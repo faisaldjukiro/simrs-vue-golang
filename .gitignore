@@ -1,5 +1,5 @@
 # Project lama hanya untuk referensi lokal dan tidak boleh di-push.
-/simrs-lama/
+/simrs-lama
 
 # Environment dan rahasia lokal.
 .env
