@@ -620,3 +620,205 @@ body.sirava-dark .user-dialog{--surface:#0f172a;--surface-soft:#1e293b;--line:rg
 @media(max-width:1050px){.patient-workspace{grid-template-columns:230px minmax(0,1fr)}.patient-workspace.collapsed{grid-template-columns:70px minmax(0,1fr)}.patient-identity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.patient-workspace,.patient-workspace.collapsed{width:calc(100% - 20px);grid-template-columns:1fr;margin:10px}.patient-workspace-sidebar{border-right:0;border-bottom:1px solid var(--line)}.patient-workspace.collapsed .patient-workspace-sidebar-tools{grid-template-columns:minmax(0,1fr) 44px}.patient-workspace.collapsed .patient-workspace-sidebar-tools button:first-child span{display:inline}.patient-workspace-sidebar-tools button:last-child{display:none}.patient-workspace-search,.patient-workspace.collapsed .patient-workspace-search{display:flex}.patient-workspace-menu,.patient-workspace.collapsed .patient-workspace-menu{max-height:none;flex-direction:row;overflow-x:auto;margin-top:10px;padding:0 0 4px}.patient-workspace-menu button,.patient-workspace.collapsed .patient-workspace-menu button{min-width:150px;grid-template-columns:34px minmax(0,1fr);padding:5px 10px;place-items:initial}.patient-workspace.collapsed .patient-workspace-menu button span{display:block}.patient-workspace-content{padding:12px}.patient-identity-heading{grid-template-columns:48px minmax(0,1fr)}.patient-identity-heading>i{width:46px;height:46px}.patient-identity-status{grid-column:1/-1;width:max-content}.patient-identity-grid,.patient-workspace-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.patient-identity-contact{grid-template-columns:1fr}}
 @media(max-width:480px){.patient-identity-grid,.patient-workspace-summary{grid-template-columns:1fr}}
+
+/* CPPT / SOAP */
+.cppt-page{display:grid;gap:15px;margin-top:15px}
+.cppt-form-card,.cppt-history-card{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--surface-soft)}
+.cppt-section-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid var(--line);background:var(--surface)}
+.cppt-section-header span{color:#0d9488;font-size:9px;font-weight:850;letter-spacing:.11em;text-transform:uppercase}
+.cppt-section-header h3{margin:4px 0 0;color:var(--text);font-size:16px}
+.cppt-section-header p{margin:4px 0 0;color:var(--muted);font-size:10px}
+.cppt-section-header small{font-size:inherit}
+.cppt-section-tools{display:flex;align-items:center;gap:8px}
+.cppt-form fieldset{min-width:0;margin:0;padding:12px;border:0}
+.cppt-form fieldset:disabled{opacity:.75}
+.cppt-time-grid,.cppt-vital-grid,.cppt-soap-grid{display:grid;gap:8px}
+.cppt-time-grid{grid-template-columns:145px 125px minmax(180px,240px) minmax(270px,1fr)}
+.cppt-vital-grid{grid-template-columns:repeat(8,minmax(72px,1fr));margin-top:10px}
+.cppt-vital-grid .allergy{grid-column:span 2}
+.cppt-soap-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
+.form-input-field{display:grid;min-width:0;gap:6px}
+.form-input-label{color:var(--muted);font-size:9px;font-style:normal;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.form-input-label i{color:#dc2626;font-style:normal}
+.form-input-element{width:100%;min-width:0;border:1px solid var(--line);border-radius:10px;outline:0;color:var(--text);background:var(--surface);font:inherit;font-size:11px;transition:.16s ease}
+input.form-input-element{height:42px;padding:0 11px}
+.form-input-textarea{resize:vertical;padding:10px 11px;line-height:1.55}
+.form-input-element:focus{border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.1)}
+.form-input-select.ui-select{width:100%;height:42px;border-color:var(--line);background:var(--surface)}
+.form-input-field .p-select-label{display:flex;align-items:center;color:var(--text);font-size:11px}
+.form-input-field .p-select-label.p-placeholder{color:var(--muted)}
+.form-input-field .p-select-dropdown{color:var(--muted)}
+.form-input-field .p-select-overlay{z-index:30;margin-top:5px;overflow:hidden;border:1px solid var(--line)!important;border-radius:10px!important;color:var(--text)!important;background:var(--surface)!important;box-shadow:0 18px 45px rgba(15,23,42,.2)!important;font-family:var(--font-sans)}
+.form-input-field .p-select-list{padding:5px;background:transparent!important}
+.form-input-field .p-select-option{border-radius:7px;padding:8px 9px;color:var(--text)!important;background:transparent!important;font-size:10px}
+.form-input-field .p-select-option:not(.p-disabled).p-focus,.form-input-field .p-select-option:not(.p-disabled):hover{color:#0f766e!important;background:rgba(20,184,166,.12)!important}
+.form-input-field .p-select-option.p-select-option-selected{color:white!important;background:#0d9488!important}
+.theme-dark .form-input-field .p-select-overlay,.sirava-dark .form-input-field .p-select-overlay{border-color:rgba(148,163,184,.2)!important;color:#f8fafc!important;background:#0f172a!important;box-shadow:0 22px 55px rgba(0,0,0,.42)!important}
+.theme-dark .form-input-field .p-select-list,.sirava-dark .form-input-field .p-select-list{background:#0f172a!important}
+.theme-dark .form-input-field .p-select-option,.sirava-dark .form-input-field .p-select-option{color:#f8fafc!important}
+.theme-dark .form-input-field .p-select-option:not(.p-disabled).p-focus,.theme-dark .form-input-field .p-select-option:not(.p-disabled):hover,.sirava-dark .form-input-field .p-select-option:not(.p-disabled).p-focus,.sirava-dark .form-input-field .p-select-option:not(.p-disabled):hover{color:#5eead4!important;background:#1e293b!important}
+.theme-dark .form-input-field .p-select-option.p-select-option-selected,.sirava-dark .form-input-field .p-select-option.p-select-option-selected{color:#042f2e!important;background:#2dd4bf!important}
+.form-input-message{color:var(--muted);font-size:9px}
+.form-input-message.error{color:#dc2626}
+.form-input-field.invalid .form-input-element{border-color:#dc2626}
+.form-compact .form-input-field{gap:4px}
+.form-compact input.form-input-element,.form-compact .form-input-select.ui-select{height:34px;min-height:34px}
+.form-compact input.form-input-element{padding:0 9px;font-size:10px}
+.form-compact .form-input-select.ui-select{font-size:10px}
+.form-compact .form-input-textarea{min-height:58px;padding:7px 9px;font-size:10px;line-height:1.4}
+.form-compact .form-input-label{font-size:8px}
+.staff-search{position:relative;display:grid;min-width:0;gap:4px}
+.staff-search-selected,.staff-search-box{display:flex;height:34px;min-width:0;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:0 9px;color:var(--text);background:var(--surface)}
+.staff-search-selected>svg,.staff-search-box>svg{flex:0 0 auto;color:#0d9488}
+.staff-search-selected>span{display:grid;min-width:0;flex:1;gap:1px}
+.staff-search-selected strong,.staff-search-selected small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.staff-search-selected strong{font-size:10px}.staff-search-selected small{color:var(--muted);font-size:8px}
+.staff-search-selected button{display:grid;width:24px;height:24px;place-items:center;border-radius:7px;color:var(--muted);background:transparent;cursor:pointer}
+.staff-search-box input{min-width:0;flex:1;height:100%;border:0;outline:0;color:var(--text);background:transparent;font-size:10px}
+.staff-search-results{position:absolute;z-index:50;top:calc(100% - 1px);right:0;left:0;display:grid;max-height:230px;gap:4px;overflow:auto;padding:5px;border:1px solid var(--line);border-radius:10px;color:var(--text);background:var(--surface);box-shadow:0 18px 45px rgba(15,23,42,.2)}
+.staff-search-results button{display:flex;align-items:center;gap:8px;padding:8px;border-radius:7px;color:var(--text);background:transparent;text-align:left;cursor:pointer}
+.staff-search-results button:hover{background:rgba(20,184,166,.12)}
+.staff-search-results button>svg{flex:0 0 auto;color:#0d9488}.staff-search-results button>span{display:grid;min-width:0;gap:2px}.staff-search-results strong,.staff-search-results small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.staff-search-results strong{font-size:10px}.staff-search-results small{color:var(--muted);font-size:8px}.staff-search-results p{margin:0;padding:12px;color:var(--muted);font-size:9px;text-align:center}
+.staff-search-hint{color:var(--muted);font-size:8px}.staff-search.disabled .staff-search-selected{opacity:.82}
+.theme-dark .staff-search-selected,.theme-dark .staff-search-box,.theme-dark .staff-search-results,.sirava-dark .staff-search-selected,.sirava-dark .staff-search-box,.sirava-dark .staff-search-results{border-color:#405269;color:#f8fafc;background:#1c283a}.theme-dark .staff-search-results button,.sirava-dark .staff-search-results button{color:#f8fafc}.theme-dark .staff-search-results button:hover,.sirava-dark .staff-search-results button:hover{background:#26364b}
+.cppt-form-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:15px;padding-top:14px;border-top:1px solid var(--line)}
+.cppt-button{display:inline-flex;min-height:38px;align-items:center;justify-content:center;gap:7px;padding:0 14px;border:1px solid transparent;border-radius:10px;font-size:10px;font-weight:800;cursor:pointer}
+.cppt-button.primary{color:white;background:#0d9488}
+.cppt-button.secondary{border-color:var(--line);color:var(--text);background:var(--surface)}
+.cppt-button.toggle{border-color:#0d9488;color:white;background:#0d9488}
+.cppt-button.icon-only{width:38px;min-width:38px;padding:0}
+.cppt-button.danger{color:white;background:#dc2626}
+.cppt-button:disabled{cursor:not-allowed;opacity:.58}
+.cppt-state{display:grid;min-height:150px;place-items:center;align-content:center;gap:10px;padding:25px;color:var(--muted);font-size:11px;text-align:center}
+.cppt-state svg{color:#0d9488}
+.cppt-state.error{color:#dc2626}
+.cppt-state button{border:1px solid var(--line);border-radius:8px;padding:7px 11px;color:var(--text);background:var(--surface);font-size:10px;font-weight:750;cursor:pointer}
+.cppt-history-card>.data-table-wrap{border:0;border-radius:0}
+.cppt-history-card .p-datatable-table{width:max-content!important;min-width:100%!important;table-layout:auto!important;font-size:10px}
+.cppt-history-card .p-datatable-thead>tr>th{width:auto!important;text-align:left!important;white-space:nowrap}
+.cppt-history-card .p-datatable-tbody>tr>td{width:auto!important;height:auto!important;text-align:left!important;vertical-align:top}
+.cppt-history-card .data-table-wrap td,.cppt-history-card .data-table-wrap td strong,.cppt-history-card .data-table-wrap td span,.cppt-history-card .data-table-wrap td code{overflow:visible;text-overflow:clip;white-space:normal}
+.cppt-table-main{display:grid;gap:4px}
+.cppt-table-main strong{min-width:max-content;color:var(--text);font-size:10px}
+.cppt-table-main span{color:var(--muted);font-size:9px}
+.cppt-table-vitals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px}
+.cppt-table-vitals span{color:var(--muted);font-size:9px;white-space:nowrap}
+.cppt-table-vitals b{color:var(--text)}
+.cppt-table-note{width:360px;max-width:none;margin:0;color:var(--text);font-size:10px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}
+.cppt-table-extra{display:grid;width:340px;gap:5px}
+.cppt-table-extra p{margin:0;color:var(--muted);font-size:9px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}
+.cppt-table-extra b{color:var(--text)}
+.cppt-table-actions{display:flex;gap:5px}
+.cppt-table-actions button{display:inline-flex;align-items:center;justify-content:center;gap:4px;border:1px solid var(--line);border-radius:7px;padding:6px 7px;color:var(--text);background:var(--surface);font-size:9px;font-weight:800;cursor:pointer}
+.cppt-table-actions button.danger{color:#dc2626}
+.cppt-owner-note{font-style:italic}
+.cppt-confirm-backdrop{position:fixed;z-index:1200;inset:0;display:grid;place-items:center;padding:20px;background:rgba(2,6,23,.62);backdrop-filter:blur(3px)}
+.cppt-confirm-dialog{width:min(420px,100%);padding:20px;border:1px solid var(--line);border-radius:16px;color:var(--text);background:var(--surface);box-shadow:0 25px 60px rgba(2,6,23,.28)}
+.cppt-confirm-dialog h3{margin:0;font-size:17px}
+.cppt-confirm-dialog p{margin:9px 0 18px;color:var(--muted);font-size:11px;line-height:1.6}
+.cppt-confirm-dialog>div{display:flex;justify-content:flex-end;gap:8px}
+
+/* Kontras visual CPPT: form dan tabel harus terbaca sebagai dua area kerja. */
+.cppt-form-card{border-color:#b8ddd7;background:#e5f6f2;box-shadow:0 8px 22px rgba(13,148,136,.07)}
+.cppt-form-card .cppt-section-header{background:#fff}
+.cppt-form{background:linear-gradient(135deg,#f0fdfa 0%,#e4f7f2 100%)}
+.cppt-form .form-input-label{color:#285f5c}
+.cppt-form .form-input-element,.cppt-form .form-input-select.ui-select{border-color:#a9cec8!important;color:#0f172a!important;background:#fff!important;box-shadow:0 1px 2px rgba(13,148,136,.07)}
+.cppt-form .form-input-element::placeholder{color:#94a3b8;opacity:1}
+.cppt-form .form-input-select .p-select-label{color:#0f172a!important}
+.cppt-form .form-input-select .p-select-label.p-placeholder{color:#64748b!important}
+.cppt-form .form-input-element:hover,.cppt-form .form-input-select.ui-select:hover{border-color:#5fa9a1!important}
+.cppt-form .form-input-element:focus,.cppt-form .form-input-select.ui-select.p-focus{border-color:#0d9488!important;box-shadow:0 0 0 3px rgba(13,148,136,.14)!important}
+.cppt-form .cppt-soap-grid .form-input-field{padding:7px;border:1px solid #b8ddd7;border-radius:10px;background:rgba(255,255,255,.58)}
+.cppt-form-actions{border-top-color:#b8ddd7}
+
+.cppt-history-card{border-color:#b5dcd6;background:#dff4f0;box-shadow:0 8px 22px rgba(13,148,136,.07)}
+.cppt-history-card .cppt-section-header{background:#fff}
+.cppt-history-card>.data-table-wrap{width:calc(100% - 24px);margin:12px;border:1px solid #9fcfc8;border-radius:11px;background:#c6e8e3;box-shadow:0 4px 14px rgba(13,148,136,.09)}
+.cppt-history-card .p-datatable-thead>tr>th{border-right:1px solid rgba(255,255,255,.13)!important;border-bottom:1px solid #0b4f53!important;color:#fff!important;background:#0f6367!important}
+.cppt-history-card .p-datatable-tbody>tr{background:#fff!important}
+.cppt-history-card .p-datatable-tbody>tr:nth-child(even){background:#e9faf6!important}
+.cppt-history-card .p-datatable-tbody>tr:hover{background:#d3f2eb!important}
+.cppt-history-card .p-datatable-tbody>tr>td{border-right:1px solid #d5ebe7!important;border-top:0!important;border-bottom:1px solid #b9dcd6!important;color:#0f172a!important;background:transparent!important}
+.cppt-history-card .p-datatable-tbody>tr>td:last-child{border-right:0!important}
+.cppt-history-card .cppt-table-main strong,.cppt-history-card .cppt-table-vitals b,.cppt-history-card .cppt-table-note,.cppt-history-card .cppt-table-extra b{color:#0f172a!important}
+.cppt-history-card .cppt-table-main span,.cppt-history-card .cppt-table-vitals span,.cppt-history-card .cppt-table-extra p{color:#466b68!important}
+
+.theme-dark .cppt-form-card,.sirava-dark .cppt-form-card{border-color:#34465a;background:#0c1625;box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.theme-dark .cppt-form-card .cppt-section-header,.sirava-dark .cppt-form-card .cppt-section-header{background:#182234}
+.theme-dark .cppt-form,.sirava-dark .cppt-form{background:linear-gradient(135deg,#111c2c 0%,#0e1b29 100%)}
+.theme-dark .cppt-form .form-input-label,.sirava-dark .cppt-form .form-input-label{color:#a9bdd1}
+.theme-dark .cppt-form .form-input-element,.theme-dark .cppt-form .form-input-select.ui-select,.sirava-dark .cppt-form .form-input-element,.sirava-dark .cppt-form .form-input-select.ui-select{border-color:#405269!important;color:#f8fafc!important;background:#1c283a!important;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.theme-dark .cppt-form .form-input-element::placeholder,.sirava-dark .cppt-form .form-input-element::placeholder{color:#71839a}
+.theme-dark .cppt-form .form-input-select .p-select-label,.sirava-dark .cppt-form .form-input-select .p-select-label{color:#f8fafc!important}
+.theme-dark .cppt-form .form-input-select .p-select-label.p-placeholder,.sirava-dark .cppt-form .form-input-select .p-select-label.p-placeholder{color:#94a3b8!important}
+.theme-dark .cppt-form .form-input-element:hover,.theme-dark .cppt-form .form-input-select.ui-select:hover,.sirava-dark .cppt-form .form-input-element:hover,.sirava-dark .cppt-form .form-input-select.ui-select:hover{border-color:#688097!important}
+.theme-dark .cppt-form .cppt-soap-grid .form-input-field,.sirava-dark .cppt-form .cppt-soap-grid .form-input-field{border-color:#304258;background:#142132}
+.theme-dark .cppt-form-actions,.sirava-dark .cppt-form-actions{border-top-color:#304258}
+
+.theme-dark .cppt-history-card,.sirava-dark .cppt-history-card{border-color:#31465a;background:#081421;box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.theme-dark .cppt-history-card .cppt-section-header,.sirava-dark .cppt-history-card .cppt-section-header{background:#182234}
+.theme-dark .cppt-history-card>.data-table-wrap,.sirava-dark .cppt-history-card>.data-table-wrap{border-color:#355064;background:#07111d;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.theme-dark .cppt-history-card .p-datatable-thead>tr>th,.sirava-dark .cppt-history-card .p-datatable-thead>tr>th{border-color:rgba(255,255,255,.11)!important;color:#f8fafc!important;background:#0d555a!important}
+.theme-dark .cppt-history-card .p-datatable-tbody>tr,.sirava-dark .cppt-history-card .p-datatable-tbody>tr{background:#111c2c!important}
+.theme-dark .cppt-history-card .p-datatable-tbody>tr:nth-child(even),.sirava-dark .cppt-history-card .p-datatable-tbody>tr:nth-child(even){background:#102d38!important}
+.theme-dark .cppt-history-card .p-datatable-tbody>tr:hover,.sirava-dark .cppt-history-card .p-datatable-tbody>tr:hover{background:#16404a!important}
+.theme-dark .cppt-history-card .p-datatable-tbody>tr>td,.sirava-dark .cppt-history-card .p-datatable-tbody>tr>td{border-color:#2b4153!important;color:#f8fafc!important}
+.theme-dark .cppt-history-card .cppt-table-main strong,.theme-dark .cppt-history-card .cppt-table-vitals b,.theme-dark .cppt-history-card .cppt-table-note,.theme-dark .cppt-history-card .cppt-table-extra b,.sirava-dark .cppt-history-card .cppt-table-main strong,.sirava-dark .cppt-history-card .cppt-table-vitals b,.sirava-dark .cppt-history-card .cppt-table-note,.sirava-dark .cppt-history-card .cppt-table-extra b{color:#f8fafc!important}
+.theme-dark .cppt-history-card .cppt-table-main span,.theme-dark .cppt-history-card .cppt-table-vitals span,.theme-dark .cppt-history-card .cppt-table-extra p,.sirava-dark .cppt-history-card .cppt-table-main span,.sirava-dark .cppt-history-card .cppt-table-vitals span,.sirava-dark .cppt-history-card .cppt-table-extra p{color:#a9bfd3!important}
+.spin{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:1200px){.cppt-time-grid{grid-template-columns:145px 125px minmax(180px,1fr)}.cppt-time-grid .petugas{grid-column:1/-1}.cppt-vital-grid{grid-template-columns:repeat(5,minmax(72px,1fr))}.cppt-vital-grid .allergy{grid-column:span 2}}
+@media(max-width:760px){.cppt-time-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cppt-time-grid .wide{grid-column:1/-1}.cppt-vital-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cppt-vital-grid .allergy{grid-column:1/-1}.cppt-soap-grid{grid-template-columns:1fr}.cppt-section-header{align-items:flex-start;flex-direction:column}.cppt-section-tools{width:100%;flex-wrap:wrap}.cppt-section-tools .cppt-button:not(.icon-only){flex:1}.cppt-section-tools .icon-only{margin-left:auto}}
+@media(max-width:480px){.cppt-time-grid,.cppt-vital-grid{grid-template-columns:1fr}.cppt-vital-grid .allergy{grid-column:auto}.cppt-form-actions{flex-direction:column-reverse}.cppt-form-actions .cppt-button{width:100%}}
+
+/* Daftar pasien memakai pemisahan visual seperti tabel CPPT, hanya pada light mode. */
+.theme-light .patient-module .patient-filter{border-color:#d7e2ea;background:#f7fafc;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+.theme-light .patient-module .patient-filter input,.theme-light .patient-module .patient-filter select,.theme-light .patient-module .patient-filter .p-select,.theme-light .patient-module .patient-filter .p-datepicker-input,.theme-light .patient-module .patient-filter .p-datepicker-dropdown,.theme-light .patient-module .filter-check{border-color:#cbd8e2;color:#0f172a;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.theme-light .patient-module .patient-filter input:hover,.theme-light .patient-module .patient-filter select:hover,.theme-light .patient-module .patient-filter .p-select:hover,.theme-light .patient-module .patient-filter .p-datepicker:hover .p-datepicker-input,.theme-light .patient-module .patient-filter .p-datepicker:hover .p-datepicker-dropdown{border-color:#5fa9a1}
+.theme-light .patient-list-table{border-color:#c8d9dd;background:#eef5f5;box-shadow:0 5px 16px rgba(15,23,42,.06)}
+.theme-light .patient-list-table .p-datatable-thead>tr>th{border-right:1px solid rgba(255,255,255,.14);border-bottom:1px solid #0b4f53;color:#fff;background:#0f6367}
+.theme-light .patient-list-table .p-datatable-thead>tr>th:last-child{border-right:0}
+.theme-light .patient-list-table .p-datatable-tbody>tr{background:#fff}
+.theme-light .patient-list-table .p-datatable-tbody>tr:nth-child(even){background:#f3f9f8}
+.theme-light .patient-list-table .p-datatable-tbody>tr:hover{background:#e5f3f1}
+.theme-light .patient-list-table .p-datatable-tbody>tr>td{border-top:0;border-right:1px solid #e1eaed;border-bottom:1px solid #d5e2e5;color:#0f172a}
+.theme-light .patient-list-table .p-datatable-tbody>tr>td:last-child{border-right:0}
+.theme-light .patient-list-table td,.theme-light .patient-list-table td strong,.theme-light .patient-list-table td code,.theme-light .patient-list-table .table-number{color:#0f172a}
+.theme-light .patient-list-table td>span{color:#52677a}
+.theme-light .patient-list-table td code{color:#17324d}
+.theme-light .patient-list-table .patient-status{border:1px solid #b9ddd7;color:#0f766e;background:#edf8f6}
+.theme-light .patient-list-table .p-paginator{border-top-color:#d5e2e5;background:#f7fafc}
+.theme-light .patient-list-table .p-paginator .p-select{border-color:#cbd8e2;background:#fff}
+
+/* Header daftar pasien dark mode dibuat satu bidang agar tidak tampak belang per kolom. */
+.theme-dark .patient-list-table .p-datatable-thead>tr>th,.sirava-dark .patient-list-table .p-datatable-thead>tr>th{border-right:1px solid rgba(148,163,184,.14);border-bottom:1px solid #285064;color:#eaf6f7;background:#123744}
+.theme-dark .patient-list-table .p-datatable-thead>tr>th:last-child,.sirava-dark .patient-list-table .p-datatable-thead>tr>th:last-child{border-right:0}
+
+/* Form CPPT light mode dibuat netral; teal cukup menjadi aksen. */
+.theme-light .cppt-form-card{border-color:#cbdde3;background:#f4f8fa;box-shadow:0 7px 20px rgba(15,23,42,.055)}
+.theme-light .cppt-form-card .cppt-section-header{border-bottom-color:#d9e5ea;background:#fff}
+.theme-light .cppt-form{background:linear-gradient(135deg,#f8fbfc 0%,#f1f7f8 100%)}
+.theme-light .cppt-form .form-input-label{color:#40586c}
+.theme-light .cppt-form .form-input-element,.theme-light .cppt-form .form-input-select.ui-select{border-color:#bdcfd8!important;background:#fff!important;box-shadow:0 1px 2px rgba(15,23,42,.045)}
+.theme-light .cppt-form .form-input-element:hover,.theme-light .cppt-form .form-input-select.ui-select:hover{border-color:#7fa9ad!important}
+.theme-light .cppt-form .cppt-soap-grid .form-input-field{border-color:#d3e1e6;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.035)}
+.theme-light .cppt-form-actions{border-top-color:#d9e5ea}
+
+/* Riwayat CPPT light mode mengikuti form yang lebih netral. */
+.theme-light .cppt-history-card{border-color:#cbdde3;background:#f4f8fa;box-shadow:0 7px 20px rgba(15,23,42,.055)}
+.theme-light .cppt-history-card .cppt-section-header{border-bottom-color:#d9e5ea;background:#fff}
+.theme-light .cppt-history-card>.data-table-wrap{border-color:#c8d9dd;background:#eef4f6;box-shadow:0 4px 14px rgba(15,23,42,.05)}
+.theme-light .cppt-history-card .p-datatable-tbody>tr{background:#fff!important}
+.theme-light .cppt-history-card .p-datatable-tbody>tr:nth-child(even){background:#f4f8f9!important}
+.theme-light .cppt-history-card .p-datatable-tbody>tr:hover{background:#eaf3f4!important}
+.theme-light .cppt-history-card .p-datatable-tbody>tr>td{border-color:#dce7ea!important}
+.theme-light .cppt-history-card .cppt-table-main span,.theme-light .cppt-history-card .cppt-table-vitals span,.theme-light .cppt-history-card .cppt-table-extra p{color:#52677a!important}
+
+/* Sidebar administrasi pasien tetap utuh saat isi halaman panjang. */
+@media(min-width:761px){
+  .dashboard-body{overflow:clip}
+  .patient-workspace{overflow:visible}
+  .patient-workspace-sidebar{position:sticky;top:12px;display:flex;height:calc(100vh - 24px);min-height:0;align-self:start;flex-direction:column;overflow:hidden;border-radius:23px 0 0 23px}
+  .patient-workspace-menu{min-height:0;max-height:none;flex:1}
+}

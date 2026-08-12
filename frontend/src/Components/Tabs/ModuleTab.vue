@@ -15,7 +15,7 @@ const props = defineProps({
   daftarStatusPeriksa: { type: Array, default: () => [] },
   daftarStatusRawatInap: { type: Array, default: () => [] },
   daftarStatusBayar: { type: Array, default: () => [] },
-  pagination: { type: Object, default: () => ({ halaman: 1, batas: 100, total: 0 }) },
+  pagination: { type: Object, default: () => ({ halaman: 1, batas: 10, total: 0 }) },
   isDark: Boolean,
   dashboardError: { type: String, default: '' },
   dashboardLoading: Boolean,
@@ -26,8 +26,8 @@ const bolehFilter = computed(() => ['Rawat Jalan', 'IGD/UGD', 'Rawat Inap'].incl
 const rawatInap = computed(() => props.currentTab === 'Rawat Inap')
 const jumlahDataTampil = computed(() => props.dashboardLoading ? 0 : props.filteredPatientRows.length)
 const jumlahDataTotal = computed(() => props.dashboardLoading ? 0 : props.pagination.total ?? props.patientRows.length)
-const firstRow = computed(() => ((props.pagination.halaman || 1) - 1) * (props.pagination.batas || 100))
-const rowsPerPage = computed(() => props.pagination.batas || 100)
+const firstRow = computed(() => ((props.pagination.halaman || 1) - 1) * (props.pagination.batas || 10))
+const rowsPerPage = computed(() => props.pagination.batas || 10)
 
 function gantiHalaman(event) {
   emit('page-change', {
@@ -76,6 +76,7 @@ function labelJenisKelamin(kode) {
     </div>
     <DataTable
       v-else
+      class="patient-list-table"
       :rows="filteredPatientRows"
       data-key="no_rawat"
       empty-message="Data pasien tidak ditemukan."
@@ -83,6 +84,7 @@ function labelJenisKelamin(kode) {
       lazy
       :first="firstRow"
       :rows-per-page="rowsPerPage"
+      :rows-per-page-options="[10, 25, 50, 100]"
       :total-records="jumlahDataTotal"
       clickable
       @page="gantiHalaman"
@@ -91,7 +93,7 @@ function labelJenisKelamin(kode) {
       <template v-if="rawatInap">
         <Column header="No.">
           <template #body="{ index }">
-            <strong class="table-number">{{ index + 1 }}</strong>
+            <strong class="table-number">{{ firstRow + index + 1 }}</strong>
           </template>
         </Column>
 
@@ -168,7 +170,7 @@ function labelJenisKelamin(kode) {
       <template v-else>
         <Column header="No.">
           <template #body="{ index }">
-            <strong class="table-number">{{ index + 1 }}</strong>
+            <strong class="table-number">{{ firstRow + index + 1 }}</strong>
           </template>
         </Column>
 

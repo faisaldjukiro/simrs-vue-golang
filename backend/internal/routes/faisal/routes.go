@@ -8,6 +8,7 @@ import (
 
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
+	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	"simrs-backend/internal/shared/httpresponse"
@@ -18,6 +19,7 @@ type Dependencies struct {
 	Beranda           *berandahttp.Handler
 	IDRG              *idrghttp.Handler
 	ManajemenPengguna *manajemenpenggunahttp.Handler
+	CPPT              *cppthttp.Handler
 }
 
 // Register attaches Faisal's routes to the shared API router. Developer names
@@ -33,6 +35,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	protectedAPI.Use(dependencies.Autentikasi.Middleware())
 	protectedAPI.GET("/beranda", dependencies.Beranda.Beranda)
 	dependencies.IDRG.Register(protectedAPI.Group("/idrg"))
+	dependencies.CPPT.Register(protectedAPI.Group("/cppt"))
 	protectedAPI.GET("/user-management", dependencies.ManajemenPengguna.Daftar)
 	protectedAPI.GET("/user-management/pegawai", dependencies.ManajemenPengguna.CariPegawai)
 	protectedAPI.POST("/user-management", dependencies.ManajemenPengguna.Tambah)

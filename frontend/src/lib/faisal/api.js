@@ -88,3 +88,41 @@ export function ubahAksesUserManagement(token, id, payload) {
     body: JSON.stringify(payload),
   })
 }
+
+export function cpptData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/cppt?${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function simpanCppt(token, payload) {
+  return request('/api/cppt', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function ubahCppt(token, payload) {
+  return request('/api/cppt', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function hapusCppt(token, payload) {
+  return request('/api/cppt', {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function cariPetugasCppt(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/cppt/petugas?${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}

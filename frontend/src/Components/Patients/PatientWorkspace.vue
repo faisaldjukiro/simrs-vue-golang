@@ -21,11 +21,13 @@ import {
 } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import PatientIdentityHeader from './PatientIdentityHeader.vue'
+import CpptPage from '../../Pages/RawatInap/CpptPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
   patient: { type: Object, required: true },
   menus: { type: Array, default: () => [] },
+  token: { type: String, required: true },
 })
 
 const emit = defineEmits(['back'])
@@ -153,6 +155,12 @@ watch(() => props.patient.no_rawat, () => {
           <strong>{{ item[1] || '-' }}</strong>
         </article>
       </section>
+
+      <CpptPage
+        v-else-if="activeSection === 'Cppt/Soap'"
+        :token="token"
+        :patient="patient"
+      />
 
       <section v-else class="patient-workspace-placeholder">
         <component :is="menusAktif.find((menu) => menu.label === activeSection)?.iconComponent || LayoutDashboard" :size="32" />

@@ -66,7 +66,7 @@ const patientFilters = ref({
   'IGD/UGD': filterKosong(),
   'Rawat Inap': filterKosong(true),
 })
-const paginationKosong = () => ({ halaman: 1, batas: 100, total: 0, total_halaman: 0 })
+const paginationKosong = () => ({ halaman: 1, batas: 10, total: 0, total_halaman: 0 })
 const patientPagination = ref({
   Registrasi: paginationKosong(),
   'Rawat Jalan': paginationKosong(),
@@ -224,7 +224,7 @@ function parameterFilterPasien(filterPerModul) {
 
     const paginasi = patientPagination.value[namaModul] ?? paginationKosong()
     parameter[`${prefix}_page`] = paginasi.halaman || 1
-    parameter[`${prefix}_limit`] = paginasi.batas || 100
+    parameter[`${prefix}_limit`] = paginasi.batas || 10
 
     if (namaModul === 'Rawat Jalan') {
       parameter[`${prefix}_poly`] = filter.poly || ''
@@ -453,6 +453,7 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
       :module-name="selectedPatientModule"
       :patient="selectedPatient"
       :menus="dashboard.menu_workspace_pasien"
+      :token="token"
       @back="closePatientWorkspace"
     />
 

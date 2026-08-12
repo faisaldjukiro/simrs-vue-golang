@@ -19,6 +19,8 @@ import (
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	"simrs-backend/internal/modules/beranda"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
+	"simrs-backend/internal/modules/cppt"
+	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	"simrs-backend/internal/modules/idrg"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	"simrs-backend/internal/modules/manajemen_pengguna"
@@ -75,6 +77,8 @@ func main() {
 	idrgRepositori := idrg.NewRepositori(simrsDB)
 	idrgHandler := idrghttp.NewHandler(idrgRepositori, idrg.NewLayanan(idrgRepositori, eklaimConfig))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
+	cpptRepositori := cppt.NewRepositori(db, simrsDB)
+	cpptHandler := cppthttp.NewHandler(cppt.NewLayanan(cpptRepositori))
 
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
@@ -83,6 +87,7 @@ func main() {
 		Beranda:           berandaHandler,
 		IDRG:              idrgHandler,
 		ManajemenPengguna: manajemenPenggunaHandler,
+		CPPT:              cpptHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 
