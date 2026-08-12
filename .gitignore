@@ -1,0 +1,55 @@
+# Project lama hanya untuk referensi lokal dan tidak boleh di-push.
+/simrs-lama/
+
+# Environment dan rahasia lokal.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dependencies dan hasil build frontend.
+**/node_modules/
+**/dist/
+**/.vite/
+**/.cache/
+**/coverage/
+
+# File sementara dan cache backend/frontend.
+**/tmp/
+**/temp/
+**/*.tmp
+**/*.test
+**/coverage.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Log dan runtime files.
+*.log
+*.pid
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor dan sistem operasi.
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Arsip dan dump database lokal.
+*.sql
+*.sql.gz
+*.dump
+*.bak
+
+# File migration/seeder SQL adalah source code dan tetap masuk Git.
+!/backend/migrations/
+!/backend/migrations/**/*.sql

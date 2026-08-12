@@ -1,0 +1,8 @@
+# Rahasia lokal
+.env
+
+# Build dan test
+bin/
+tmp/
+coverage.out
+*.log

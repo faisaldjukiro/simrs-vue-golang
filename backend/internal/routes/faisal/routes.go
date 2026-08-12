@@ -1,0 +1,40 @@
+// Package faisal registers routes maintained by Faisal.
+package faisal
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
+	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
+	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
+	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
+	"simrs-backend/internal/shared/httpresponse"
+)
+
+type Dependencies struct {
+	Autentikasi       *autentikasihttp.Handler
+	Beranda           *berandahttp.Handler
+	IDRG              *idrghttp.Handler
+	ManajemenPengguna *manajemenpenggunahttp.Handler
+}
+
+// Register attaches Faisal's routes to the shared API router. Developer names
+// are intentionally not included in public URLs.
+func Register(router *gin.Engine, dependencies Dependencies) {
+	router.GET("/health", func(c *gin.Context) {
+		httpresponse.Success(c, http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	dependencies.Autentikasi.Register(router.Group("/api/auth"))
+
+	protectedAPI := router.Group("/api")
+	protectedAPI.Use(dependencies.Autentikasi.Middleware())
+	protectedAPI.GET("/beranda", dependencies.Beranda.Beranda)
+	dependencies.IDRG.Register(protectedAPI.Group("/idrg"))
+	protectedAPI.GET("/user-management", dependencies.ManajemenPengguna.Daftar)
+	protectedAPI.GET("/user-management/pegawai", dependencies.ManajemenPengguna.CariPegawai)
+	protectedAPI.POST("/user-management", dependencies.ManajemenPengguna.Tambah)
+	protectedAPI.PUT("/user-management/:id/akses", dependencies.ManajemenPengguna.UbahAkses)
+}
