@@ -21,7 +21,7 @@ const props = defineProps({
   dashboardLoading: Boolean,
 })
 
-const emit = defineEmits(['apply-filters', 'page-change'])
+const emit = defineEmits(['apply-filters', 'page-change', 'select-patient'])
 const bolehFilter = computed(() => ['Rawat Jalan', 'IGD/UGD', 'Rawat Inap'].includes(props.currentTab))
 const rawatInap = computed(() => props.currentTab === 'Rawat Inap')
 const jumlahDataTampil = computed(() => props.dashboardLoading ? 0 : props.filteredPatientRows.length)
@@ -84,7 +84,9 @@ function labelJenisKelamin(kode) {
       :first="firstRow"
       :rows-per-page="rowsPerPage"
       :total-records="jumlahDataTotal"
+      clickable
       @page="gantiHalaman"
+      @row-click="emit('select-patient', $event.data)"
     >
       <template v-if="rawatInap">
         <Column header="No.">

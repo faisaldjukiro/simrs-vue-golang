@@ -13,15 +13,17 @@ defineProps({
   rowsPerPage: { type: Number, default: 100 },
   rowsPerPageOptions: { type: Array, default: () => [50, 100, 200, 500] },
   totalRecords: { type: Number, default: 0 },
+  clickable: Boolean,
 })
 
-const emit = defineEmits(['page'])
+const emit = defineEmits(['page', 'row-click'])
 </script>
 
 <template>
   <div class="patient-table-wrap data-table-wrap">
     <PrimeDataTable
       class="data-table"
+      :class="{ 'data-table-clickable': clickable }"
       :value="rows"
       :data-key="dataKey"
       :loading="loading"
@@ -34,6 +36,7 @@ const emit = defineEmits(['page'])
       paginator-template="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
       current-page-report-template="{first} - {last} dari {totalRecords} data"
       @page="emit('page', $event)"
+      @row-click="emit('row-click', $event)"
     >
       <slot />
 

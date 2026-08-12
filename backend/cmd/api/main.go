@@ -71,7 +71,7 @@ func main() {
 	autentikasiRepositori := autentikasi.NewRepositori(db, simrsDB)
 	autentikasiLayanan := autentikasi.NewLayanan(autentikasiRepositori, tokenTTL)
 	autentikasiHandler := autentikasihttp.NewHandler(autentikasiLayanan)
-	berandaHandler := berandahttp.NewHandler(beranda.NewRepositori(simrsDB))
+	berandaHandler := berandahttp.NewHandler(beranda.NewRepositori(simrsDB, db))
 	idrgRepositori := idrg.NewRepositori(simrsDB)
 	idrgHandler := idrghttp.NewHandler(idrgRepositori, idrg.NewLayanan(idrgRepositori, eklaimConfig))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))

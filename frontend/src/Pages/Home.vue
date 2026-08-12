@@ -17,6 +17,7 @@ import {
 } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import DashboardLayout from '../Components/Layout/DashboardLayout.vue'
+import PatientWorkspace from '../Components/Patients/PatientWorkspace.vue'
 import BerandaTab from '../Components/Tabs/BerandaTab.vue'
 import IdrgPage from './Eklaim/IdrgPage.vue'
 import ModulePlaceholder from '../Components/Tabs/ModulePlaceholder.vue'
@@ -36,6 +37,8 @@ const isDark = ref(localStorage.getItem('simrs_theme') !== 'light')
 const currentTab = ref('Menu')
 const menuOpen = ref(false)
 const menuSearch = ref('')
+const selectedPatient = ref(null)
+const selectedPatientModule = ref('')
 const now = ref(new Date())
 const dashboardLoading = ref(true)
 const dashboardError = ref('')
@@ -86,6 +89,7 @@ const dashboard = ref({
   poliklinik: [],
   dokter: [],
   pilihan_status: { periksa: [], rawat_inap: [], status_bayar: [] },
+  menu_workspace_pasien: [],
 })
 const userManagement = ref({
   ringkasan: { jumlah_pengguna: 0, jumlah_aktif: 0, jumlah_admin: 0 },
@@ -300,7 +304,11 @@ onMounted(() => {
 })
 watch(() => props.token, loadDashboard)
 watch(isAuthenticated, (loggedIn) => {
-  if (!loggedIn) currentTab.value = 'Menu'
+  if (!loggedIn) {
+    currentTab.value = 'Menu'
+    selectedPatient.value = null
+    selectedPatientModule.value = ''
+  }
 })
 
 function toggleTheme() {
@@ -325,6 +333,8 @@ function selectMenu(label) {
   }
   if (label === 'Beranda') {
     currentTab.value = 'Menu'
+    selectedPatient.value = null
+    selectedPatientModule.value = ''
     menuOpen.value = false
     return
   }
@@ -333,6 +343,8 @@ function selectMenu(label) {
     emit('logout')
     return
   }
+  selectedPatient.value = null
+  selectedPatientModule.value = ''
   currentTab.value = label
   menuOpen.value = false
 
@@ -347,6 +359,17 @@ function selectMenu(label) {
   }
 
   if (!dashboardLoading.value) tampilkanToastDataKosong(label, dashboard.value)
+}
+
+function selectPatient(patient) {
+  if (!patient || !['Rawat Jalan', 'IGD/UGD', 'Rawat Inap'].includes(currentTab.value)) return
+  selectedPatient.value = patient
+  selectedPatientModule.value = currentTab.value
+}
+
+function closePatientWorkspace() {
+  selectedPatient.value = null
+  selectedPatientModule.value = ''
 }
 
 function openMenu() {
@@ -425,6 +448,14 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
       @open-menu="openMenu"
     />
 
+    <PatientWorkspace
+      v-else-if="selectedPatient"
+      :module-name="selectedPatientModule"
+      :patient="selectedPatient"
+      :menus="dashboard.menu_workspace_pasien"
+      @back="closePatientWorkspace"
+    />
+
     <ModuleTab
       v-else-if="patientRows !== null"
       :current-tab="currentTab"
@@ -442,6 +473,7 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
       :dashboard-loading="dashboardLoading"
       @apply-filters="applyPatientFilters"
       @page-change="applyPatientPage"
+      @select-patient="selectPatient"
     />
 
     <UserManagementTab
