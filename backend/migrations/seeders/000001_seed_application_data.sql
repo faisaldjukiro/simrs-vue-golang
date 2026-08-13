@@ -72,7 +72,7 @@ VALUES
     ('Penanganan Dokter & Petugas', 'Users', JSON_ARRAY('Rawat Inap'), 2, TRUE, NOW(), NOW()),
     ('SBAR', 'MessageSquareText', JSON_ARRAY('Rawat Inap'), 3, TRUE, NOW(), NOW()),
     ('Diagnosa', 'Stethoscope', JSON_ARRAY('Rawat Inap'), 4, TRUE, NOW(), NOW()),
-    ('Riwayat Pasien', 'History', JSON_ARRAY('Rawat Inap'), 5, TRUE, NOW(), NOW()),
+    ('Riwayat Perawatan', 'History', JSON_ARRAY('Rawat Inap'), 5, TRUE, NOW(), NOW()),
     ('Input Resep', 'Pill', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 6, TRUE, NOW(), NOW()),
     ('Copy Resep', 'Copy', JSON_ARRAY('Rawat Inap'), 7, TRUE, NOW(), NOW()),
     ('Resep Luar', 'Receipt', JSON_ARRAY('Rawat Inap'), 8, TRUE, NOW(), NOW()),
@@ -130,7 +130,6 @@ VALUES
     ('Konseling Farmasi', 'MessageCircle', JSON_ARRAY('Rawat Inap'), 60, TRUE, NOW(), NOW()),
     ('Informasi Obat', 'Pill', JSON_ARRAY('Rawat Inap'), 61, TRUE, NOW(), NOW()),
     ('Transfer Antar Ruang', 'ArrowRightLeft', JSON_ARRAY('Rawat Inap'), 62, TRUE, NOW(), NOW()),
-    ('Riwayat Perawatan', 'ScrollText', JSON_ARRAY('Rawat Inap'), 63, TRUE, NOW(), NOW()),
     ('Triase IGD', 'Stethoscope', JSON_ARRAY('IGD/UGD'), 64, TRUE, NOW(), NOW());
 
 COMMIT;

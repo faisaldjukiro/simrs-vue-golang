@@ -190,3 +190,8 @@ export function hapusPermintaanRadiologi(token, noRawat, nomor) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/permintaan-radiologi/${encodeURIComponent(nomor)}?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
+
+export function riwayatPerawatanData(token, params = {}) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/riwayat-perawatan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}

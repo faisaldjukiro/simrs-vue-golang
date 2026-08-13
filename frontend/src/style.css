@@ -884,3 +884,250 @@ input.form-input-element{height:42px;padding:0 11px}
 .theme-dark .radiology-status-badge.partial,.sirava-dark .radiology-status-badge.partial{color:#fdba74;background:rgba(154,52,18,.35)}
 @media(max-width:900px){.radiology-form-main{grid-template-columns:1fr 1fr}.radiology-referrer{grid-column:1/-1}}
 @media(max-width:650px){.radiology-form-main,.radiology-notes-grid{grid-template-columns:1fr}}
+
+/* Riwayat perawatan pasien */
+.care-history-page{display:grid;gap:14px;padding:14px}
+.care-history-filter,.care-history-content{overflow:hidden;border:1px solid var(--line);border-radius:15px;background:var(--surface)}
+.care-history-filter>header,.care-history-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 18px;border-bottom:1px solid var(--line)}
+.care-history-filter header div,.care-history-summary div{display:grid;gap:3px}
+.care-history-filter header span,.care-history-summary span{color:#0d9488;font-size:8px;font-weight:850;letter-spacing:.1em}
+.care-history-filter header h3,.care-history-summary h3{margin:0;color:var(--text);font-size:18px}
+.care-history-filter header p,.care-history-summary p{margin:0;color:var(--muted);font-size:9px}
+.care-history-filter>header>button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:9px;padding:10px 14px;color:white;background:#0d9488;font-size:10px;font-weight:850;cursor:pointer}
+.care-history-filter>header>button:disabled{opacity:.55;cursor:wait}
+.care-history-modes{display:flex;flex-wrap:wrap;gap:7px;padding:13px 16px 8px}
+.care-history-modes label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--muted);background:var(--surface-soft);font-size:9px;font-weight:750;cursor:pointer}
+.care-history-modes label.active{border-color:rgba(13,148,136,.42);color:#0f766e;background:rgba(20,184,166,.1)}
+.care-history-modes input{accent-color:#0d9488}
+.care-history-range{display:grid;grid-template-columns:repeat(2,minmax(180px,280px));gap:10px;padding:5px 16px 10px}
+.care-history-range>label,.care-history-number{display:grid;gap:5px;color:var(--muted);font-size:8px;font-weight:850}
+.care-history-range .p-datepicker{width:100%}
+.care-history-number{max-width:570px;padding:5px 16px 10px}
+.care-history-number div{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:0 10px;background:var(--surface)}
+.care-history-number input{width:100%;height:39px;border:0;outline:0;color:var(--text);background:transparent;font-size:10px}
+.care-history-groups{display:flex;flex-wrap:wrap;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--line);background:var(--surface-soft)}
+.care-history-groups label{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:9px;font-weight:750}
+.care-history-groups input{accent-color:#0d9488}
+.care-history-visits{display:grid;gap:10px;padding:14px}
+.care-history-visit{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.care-history-visit.open{border-color:rgba(13,148,136,.32)}
+.care-history-visit-head{display:grid;width:100%;grid-template-columns:120px 165px minmax(190px,1.2fr) minmax(190px,1fr) minmax(130px,.7fr) auto auto;align-items:center;gap:13px;border:0;padding:12px 14px;color:var(--text);background:var(--surface-soft);text-align:left;cursor:pointer}
+.care-history-visit.open .care-history-visit-head{background:rgba(20,184,166,.07)}
+.care-history-visit-head>span{display:grid;min-width:0;gap:3px}
+.care-history-visit-head small{overflow:hidden;color:var(--muted);font-size:8px;text-overflow:ellipsis;white-space:nowrap}
+.care-history-visit-head strong{overflow:hidden;color:var(--text);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.care-history-date strong{font-size:12px}
+.care-history-count{display:inline-flex!important;padding:5px 7px;border-radius:999px;color:#0f766e!important;background:rgba(20,184,166,.12);font-size:8px;font-weight:850;white-space:nowrap}
+.care-history-visit-body{display:grid;gap:11px;padding:13px;background:var(--surface)}
+.care-history-meta{display:flex;flex-wrap:wrap;gap:7px}
+.care-history-meta span{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:7px;padding:6px 8px;color:var(--muted);background:var(--surface-soft);font-size:8px}
+.care-history-meta b{color:var(--text)}
+.care-history-section{overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.care-history-section>h4{margin:0;padding:9px 11px;border-bottom:1px solid var(--line);color:var(--text);background:var(--surface-soft);font-size:10px}
+.care-history-code-list{display:grid}
+.care-history-code-list article{display:grid;grid-template-columns:85px minmax(180px,1fr) 120px;gap:10px;padding:8px 11px;border-bottom:1px solid var(--line);font-size:9px}
+.care-history-code-list article:last-child{border-bottom:0}
+.care-history-code-list b{color:#2563eb}.care-history-code-list span{color:var(--text)}.care-history-code-list small{color:var(--muted)}
+.care-history-soap{display:grid;gap:8px;padding:9px}
+.care-history-soap article{overflow:hidden;border:1px solid var(--line);border-radius:8px}
+.care-history-soap header{display:flex;justify-content:space-between;gap:10px;padding:8px 9px;background:var(--surface-soft);font-size:8px}
+.care-history-soap header span{color:var(--muted)}
+.care-history-vitals{display:flex;flex-wrap:wrap;gap:6px;padding:7px 9px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.care-history-vitals span{color:var(--muted);font-size:8px}.care-history-vitals b{color:var(--text)}
+.care-history-soap dl{display:grid;grid-template-columns:65px 1fr;margin:0}
+.care-history-soap dt,.care-history-soap dd{margin:0;padding:7px 9px;border-bottom:1px solid var(--line);font-size:9px;white-space:pre-wrap}
+.care-history-soap dt{color:#0f766e;font-weight:850}.care-history-soap dd{color:var(--text)}
+.care-history-doctor-notes{display:grid;gap:8px;padding:9px}
+.care-history-doctor-notes article{overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.care-history-doctor-notes header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--surface-soft);font-size:9px}
+.care-history-doctor-notes header span{color:var(--muted)}
+.care-history-doctor-notes p{margin:0;padding:10px;color:var(--text);font-size:9px;line-height:1.55;white-space:pre-wrap}
+.care-history-table{min-width:700px}
+.care-history-table>div{display:grid;grid-template-columns:160px minmax(240px,1fr) minmax(210px,.8fr) 110px;align-items:center;border-bottom:1px solid var(--line)}
+.care-history-table>div:last-child{border-bottom:0}
+.care-history-table>div>span{display:grid;gap:2px;padding:8px 10px;color:var(--text);font-size:9px}
+.care-history-table>div>span small{color:var(--muted)}
+.care-history-table .care-history-result{display:block;margin-top:5px;padding:6px 7px;border-left:2px solid #0d9488;color:var(--text);background:var(--surface-soft);line-height:1.5;white-space:pre-wrap}
+.care-history-lab-detail{display:grid;gap:3px;margin-top:6px}
+.care-history-lab-detail>small{display:block;padding:5px 7px;border:1px solid var(--line);border-radius:6px;color:var(--text)!important;background:var(--surface-soft);line-height:1.45}
+.care-history-lab-detail i{color:var(--muted);font-style:normal}.care-history-lab-detail em{display:block;color:#b45309;font-style:normal}
+.care-history-table .head{color:var(--muted);background:var(--surface-soft);font-size:8px;font-weight:850}
+.care-history-table.medicine>div{grid-template-columns:160px minmax(260px,1fr) 120px 110px}
+.care-history-table.room>div{grid-template-columns:210px minmax(250px,1fr) 180px 110px}
+.care-history-table.prescription>div{grid-template-columns:120px minmax(250px,1fr) 180px 110px}
+.care-history-costs{display:grid}
+.care-history-costs article{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:8px 11px;border-bottom:1px solid var(--line)}
+.care-history-costs article:last-child{border-bottom:0}.care-history-costs article span{display:grid;gap:2px;font-size:9px}.care-history-costs article small{color:var(--muted)}.care-history-costs article strong{font-size:9px}.care-history-costs article strong.deduction{color:#dc2626}
+.care-history-resume-head{display:flex;flex-wrap:wrap;gap:8px;padding:9px}
+.care-history-resume-head span{display:inline-flex;gap:6px;border:1px solid var(--line);border-radius:7px;padding:7px 9px;color:var(--muted);font-size:8px}.care-history-resume-head b{color:var(--text)}
+.care-history-resume dl{display:grid;grid-template-columns:170px 1fr;margin:0;padding:0 9px 9px}
+.care-history-resume dt,.care-history-resume dd{margin:0;padding:8px 9px;border:1px solid var(--line);border-bottom:0;font-size:9px;white-space:pre-wrap}.care-history-resume dt{color:#0f766e;font-weight:850;background:var(--surface-soft)}.care-history-resume dd{color:var(--text)}.care-history-resume dt:nth-last-of-type(1),.care-history-resume dd:last-child{border-bottom:1px solid var(--line)}
+.care-history-documents{display:grid;gap:8px;padding:9px}
+.care-history-documents details{overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.care-history-documents summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 11px;color:var(--text);background:var(--surface-soft);font-size:9px;font-weight:850;cursor:pointer;list-style-position:inside}
+.care-history-documents summary small{margin-left:auto;color:var(--muted);font-size:8px}
+.care-history-document-row{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:1px;border-top:1px solid var(--line);background:var(--line)}
+.care-history-document-row>div{min-width:0;padding:8px 9px;background:var(--surface)}
+.care-history-document-row small{display:block;margin-bottom:3px;color:var(--muted);font-size:7px;font-weight:800;text-transform:uppercase}
+.care-history-document-row p{margin:0;color:var(--text);font-size:9px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}
+.theme-dark .care-history-modes label.active,.sirava-dark .care-history-modes label.active{color:#5eead4;background:rgba(20,184,166,.12)}
+.theme-dark .care-history-count,.sirava-dark .care-history-count{color:#5eead4!important;background:rgba(20,184,166,.14)}
+.theme-dark .care-history-code-list b,.sirava-dark .care-history-code-list b{color:#60a5fa}
+.theme-dark .care-history-soap dt,.sirava-dark .care-history-soap dt{color:#5eead4}
+@media(max-width:1200px){.care-history-document-row{grid-template-columns:repeat(3,minmax(150px,1fr))}}
+@media(max-width:1150px){.care-history-visit-head{grid-template-columns:110px 155px minmax(180px,1fr) minmax(170px,1fr) auto auto}.care-history-visit-head>span:nth-child(5){display:none}}
+@media(max-width:800px){.care-history-page{padding:8px}.care-history-visit-head{grid-template-columns:110px minmax(150px,1fr) auto auto}.care-history-visit-head>span:nth-child(3),.care-history-visit-head>span:nth-child(4),.care-history-visit-head>span:nth-child(5){display:none}.care-history-range{grid-template-columns:1fr}.care-history-code-list article{grid-template-columns:70px 1fr}.care-history-code-list article small{grid-column:2}.care-history-section{overflow-x:auto}.care-history-document-row{grid-template-columns:repeat(2,minmax(145px,1fr))}}
+@media(max-width:520px){.care-history-document-row{grid-template-columns:1fr}}
+
+/* Ukuran teks Riwayat Perawatan dibuat nyaman untuk pembacaan rekam medis. */
+.care-history-filter header span,.care-history-summary span{font-size:10px}
+.care-history-filter header h3,.care-history-summary h3{font-size:21px}
+.care-history-filter header p,.care-history-summary p{font-size:11px;line-height:1.45}
+.care-history-filter>header>button{font-size:11px}
+.care-history-modes label{font-size:11px}
+.care-history-range>label,.care-history-number{font-size:10px}
+.care-history-number input{font-size:12px}
+.care-history-groups label{font-size:10px}
+.care-history-visit-head small{font-size:9px}
+.care-history-visit-head strong{font-size:12px}
+.care-history-date strong{font-size:14px}
+.care-history-count{font-size:10px}
+.care-history-meta span{font-size:10px;line-height:1.4}
+.care-history-section>h4{padding:11px 13px;font-size:12px}
+.care-history-code-list article{padding:10px 13px;font-size:11px;line-height:1.45}
+.care-history-soap{gap:10px;padding:11px}
+.care-history-soap header{padding:10px 11px;font-size:10px}
+.care-history-vitals{gap:9px;padding:9px 11px}
+.care-history-vitals span{font-size:10px}
+.care-history-soap dt,.care-history-soap dd{padding:9px 11px;font-size:11px;line-height:1.55}
+.care-history-doctor-notes header{font-size:10px}
+.care-history-doctor-notes p{font-size:11px;line-height:1.6}
+.care-history-table>div>span{padding:10px 11px;font-size:11px;line-height:1.45}
+.care-history-table>div>span small{font-size:10px}
+.care-history-table .head{font-size:10px}
+.care-history-costs article span,.care-history-costs article strong{font-size:11px}
+.care-history-costs article small{font-size:10px}
+.care-history-resume-head span{font-size:10px}
+.care-history-resume dt,.care-history-resume dd{padding:10px 11px;font-size:11px;line-height:1.55}
+.care-history-documents summary{font-size:11px}
+.care-history-documents summary small{font-size:10px}
+.care-history-document-row small{font-size:9px}
+.care-history-document-row p{font-size:11px;line-height:1.55}
+
+/* Laporan Riwayat Perawatan mengikuti pola tabel vertikal SIMRS Khanza. */
+.care-history-report-layout{display:grid;grid-template-columns:235px minmax(0,1fr);min-height:520px}
+.care-history-report-layout.options-hidden{grid-template-columns:38px minmax(0,1fr)}
+.care-history-report-options{display:flex;min-width:0;max-height:calc(100vh - 190px);flex-direction:column;align-self:start;overflow-y:auto;position:sticky;top:8px;border-right:1px solid var(--line);padding:10px 8px;background:var(--surface-soft);scrollbar-width:thin}
+.care-history-options-head{display:flex;align-items:center;justify-content:space-between;gap:5px;padding-bottom:5px}
+.care-history-options-head>strong{min-width:0;padding:7px 8px;color:var(--muted);font-size:10px;letter-spacing:.08em}
+.care-history-options-head button,.care-history-options-rail button{display:grid;width:29px;height:29px;flex:0 0 29px;place-items:center;border:1px solid var(--line);border-radius:7px;color:var(--muted);background:var(--surface);cursor:pointer}
+.care-history-options-head button:hover,.care-history-options-rail button:hover{border-color:#0d9488;color:#0d9488;background:rgba(13,148,136,.08)}
+.care-history-options-rail{display:flex;align-items:flex-start;justify-content:center;border-right:1px solid var(--line);padding-top:12px;background:var(--surface-soft)}
+.care-history-report-options label{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:5px;color:var(--text);font-size:11px;line-height:1.35;cursor:pointer}
+.care-history-report-options label:hover{background:rgba(13,148,136,.08)}
+.care-history-report-options .care-history-preset,.care-history-report-options .care-history-select-all{position:sticky;z-index:2;font-weight:850;background:var(--surface-soft)}
+.care-history-report-options .care-history-preset{top:-10px}
+.care-history-report-options .care-history-select-all{top:25px;border-bottom:1px solid var(--line)}
+.care-history-report-options input{width:14px;height:14px;flex:0 0 14px;margin:0;accent-color:#0d9488}
+.care-history-report-content{min-width:0;background:var(--surface)}
+.care-history-report-content .care-history-visits{gap:18px;padding:0}
+.care-history-report-content .care-history-visit{overflow:hidden;border:0;border-bottom:4px solid var(--line);border-radius:0}
+.care-history-report-caption{display:grid;width:100%;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;border:0;border-bottom:1px solid var(--line);padding:9px 13px;color:var(--text);background:var(--surface-soft);text-align:left;cursor:pointer}
+.care-history-report-caption span{font-size:12px;font-weight:850}
+.care-history-report-caption small{color:var(--muted);font-size:10px}
+.care-history-report-content .care-history-visit-body{gap:0;padding:0}
+.care-history-identity{display:grid;border-bottom:1px solid var(--line);background:var(--surface)}
+.care-history-identity>div{display:grid;grid-template-columns:30px 280px 18px minmax(0,1fr);min-height:31px;border-bottom:1px solid var(--line)}
+.care-history-identity>div:last-child{border-bottom:0}
+.care-history-identity i,.care-history-identity b,.care-history-identity em,.care-history-identity span{display:flex;align-items:center;margin:0;padding:6px 8px;font-size:11px;font-style:normal;line-height:1.45}
+.care-history-identity i{justify-content:center;color:var(--muted);padding-left:3px;padding-right:3px}
+.care-history-identity b{border-left:1px solid var(--line);border-right:1px solid var(--line);color:var(--muted);font-weight:650}
+.care-history-identity em{justify-content:center;padding-left:2px;padding-right:2px;color:var(--muted)}
+.care-history-identity span{color:var(--text);font-weight:650;overflow-wrap:anywhere}
+.care-history-report-content .care-history-section{display:grid;grid-template-columns:300px minmax(0,1fr);border-width:0 0 1px;border-radius:0}
+.care-history-report-content .care-history-section>h4{grid-row:1 / span 20;align-self:stretch;border-right:1px solid var(--line);border-bottom:0;background:rgba(13,148,136,.055);font-weight:700}
+.care-history-report-content .care-history-section>*:not(h4){grid-column:2;min-width:0}
+.care-history-report-content .care-history-soap article,.care-history-report-content .care-history-doctor-notes article,.care-history-report-content .care-history-documents details{border-radius:4px}
+.care-history-file-list{display:grid;gap:15px;padding:12px;background:var(--surface)}
+.care-history-file-list article{overflow:hidden;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft)}
+.care-history-file-list article>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.care-history-file-list article>header span{display:grid;min-width:0;gap:3px}
+.care-history-file-list article>header b{color:var(--text);font-size:11px}.care-history-file-list article>header small{color:var(--muted);font-size:9px;overflow-wrap:anywhere}
+.care-history-file-list article>header a{flex:0 0 auto;border:1px solid #0d9488;border-radius:7px;padding:7px 10px;color:#0f766e;font-size:9px;font-weight:800;text-decoration:none}
+.care-history-file-list iframe{display:block;width:100%;height:680px;border:0;background:#fff}
+.care-history-image-link{display:flex;justify-content:center;padding:14px;background:#e5e7eb}
+.care-history-image-link img{display:block;width:auto;max-width:100%;height:auto;max-height:900px;object-fit:contain;box-shadow:0 2px 12px rgba(15,23,42,.14)}
+.care-history-file-list article>p{margin:0;padding:16px;color:var(--muted);font-size:10px;text-align:center}
+.care-history-signature-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;padding:14px;background:var(--surface)}
+.care-history-signature-card{display:flex;min-width:0;flex-direction:column;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;padding:13px;color:var(--text);background:var(--surface-soft);text-align:center}
+.care-history-signature-qr{display:grid;width:108px;height:108px;place-items:center;margin-bottom:4px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:#fff}
+.care-history-signature-qr img{display:block;width:96px;height:96px;object-fit:contain}
+.care-history-signature-card span{color:var(--muted);font-size:10px}
+.care-history-signature-card strong{font-size:11px;line-height:1.4}
+.care-history-signature-card small{color:var(--muted);font-family:ui-monospace,monospace;font-size:9px}
+.care-history-signature-card em{margin-top:4px;color:#d97706;font-size:9px;font-style:normal}
+.theme-dark .care-history-report-content .care-history-section>h4,.sirava-dark .care-history-report-content .care-history-section>h4{background:rgba(20,184,166,.08)}
+.theme-dark .care-history-image-link,.sirava-dark .care-history-image-link{background:#07111d}
+:where(.theme-dark,.sirava-dark) .care-history-filter,
+:where(.theme-dark,.sirava-dark) .care-history-content{
+  --surface:#0b1424;
+  --surface-soft:#111e30;
+  --line:rgba(148,163,184,.17);
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+  background:#0b1424;
+  border-color:rgba(148,163,184,.18);
+}
+:where(.theme-dark,.sirava-dark) .care-history-summary{
+  background:#0d1929;
+}
+:where(.theme-dark,.sirava-dark) .care-history-report-options,
+:where(.theme-dark,.sirava-dark) .care-history-options-rail{
+  background:#0e1a2b;
+  border-color:rgba(148,163,184,.17);
+}
+:where(.theme-dark,.sirava-dark) .care-history-report-options .care-history-preset,
+:where(.theme-dark,.sirava-dark) .care-history-report-options .care-history-select-all{
+  background:#0e1a2b;
+}
+:where(.theme-dark,.sirava-dark) .care-history-report-options label:hover{
+  background:rgba(45,212,191,.09);
+}
+:where(.theme-dark,.sirava-dark) .care-history-report-content,
+:where(.theme-dark,.sirava-dark) .care-history-visit-body,
+:where(.theme-dark,.sirava-dark) .care-history-identity{
+  background:#0b1424;
+}
+:where(.theme-dark,.sirava-dark) .care-history-report-caption{
+  background:#132136;
+}
+:where(.theme-dark,.sirava-dark) .care-history-identity>div:nth-child(even),
+:where(.theme-dark,.sirava-dark) .care-history-table>div:not(.head):nth-child(odd),
+:where(.theme-dark,.sirava-dark) .care-history-code-list article:nth-child(even){
+  background:#0f1c2e;
+}
+:where(.theme-dark,.sirava-dark) .care-history-report-content .care-history-section{
+  background:#0b1424;
+}
+:where(.theme-dark,.sirava-dark) .care-history-report-content .care-history-section>h4{
+  color:#e2e8f0;
+  background:#102638;
+}
+:where(.theme-dark,.sirava-dark) .care-history-table .head{
+  color:#cbd5e1;
+  background:#14243a;
+}
+:where(.theme-dark,.sirava-dark) .care-history-soap article,
+:where(.theme-dark,.sirava-dark) .care-history-doctor-notes article,
+:where(.theme-dark,.sirava-dark) .care-history-documents details,
+:where(.theme-dark,.sirava-dark) .care-history-file-list article{
+  background:#0e1a2b;
+}
+:where(.theme-dark,.sirava-dark) .care-history-signature-list{
+  background:#0b1424;
+}
+:where(.theme-dark,.sirava-dark) .care-history-signature-card{
+  background:#0e1a2b;
+}
+@media(max-width:980px){.care-history-report-layout{grid-template-columns:190px minmax(0,1fr)}.care-history-identity>div{grid-template-columns:25px 190px 16px minmax(0,1fr)}}
+@media(max-width:700px){.care-history-report-layout{grid-template-columns:1fr}.care-history-report-layout.options-hidden{grid-template-columns:1fr}.care-history-report-options{display:grid;max-height:320px;grid-template-columns:repeat(2,minmax(0,1fr));position:static;border-right:0;border-bottom:1px solid var(--line)}.care-history-options-head{grid-column:1/-1}.care-history-report-options .care-history-preset{top:-10px}.care-history-report-options .care-history-select-all{top:25px}.care-history-options-rail{justify-content:flex-end;border-right:0;border-bottom:1px solid var(--line);padding:7px 9px}.care-history-identity>div{grid-template-columns:22px 125px 14px minmax(0,1fr)}.care-history-identity i,.care-history-identity b,.care-history-identity em,.care-history-identity span{padding:6px 5px;font-size:10px}.care-history-report-caption{grid-template-columns:minmax(0,1fr) auto}.care-history-report-caption small{display:none}.care-history-report-content .care-history-section{grid-template-columns:1fr}.care-history-report-content .care-history-section>h4{grid-row:auto;grid-column:1;border-right:0;border-bottom:1px solid var(--line)}.care-history-report-content .care-history-section>*:not(h4){grid-column:1}.care-history-file-list iframe{height:480px}}

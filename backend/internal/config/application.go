@@ -28,3 +28,13 @@ func AuthTokenTTL() (time.Duration, error) {
 	}
 	return ttl, nil
 }
+
+// SIMRSWebBaseURL is the read-only hybrid web host used by Khanza for
+// clinical images and digital treatment documents.
+func SIMRSWebBaseURL() string {
+	if alamat := strings.TrimRight(strings.TrimSpace(os.Getenv("SIMRS_WEB_BASE_URL")), "/"); alamat != "" {
+		return alamat
+	}
+	host := valueOrDefault("SIMRS_DB_HOST", "127.0.0.1")
+	return "http://" + host + "/webapps"
+}

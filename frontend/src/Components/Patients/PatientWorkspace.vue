@@ -24,6 +24,7 @@ import PatientIdentityHeader from './PatientIdentityHeader.vue'
 import CpptPage from '../../Pages/RawatInap/CpptPage.vue'
 import PenangananDokterPetugasPage from '../../Pages/RawatInap/PenangananDokterPetugasPage.vue'
 import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologiPage.vue'
+import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -69,7 +70,11 @@ const menusAktif = computed(() => {
 
   sumber.forEach((menu) => {
     const modules = Array.isArray(menu.modules) ? menu.modules : []
-    const namaMenu = menu.label === 'Permintaan Rad' ? 'Permintaan Radiologi' : menu.label
+    const namaMenu = menu.label === 'Permintaan Rad'
+      ? 'Permintaan Radiologi'
+      : menu.label === 'Riwayat Pasien'
+        ? 'Riwayat Perawatan'
+        : menu.label
     if (!modules.includes(props.moduleName) || sudahAda.has(namaMenu)) return
     sudahAda.add(namaMenu)
     daftar.push({ ...menu, label: namaMenu })
@@ -173,6 +178,12 @@ watch(() => props.patient.no_rawat, () => {
 
       <PermintaanRadiologiPage
         v-else-if="['Permintaan Rad', 'Permintaan Radiologi'].includes(activeSection)"
+        :token="token"
+        :patient="patient"
+      />
+
+      <RiwayatPerawatanPage
+        v-else-if="activeSection === 'Riwayat Perawatan'"
         :token="token"
         :patient="patient"
       />
