@@ -23,6 +23,7 @@ import { computed, ref, watch } from 'vue'
 import PatientIdentityHeader from './PatientIdentityHeader.vue'
 import CpptPage from '../../Pages/RawatInap/CpptPage.vue'
 import PenangananDokterPetugasPage from '../../Pages/RawatInap/PenangananDokterPetugasPage.vue'
+import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologiPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -57,7 +58,7 @@ const iconMap = {
 const fallbackMenus = [
   { label: 'Input Resep', icon: 'Pill', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Permintaan Lab', icon: 'FlaskConical', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
-  { label: 'Permintaan Rad', icon: 'ScanSearch', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
+  { label: 'Permintaan Radiologi', icon: 'ScanSearch', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Triase IGD', icon: 'Stethoscope', modules: ['IGD/UGD'] },
 ]
 
@@ -68,9 +69,10 @@ const menusAktif = computed(() => {
 
   sumber.forEach((menu) => {
     const modules = Array.isArray(menu.modules) ? menu.modules : []
-    if (!modules.includes(props.moduleName) || sudahAda.has(menu.label)) return
-    sudahAda.add(menu.label)
-    daftar.push(menu)
+    const namaMenu = menu.label === 'Permintaan Rad' ? 'Permintaan Radiologi' : menu.label
+    if (!modules.includes(props.moduleName) || sudahAda.has(namaMenu)) return
+    sudahAda.add(namaMenu)
+    daftar.push({ ...menu, label: namaMenu })
   })
 
   return daftar.map((menu) => ({
@@ -165,6 +167,12 @@ watch(() => props.patient.no_rawat, () => {
 
       <PenangananDokterPetugasPage
         v-else-if="['Penangangan Dokter & Petugas', 'Penanganan Dokter & Petugas'].includes(activeSection)"
+        :token="token"
+        :patient="patient"
+      />
+
+      <PermintaanRadiologiPage
+        v-else-if="['Permintaan Rad', 'Permintaan Radiologi'].includes(activeSection)"
         :token="token"
         :patient="patient"
       />

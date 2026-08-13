@@ -850,3 +850,37 @@ input.form-input-element{height:42px;padding:0 11px}
 @media(max-width:1250px){.handling-main-grid{grid-template-columns:145px 125px minmax(240px,1fr)}.handling-main-grid .reference-search:nth-child(4){grid-column:1/-1}}
 @media(max-width:760px){.handling-main-grid{grid-template-columns:1fr 1fr}.handling-main-grid .reference-search{grid-column:1/-1}}
 @media(max-width:480px){.handling-main-grid{grid-template-columns:1fr}}
+
+/* Permintaan radiologi */
+.radiology-form-card{position:relative;z-index:5;overflow:visible}
+.radiology-history-card{position:relative;z-index:1}
+.radiology-form-main{display:grid;grid-template-columns:170px 145px minmax(280px,1fr);gap:9px}
+.radiology-notes-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
+.radiology-treatment-search{margin-top:10px}
+.radiology-treatment-search .staff-search-results{z-index:1000}
+.radiology-filter-note{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.radiology-filter-note span{padding:5px 8px;border:1px solid rgba(13,148,136,.2);border-radius:999px;color:#0f766e;background:rgba(20,184,166,.08);font-size:8px;font-weight:800}
+.radiology-history-card .p-datatable-table{min-width:1650px!important}
+.radiology-clinical{display:grid;width:300px;gap:5px}
+.radiology-clinical p{margin:0;color:var(--text);font-size:9px;line-height:1.45;overflow-wrap:anywhere;white-space:normal}
+.radiology-exam-list{display:grid;width:380px;gap:5px}
+.radiology-exam-list article{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.radiology-exam-list article:last-child{padding-bottom:0;border-bottom:0}
+.radiology-exam-list article>span{display:grid;min-width:0;gap:2px}
+.radiology-exam-list strong{color:var(--text);font-size:9px}.radiology-exam-list small{color:var(--muted);font-size:8px}
+.radiology-exam-list b{color:var(--text);font-size:9px;white-space:nowrap}
+.radiology-status-cell{display:grid;justify-items:start;gap:5px}
+.radiology-status-cell small{color:var(--muted);font-size:8px;white-space:nowrap}
+.radiology-status-badge{display:inline-flex;align-items:center;min-height:22px;padding:4px 8px;border-radius:999px;font-size:8px;font-weight:850;white-space:nowrap}
+.radiology-status-badge.waiting,.radiology-status-badge.unpaid{color:#92400e;background:#fef3c7}
+.radiology-status-badge.processing{color:#1d4ed8;background:#dbeafe}
+.radiology-status-badge.completed,.radiology-status-badge.paid{color:#047857;background:#d1fae5}
+.radiology-status-badge.partial{color:#9a3412;background:#ffedd5}
+.radiology-locked{color:var(--muted);font-size:9px;font-weight:750}
+.theme-dark .radiology-filter-note span,.sirava-dark .radiology-filter-note span{color:#5eead4;background:rgba(20,184,166,.12)}
+.theme-dark .radiology-status-badge.waiting,.theme-dark .radiology-status-badge.unpaid,.sirava-dark .radiology-status-badge.waiting,.sirava-dark .radiology-status-badge.unpaid{color:#fcd34d;background:rgba(146,64,14,.3)}
+.theme-dark .radiology-status-badge.processing,.sirava-dark .radiology-status-badge.processing{color:#93c5fd;background:rgba(30,64,175,.35)}
+.theme-dark .radiology-status-badge.completed,.theme-dark .radiology-status-badge.paid,.sirava-dark .radiology-status-badge.completed,.sirava-dark .radiology-status-badge.paid{color:#6ee7b7;background:rgba(6,95,70,.35)}
+.theme-dark .radiology-status-badge.partial,.sirava-dark .radiology-status-badge.partial{color:#fdba74;background:rgba(154,52,18,.35)}
+@media(max-width:900px){.radiology-form-main{grid-template-columns:1fr 1fr}.radiology-referrer{grid-column:1/-1}}
+@media(max-width:650px){.radiology-form-main,.radiology-notes-grid{grid-template-columns:1fr}}

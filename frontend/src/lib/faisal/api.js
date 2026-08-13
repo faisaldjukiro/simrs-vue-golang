@@ -162,3 +162,31 @@ export function ubahPenangananDokterPetugas(token, payload) {
 export function hapusPenangananDokterPetugas(token, payload) {
   return request('/api/penanganan-dokter-petugas', { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
 }
+
+export function permintaanRadiologiData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/permintaan-radiologi?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariDokterRadiologi(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/permintaan-radiologi/dokter?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariTindakanRadiologi(token, noRawat, kataKunci) {
+  const query = new URLSearchParams({ no_rawat: noRawat, q: kataKunci }).toString()
+  return request(`/api/permintaan-radiologi/tindakan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanPermintaanRadiologi(token, payload) {
+  return request('/api/permintaan-radiologi', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahPermintaanRadiologi(token, nomor, payload) {
+  return request(`/api/permintaan-radiologi/${encodeURIComponent(nomor)}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusPermintaanRadiologi(token, noRawat, nomor) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/permintaan-radiologi/${encodeURIComponent(nomor)}?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+}

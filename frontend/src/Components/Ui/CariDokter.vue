@@ -1,15 +1,18 @@
 <script setup>
 import InputPencarian from './InputPencarian.vue'
-import { cariDokterPenanganan } from '../../lib/faisal/api'
+import { cariDokterPenanganan, cariDokterRadiologi } from '../../lib/faisal/api'
 
 const model = defineModel({ default: () => ({}) })
 const props = defineProps({
   token: { type: String, required: true },
+  sumber: { type: String, default: 'penanganan' },
   disabled: Boolean,
   required: Boolean,
 })
 
-const cariDokter = (kataKunci) => cariDokterPenanganan(props.token, kataKunci)
+const cariDokter = (kataKunci) => props.sumber === 'radiologi'
+  ? cariDokterRadiologi(props.token, kataKunci)
+  : cariDokterPenanganan(props.token, kataKunci)
 </script>
 
 <template>

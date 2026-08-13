@@ -87,7 +87,7 @@ VALUES
     ('Data Obat & BHP', 'Database', JSON_ARRAY('Rawat Inap'), 17, TRUE, NOW(), NOW()),
     ('Berkas Digital', 'FolderOpen', JSON_ARRAY('Rawat Inap'), 18, TRUE, NOW(), NOW()),
     ('Permintaan Lab', 'FlaskConical', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 19, TRUE, NOW(), NOW()),
-    ('Permintaan Rad', 'ScanSearch', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 20, TRUE, NOW(), NOW()),
+    ('Permintaan Radiologi', 'ScanSearch', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 20, TRUE, NOW(), NOW()),
     ('Jadwal Operasi', 'CalendarDays', JSON_ARRAY('Rawat Inap'), 21, TRUE, NOW(), NOW()),
     ('Surat Kontrol', 'CalendarCheck', JSON_ARRAY('Rawat Inap'), 22, TRUE, NOW(), NOW()),
     ('Rujuk Keluar', 'ExternalLink', JSON_ARRAY('Rawat Inap'), 23, TRUE, NOW(), NOW()),
