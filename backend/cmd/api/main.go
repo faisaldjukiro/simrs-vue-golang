@@ -25,6 +25,8 @@ import (
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	"simrs-backend/internal/modules/manajemen_pengguna"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
+	"simrs-backend/internal/modules/penanganan_dokter_petugas"
+	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	"simrs-backend/internal/platform/database"
 	faisalroutes "simrs-backend/internal/routes/faisal"
 	sahrulroutes "simrs-backend/internal/routes/sahrul"
@@ -79,15 +81,18 @@ func main() {
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
 	cpptRepositori := cppt.NewRepositori(db, simrsDB)
 	cpptHandler := cppthttp.NewHandler(cppt.NewLayanan(cpptRepositori))
+	penangananRepositori := penanganan_dokter_petugas.NewRepositori(simrsDB)
+	penangananHandler := penanganandokterpetugashttp.NewHandler(penanganan_dokter_petugas.NewLayanan(penangananRepositori))
 
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
 	faisalroutes.Register(router, faisalroutes.Dependencies{
-		Autentikasi:       autentikasiHandler,
-		Beranda:           berandaHandler,
-		IDRG:              idrgHandler,
-		ManajemenPengguna: manajemenPenggunaHandler,
-		CPPT:              cpptHandler,
+		Autentikasi:             autentikasiHandler,
+		Beranda:                 berandaHandler,
+		IDRG:                    idrgHandler,
+		ManajemenPengguna:       manajemenPenggunaHandler,
+		CPPT:                    cpptHandler,
+		PenangananDokterPetugas: penangananHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 

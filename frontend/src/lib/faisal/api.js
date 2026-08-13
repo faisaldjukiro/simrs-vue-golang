@@ -126,3 +126,39 @@ export function cariPetugasCppt(token, kataKunci) {
     headers: { Authorization: `Bearer ${token}` },
   })
 }
+
+export function penangananDokterPetugasData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/penanganan-dokter-petugas?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariDokterPenanganan(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/penanganan-dokter-petugas/dokter?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariPetugasPenanganan(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/penanganan-dokter-petugas/petugas?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariTindakanPenanganan(token, noRawat, kataKunci) {
+  const query = new URLSearchParams({ no_rawat: noRawat, q: kataKunci }).toString()
+  return request(`/api/penanganan-dokter-petugas/tindakan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanPenangananDokterPetugas(token, payload) {
+  return request('/api/penanganan-dokter-petugas', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function simpanBanyakPenangananDokterPetugas(token, payload) {
+  return request('/api/penanganan-dokter-petugas/banyak', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahPenangananDokterPetugas(token, payload) {
+  return request('/api/penanganan-dokter-petugas', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusPenangananDokterPetugas(token, payload) {
+  return request('/api/penanganan-dokter-petugas', { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}

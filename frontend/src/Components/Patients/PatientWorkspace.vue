@@ -22,6 +22,7 @@ import {
 import { computed, ref, watch } from 'vue'
 import PatientIdentityHeader from './PatientIdentityHeader.vue'
 import CpptPage from '../../Pages/RawatInap/CpptPage.vue'
+import PenangananDokterPetugasPage from '../../Pages/RawatInap/PenangananDokterPetugasPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -158,6 +159,12 @@ watch(() => props.patient.no_rawat, () => {
 
       <CpptPage
         v-else-if="activeSection === 'Cppt/Soap'"
+        :token="token"
+        :patient="patient"
+      />
+
+      <PenangananDokterPetugasPage
+        v-else-if="['Penangangan Dokter & Petugas', 'Penanganan Dokter & Petugas'].includes(activeSection)"
         :token="token"
         :patient="patient"
       />

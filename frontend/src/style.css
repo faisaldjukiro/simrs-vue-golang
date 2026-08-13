@@ -668,6 +668,7 @@ input.form-input-element{height:42px;padding:0 11px}
 .form-compact .form-input-textarea{min-height:58px;padding:7px 9px;font-size:10px;line-height:1.4}
 .form-compact .form-input-label{font-size:8px}
 .staff-search{position:relative;display:grid;min-width:0;gap:4px}
+.staff-search-wrapper{display:grid;min-width:0;gap:4px}
 .staff-search-selected,.staff-search-box{display:flex;height:34px;min-width:0;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:0 9px;color:var(--text);background:var(--surface)}
 .staff-search-selected>svg,.staff-search-box>svg{flex:0 0 auto;color:#0d9488}
 .staff-search-selected>span{display:grid;min-width:0;flex:1;gap:1px}
@@ -678,9 +679,11 @@ input.form-input-element{height:42px;padding:0 11px}
 .staff-search-results{position:absolute;z-index:50;top:calc(100% - 1px);right:0;left:0;display:grid;max-height:230px;gap:4px;overflow:auto;padding:5px;border:1px solid var(--line);border-radius:10px;color:var(--text);background:var(--surface);box-shadow:0 18px 45px rgba(15,23,42,.2)}
 .staff-search-results button{display:flex;align-items:center;gap:8px;padding:8px;border-radius:7px;color:var(--text);background:transparent;text-align:left;cursor:pointer}
 .staff-search-results button:hover{background:rgba(20,184,166,.12)}
-.staff-search-results button>svg{flex:0 0 auto;color:#0d9488}.staff-search-results button>span{display:grid;min-width:0;gap:2px}.staff-search-results strong,.staff-search-results small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.staff-search-results strong{font-size:10px}.staff-search-results small{color:var(--muted);font-size:8px}.staff-search-results p{margin:0;padding:12px;color:var(--muted);font-size:9px;text-align:center}
+.staff-search-results button>svg{flex:0 0 auto;color:#0d9488}.staff-search-results button>span{display:grid;min-width:0;flex:1;gap:2px}.staff-search-results strong,.staff-search-results small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.staff-search-results strong{font-size:10px}.staff-search-results small{color:var(--muted);font-size:8px}.staff-search-results p{margin:0;padding:12px;color:var(--muted);font-size:9px;text-align:center}
+.staff-search-selected>.reference-search-value,.staff-search-results .reference-search-value{flex:0 0 auto;margin-left:auto;color:#0f766e;font-size:10px;font-weight:850;white-space:nowrap}
 .staff-search-hint{color:var(--muted);font-size:8px}.staff-search.disabled .staff-search-selected{opacity:.82}
 .theme-dark .staff-search-selected,.theme-dark .staff-search-box,.theme-dark .staff-search-results,.sirava-dark .staff-search-selected,.sirava-dark .staff-search-box,.sirava-dark .staff-search-results{border-color:#405269;color:#f8fafc;background:#1c283a}.theme-dark .staff-search-results button,.sirava-dark .staff-search-results button{color:#f8fafc}.theme-dark .staff-search-results button:hover,.sirava-dark .staff-search-results button:hover{background:#26364b}
+.theme-dark .staff-search-selected>.reference-search-value,.theme-dark .staff-search-results .reference-search-value,.sirava-dark .staff-search-selected>.reference-search-value,.sirava-dark .staff-search-results .reference-search-value{color:#5eead4}
 .cppt-form-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:15px;padding-top:14px;border-top:1px solid var(--line)}
 .cppt-button{display:inline-flex;min-height:38px;align-items:center;justify-content:center;gap:7px;padding:0 14px;border:1px solid transparent;border-radius:10px;font-size:10px;font-weight:800;cursor:pointer}
 .cppt-button.primary{color:white;background:#0d9488}
@@ -822,3 +825,28 @@ input.form-input-element{height:42px;padding:0 11px}
   .patient-workspace-sidebar{position:sticky;top:12px;display:flex;height:calc(100vh - 24px);min-height:0;align-self:start;flex-direction:column;overflow:hidden;border-radius:23px 0 0 23px}
   .patient-workspace-menu{min-height:0;max-height:none;flex:1}
 }
+
+/* Penanganan dokter dan petugas */
+.handling-form-card{position:relative;z-index:5;overflow:visible}
+.handling-history-card{position:relative;z-index:1}
+.handling-treatment .staff-search-results{z-index:1000}
+.handling-lock{margin:12px 12px 0;padding:10px 12px;border:1px solid #f4cf78;border-radius:10px;color:#92400e;background:#fffbeb;font-size:10px;font-weight:750}
+.handling-main-grid{display:grid;grid-template-columns:145px 125px repeat(2,minmax(240px,1fr));gap:9px}
+.handling-treatment{grid-column:1/-1}
+.handling-treatment-multiple{display:grid;gap:7px}
+.handling-treatment-list{display:grid;gap:5px}
+.handling-treatment-list article{display:flex;min-width:0;align-items:center;gap:9px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;color:var(--text);background:var(--surface)}
+.handling-treatment-list article>span:nth-child(2){display:grid;min-width:0;flex:1;gap:2px}
+.handling-treatment-list article>span strong,.handling-treatment-list article>span small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.handling-treatment-list article>span strong{font-size:10px}.handling-treatment-list article>span small{color:var(--muted);font-size:8px}
+.handling-treatment-number{display:grid;width:23px;height:23px;flex:0 0 23px;place-items:center;border-radius:7px;color:#0f766e;background:rgba(20,184,166,.12);font-size:9px;font-weight:850}
+.handling-treatment-price{flex:0 0 auto;color:#0f766e;font-size:10px;white-space:nowrap}
+.handling-treatment-list button{display:grid;width:26px;height:26px;flex:0 0 26px;place-items:center;border:1px solid var(--line);border-radius:7px;color:#dc2626;background:transparent;cursor:pointer}
+.theme-dark .handling-treatment-number,.sirava-dark .handling-treatment-number{color:#5eead4;background:rgba(20,184,166,.16)}
+.theme-dark .handling-treatment-price,.sirava-dark .handling-treatment-price{color:#5eead4}
+.handling-history-card .p-datatable-table{min-width:1400px!important}
+.reference-search .staff-search-results{top:calc(100% + 2px)}
+.theme-dark .handling-lock,.sirava-dark .handling-lock{border-color:rgba(245,158,11,.3);color:#fcd34d;background:rgba(120,53,15,.25)}
+@media(max-width:1250px){.handling-main-grid{grid-template-columns:145px 125px minmax(240px,1fr)}.handling-main-grid .reference-search:nth-child(4){grid-column:1/-1}}
+@media(max-width:760px){.handling-main-grid{grid-template-columns:1fr 1fr}.handling-main-grid .reference-search{grid-column:1/-1}}
+@media(max-width:480px){.handling-main-grid{grid-template-columns:1fr}}

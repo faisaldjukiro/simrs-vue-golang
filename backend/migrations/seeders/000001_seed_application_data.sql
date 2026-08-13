@@ -69,7 +69,7 @@ INSERT INTO menu_workspace_pasien
     (nama_menu, ikon, daftar_modul, urutan, aktif, created_at, updated_at)
 VALUES
     ('Cppt/Soap', 'FileSignature', JSON_ARRAY('Rawat Inap'), 1, TRUE, NOW(), NOW()),
-    ('Penangangan Dokter & Petugas', 'Users', JSON_ARRAY('Rawat Inap'), 2, TRUE, NOW(), NOW()),
+    ('Penanganan Dokter & Petugas', 'Users', JSON_ARRAY('Rawat Inap'), 2, TRUE, NOW(), NOW()),
     ('SBAR', 'MessageSquareText', JSON_ARRAY('Rawat Inap'), 3, TRUE, NOW(), NOW()),
     ('Diagnosa', 'Stethoscope', JSON_ARRAY('Rawat Inap'), 4, TRUE, NOW(), NOW()),
     ('Riwayat Pasien', 'History', JSON_ARRAY('Rawat Inap'), 5, TRUE, NOW(), NOW()),
