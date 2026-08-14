@@ -40,6 +40,7 @@ type Tindakan struct {
 }
 
 type Catatan struct {
+	JenisRawat   string  `json:"jenis_rawat"`
 	NoRawat      string  `json:"no_rawat"`
 	KodeTindakan string  `json:"kode_tindakan"`
 	NamaTindakan string  `json:"nama_tindakan"`
@@ -57,9 +58,11 @@ type Catatan struct {
 	KSO          float64 `json:"kso"`
 	Manajemen    float64 `json:"manajemen"`
 	Total        float64 `json:"total"`
+	StatusBayar  string  `json:"status_bayar,omitempty"`
 }
 
 type Kunci struct {
+	JenisRawat   string `json:"jenis_rawat"`
 	NoRawat      string `json:"no_rawat"`
 	KodeTindakan string `json:"kode_tindakan"`
 	KodeDokter   string `json:"kode_dokter"`
@@ -94,7 +97,7 @@ func (r *Repositori) Daftar(ctx context.Context, noRawat string) ([]Catatan, boo
 
 	daftar := make([]Catatan, 0)
 	for rows.Next() {
-		var item Catatan
+		item := Catatan{JenisRawat: "ranap"}
 		if err := rows.Scan(&item.NoRawat, &item.KodeTindakan, &item.NamaTindakan, &item.Kelas,
 			&item.KodeDokter, &item.NamaDokter, &item.KodePetugas, &item.NamaPetugas,
 			&item.Tanggal, &item.Jam, &item.Material, &item.BHP, &item.TarifDokter,

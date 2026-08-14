@@ -13,7 +13,12 @@ import {
 } from '../../lib/faisal/api'
 import { useNotifikasi } from '../../lib/shared/useNotifikasi'
 
-const props = defineProps({ token: { type: String, required: true }, patient: { type: Object, required: true } })
+const props = defineProps({
+  token: { type: String, required: true },
+  patient: { type: Object, required: true },
+  jenisRawat: { type: String, default: 'ranap' },
+  namaModul: { type: String, default: 'Rawat Inap' },
+})
 const notifikasi = useNotifikasi()
 const loading = ref(false)
 const saving = ref(false)
@@ -28,6 +33,7 @@ const doctor = ref({})
 const officer = ref({})
 const treatments = ref([])
 const form = reactive(emptyForm())
+const labelJenisRawat = computed(() => props.jenisRawat === 'ralan' ? props.namaModul : 'Rawat Inap')
 const tableRecords = computed(() => records.value.map((item) => ({
   ...item,
   _key: [item.no_rawat, item.kode_tindakan, item.kode_dokter, item.kode_petugas, item.tanggal, item.jam].join('|'),
@@ -36,7 +42,7 @@ const tableRecords = computed(() => records.value.map((item) => ({
 function today() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }
 function now() { return new Date().toTimeString().slice(0, 8) }
 function emptyForm() { return { no_rawat: props.patient?.no_rawat || '', tanggal: today(), jam: now() } }
-function keyFor(item) { return { no_rawat: item.no_rawat, kode_tindakan: item.kode_tindakan, kode_dokter: item.kode_dokter, kode_petugas: item.kode_petugas, tanggal: item.tanggal, jam: item.jam } }
+function keyFor(item) { return { jenis_rawat: item.jenis_rawat || props.jenisRawat, no_rawat: item.no_rawat, kode_tindakan: item.kode_tindakan, kode_dokter: item.kode_dokter, kode_petugas: item.kode_petugas, tanggal: item.tanggal, jam: item.jam } }
 function rupiah(value) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0)) }
 function formatDate(value) { if (!value) return '-'; const [y, m, d] = value.split('-'); return `${d}/${m}/${y}` }
 
@@ -51,7 +57,7 @@ async function loadRecords() {
   if (!props.patient.no_rawat) return
   loading.value = true; error.value = ''
   try {
-    const data = await penangananDokterPetugasData(props.token, props.patient.no_rawat)
+    const data = await penangananDokterPetugasData(props.token, props.patient.no_rawat, props.jenisRawat)
     records.value = data?.catatan || []
     billingLocked.value = Boolean(data?.billing_terkunci)
     if (!editingKey.value) {
@@ -73,7 +79,7 @@ function editRecord(item) {
   nextTick(() => document.querySelector('.handling-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 
-function catatan(tindakan) { return { no_rawat: form.no_rawat, kode_tindakan: tindakan.kode || '', kode_dokter: doctor.value.kode || '', kode_petugas: officer.value.kode || '', tanggal: form.tanggal, jam: form.jam } }
+function catatan(tindakan) { return { jenis_rawat: props.jenisRawat, no_rawat: form.no_rawat, kode_tindakan: tindakan.kode || '', kode_dokter: doctor.value.kode || '', kode_petugas: officer.value.kode || '', tanggal: form.tanggal, jam: form.jam } }
 function payload() { return { kunci_lama: editingKey.value, ...catatan(treatments.value[0] || {}) } }
 async function saveRecord() {
   if (!doctor.value.kode || !officer.value.kode || treatments.value.length === 0) { notifikasi.peringatan('Dokter, petugas, dan minimal satu tindakan wajib dipilih.'); return }
@@ -94,14 +100,14 @@ async function confirmDelete() {
   finally { deleting.value = false }
 }
 
-watch(() => props.patient.no_rawat, () => { resetForm(false); loadRecords() }, { immediate: true })
+watch([() => props.patient.no_rawat, () => props.jenisRawat], () => { resetForm(false); loadRecords() }, { immediate: true })
 </script>
 
 <template>
   <section class="cppt-page handling-page">
     <article class="cppt-form-card handling-form-card">
       <header class="cppt-section-header">
-        <div><span>Tindakan Rawat Inap</span><h3>{{ editingKey ? 'Edit Penanganan Dokter & Petugas' : 'Input Penanganan Dokter & Petugas' }}</h3><p>Hanya tindakan gabungan dokter dan petugas.</p></div>
+        <div><span>Tindakan {{ labelJenisRawat }}</span><h3>{{ editingKey ? 'Edit Penanganan Dokter & Petugas' : 'Input Penanganan Dokter & Petugas' }}</h3><p>Hanya tindakan gabungan dokter dan petugas.</p></div>
         <div class="cppt-section-tools">
           <button v-if="editingKey" type="button" class="cppt-button secondary" @click="resetForm(false)"><X :size="15" /> Batal Edit</button>
           <button type="button" class="cppt-button toggle icon-only" :title="formVisible ? 'Sembunyikan Form Input' : 'Tampilkan Form Input'" @click="formVisible = !formVisible"><ChevronUp v-if="formVisible" :size="15" /><ChevronDown v-else :size="15" /></button>
@@ -115,7 +121,7 @@ watch(() => props.patient.no_rawat, () => { resetForm(false); loadRecords() }, {
             <FormInput v-model="form.jam" label="Jam Rawat" type="time" step="1" required />
             <CariDokter v-model="doctor" :token="token" required />
             <CariPetugas v-model="officer" :token="token" sumber="penanganan" required />
-            <CariTindakanRanap v-model="treatments" :token="token" :no-rawat="patient.no_rawat" :multiple="!editingKey" required />
+            <CariTindakanRanap v-model="treatments" :token="token" :no-rawat="patient.no_rawat" :jenis-rawat="jenisRawat" :multiple="!editingKey" required />
           </div>
           <footer class="cppt-form-actions"><button type="button" class="cppt-button secondary" @click="resetForm(false)"><X :size="15" /> Batal / Reset</button><button type="submit" class="cppt-button primary"><LoaderCircle v-if="saving" class="spin" :size="15" /><Save v-else :size="15" />{{ saving ? 'Menyimpan...' : editingKey ? 'Simpan Perubahan' : `Simpan ${treatments.length || ''} Penanganan` }}</button></footer>
         </fieldset>

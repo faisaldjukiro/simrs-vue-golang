@@ -40,8 +40,9 @@ func NewLayanan(repositori *Repositori) *Layanan {
 	return &Layanan{repositori: repositori}
 }
 
-func (l *Layanan) Daftar(ctx context.Context, userID uint64, username, noRawat string) (Data, error) {
+func (l *Layanan) Daftar(ctx context.Context, userID uint64, username, noRawat, jenisRawat string) (Data, error) {
 	noRawat = strings.TrimSpace(noRawat)
+	jenisRawat = normalisasiJenisRawat(jenisRawat)
 	if noRawat == "" {
 		return Data{}, fmt.Errorf("%w: nomor rawat wajib diisi", ErrInputTidakValid)
 	}
@@ -49,7 +50,12 @@ func (l *Layanan) Daftar(ctx context.Context, userID uint64, username, noRawat s
 	if err != nil {
 		return Data{}, err
 	}
-	catatan, err := l.repositori.Daftar(ctx, noRawat, petugas.NIP, aksesPenuh)
+	var catatan []Catatan
+	if jenisRawat == "ralan" {
+		catatan, err = l.repositori.DaftarRalan(ctx, noRawat, petugas.NIP, aksesPenuh)
+	} else {
+		catatan, err = l.repositori.Daftar(ctx, noRawat, petugas.NIP, aksesPenuh)
+	}
 	if err != nil {
 		return Data{}, err
 	}
@@ -79,7 +85,12 @@ func (l *Layanan) Simpan(ctx context.Context, userID uint64, username string, in
 	if err := validasiCatatan(&input.Catatan); err != nil {
 		return err
 	}
-	if err := l.repositori.Simpan(ctx, input.Catatan); err != nil {
+	if input.Catatan.JenisRawat == "ralan" {
+		err = l.repositori.SimpanRalan(ctx, input.Catatan)
+	} else {
+		err = l.repositori.Simpan(ctx, input.Catatan)
+	}
+	if err != nil {
 		return petakanErrorMySQL(err)
 	}
 	return nil
@@ -90,6 +101,7 @@ func (l *Layanan) Ubah(ctx context.Context, userID uint64, username string, inpu
 	if err != nil {
 		return err
 	}
+	bersihkanKunci(&input.KunciLama)
 	if err := validasiKunci(input.KunciLama); err != nil {
 		return err
 	}
@@ -104,7 +116,15 @@ func (l *Layanan) Ubah(ctx context.Context, userID uint64, username string, inpu
 	if err := validasiCatatan(&input.Catatan); err != nil {
 		return err
 	}
-	if err := l.repositori.Ubah(ctx, input.KunciLama, input.Catatan, petugas.NIP, aksesPenuh); err != nil {
+	if input.KunciLama.JenisRawat != input.Catatan.JenisRawat {
+		return fmt.Errorf("%w: jenis rawat catatan lama dan baru harus sama", ErrInputTidakValid)
+	}
+	if input.Catatan.JenisRawat == "ralan" {
+		err = l.repositori.UbahRalan(ctx, input.KunciLama, input.Catatan, petugas.NIP, aksesPenuh)
+	} else {
+		err = l.repositori.Ubah(ctx, input.KunciLama, input.Catatan, petugas.NIP, aksesPenuh)
+	}
+	if err != nil {
 		return petakanErrorMySQL(err)
 	}
 	return nil
@@ -130,8 +150,12 @@ func (l *Layanan) Hapus(ctx context.Context, userID uint64, username string, kun
 	if err != nil {
 		return err
 	}
+	bersihkanKunci(&kunci)
 	if err := validasiKunci(kunci); err != nil {
 		return err
+	}
+	if kunci.JenisRawat == "ralan" {
+		return l.repositori.HapusRalan(ctx, kunci, petugas.NIP, aksesPenuh)
 	}
 	return l.repositori.Hapus(ctx, kunci, petugas.NIP, aksesPenuh)
 }
@@ -152,6 +176,9 @@ func (l *Layanan) identitas(ctx context.Context, userID uint64, username string)
 }
 
 func validasiKunci(kunci Kunci) error {
+	if kunci.JenisRawat != "ranap" && kunci.JenisRawat != "ralan" {
+		return fmt.Errorf("%w: jenis rawat catatan lama tidak valid", ErrInputTidakValid)
+	}
 	if strings.TrimSpace(kunci.NoRawat) == "" {
 		return fmt.Errorf("%w: nomor rawat catatan lama wajib diisi", ErrInputTidakValid)
 	}
@@ -166,6 +193,9 @@ func validasiKunci(kunci Kunci) error {
 
 func validasiCatatan(catatan *Catatan) error {
 	bersihkanCatatan(catatan)
+	if catatan.JenisRawat != "ranap" && catatan.JenisRawat != "ralan" {
+		return fmt.Errorf("%w: jenis rawat tidak valid", ErrInputTidakValid)
+	}
 	if catatan.NoRawat == "" {
 		return fmt.Errorf("%w: nomor rawat wajib diisi", ErrInputTidakValid)
 	}
@@ -190,7 +220,8 @@ func validasiCatatan(catatan *Catatan) error {
 		"tinggi": {catatan.Tinggi, 5}, "berat": {catatan.Berat, 5},
 		"SpO2": {catatan.SpO2, 3}, "GCS": {catatan.GCS, 10},
 		"alergi": {catatan.Alergi, 50}, "subjek": {catatan.Subjek, 2000},
-		"objek": {catatan.Objek, 2000}, "asesmen": {catatan.Asesmen, 2000},
+		"lingkar perut": {catatan.LingkarPerut, 5},
+		"objek":         {catatan.Objek, 2000}, "asesmen": {catatan.Asesmen, 2000},
 		"plan": {catatan.Plan, 2000}, "instruksi": {catatan.Instruksi, 2000},
 		"evaluasi": {catatan.Evaluasi, 2000},
 	}
@@ -203,6 +234,7 @@ func validasiCatatan(catatan *Catatan) error {
 }
 
 func bersihkanCatatan(catatan *Catatan) {
+	catatan.JenisRawat = normalisasiJenisRawat(catatan.JenisRawat)
 	catatan.NoRawat = strings.TrimSpace(catatan.NoRawat)
 	catatan.TanggalPerawatan = strings.TrimSpace(catatan.TanggalPerawatan)
 	catatan.JamRawat = normalisasiWaktu(catatan.JamRawat)
@@ -218,6 +250,7 @@ func bersihkanCatatan(catatan *Catatan) {
 	catatan.Subjek = strings.TrimSpace(catatan.Subjek)
 	catatan.Objek = strings.TrimSpace(catatan.Objek)
 	catatan.Alergi = strings.TrimSpace(catatan.Alergi)
+	catatan.LingkarPerut = strings.TrimSpace(catatan.LingkarPerut)
 	catatan.Asesmen = strings.TrimSpace(catatan.Asesmen)
 	catatan.Plan = strings.TrimSpace(catatan.Plan)
 	catatan.Instruksi = strings.TrimSpace(catatan.Instruksi)
@@ -228,7 +261,7 @@ func bersihkanCatatan(catatan *Catatan) {
 func adaIsiKlinis(catatan Catatan) bool {
 	nilai := []string{catatan.SuhuTubuh, catatan.Tensi, catatan.Nadi, catatan.Respirasi,
 		catatan.Tinggi, catatan.Berat, catatan.SpO2, catatan.GCS, catatan.Subjek,
-		catatan.Objek, catatan.Alergi, catatan.Asesmen, catatan.Plan, catatan.Instruksi,
+		catatan.Objek, catatan.Alergi, catatan.LingkarPerut, catatan.Asesmen, catatan.Plan, catatan.Instruksi,
 		catatan.Evaluasi}
 	for _, item := range nilai {
 		if item != "" {
@@ -236,6 +269,21 @@ func adaIsiKlinis(catatan Catatan) bool {
 		}
 	}
 	return false
+}
+
+func bersihkanKunci(kunci *Kunci) {
+	kunci.JenisRawat = normalisasiJenisRawat(kunci.JenisRawat)
+	kunci.NoRawat = strings.TrimSpace(kunci.NoRawat)
+	kunci.TanggalPerawatan = strings.TrimSpace(kunci.TanggalPerawatan)
+	kunci.JamRawat = normalisasiWaktu(kunci.JamRawat)
+}
+
+func normalisasiJenisRawat(nilai string) string {
+	nilai = strings.ToLower(strings.TrimSpace(nilai))
+	if nilai == "ralan" || nilai == "igd" || nilai == "rawat jalan" {
+		return "ralan"
+	}
+	return "ranap"
 }
 
 func nilaiKesadaranValid(nilai string) bool {

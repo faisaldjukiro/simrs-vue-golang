@@ -20,6 +20,7 @@ type Petugas struct {
 }
 
 type Catatan struct {
+	JenisRawat       string `json:"jenis_rawat"`
 	NoRawat          string `json:"no_rawat"`
 	TanggalPerawatan string `json:"tgl_perawatan"`
 	JamRawat         string `json:"jam_rawat"`
@@ -35,6 +36,7 @@ type Catatan struct {
 	Subjek           string `json:"subjek"`
 	Objek            string `json:"objek"`
 	Alergi           string `json:"alergi"`
+	LingkarPerut     string `json:"lingkar_perut,omitempty"`
 	Asesmen          string `json:"asesmen"`
 	Plan             string `json:"plan"`
 	Instruksi        string `json:"instruksi"`
@@ -46,6 +48,7 @@ type Catatan struct {
 }
 
 type Kunci struct {
+	JenisRawat       string `json:"jenis_rawat"`
 	NoRawat          string `json:"no_rawat"`
 	TanggalPerawatan string `json:"tgl_perawatan"`
 	JamRawat         string `json:"jam_rawat"`
@@ -139,7 +142,7 @@ func (r *Repositori) Daftar(ctx context.Context, noRawat, nipLogin string, akses
 
 	catatan := make([]Catatan, 0)
 	for rows.Next() {
-		var item Catatan
+		item := Catatan{JenisRawat: "ranap"}
 		if err := rows.Scan(
 			&item.NoRawat, &item.TanggalPerawatan, &item.JamRawat,
 			&item.SuhuTubuh, &item.Tensi, &item.Nadi, &item.Respirasi, &item.Tinggi,

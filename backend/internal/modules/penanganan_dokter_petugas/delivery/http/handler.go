@@ -39,7 +39,7 @@ func (h *Handler) Daftar(c *gin.Context) {
 		h.unauth(c)
 		return
 	}
-	data, err := h.layanan.Daftar(c.Request.Context(), u.Username, c.Query("no_rawat"))
+	data, err := h.layanan.Daftar(c.Request.Context(), u.Username, c.Query("no_rawat"), c.Query("jenis_rawat"))
 	if err != nil {
 		h.error(c, err)
 		return
@@ -63,7 +63,7 @@ func (h *Handler) CariPetugas(c *gin.Context) {
 	httpresponse.Success(c, http.StatusOK, data)
 }
 func (h *Handler) CariTindakan(c *gin.Context) {
-	data, err := h.layanan.CariTindakan(c.Request.Context(), c.Query("no_rawat"), c.Query("q"))
+	data, err := h.layanan.CariTindakan(c.Request.Context(), c.Query("no_rawat"), c.Query("q"), c.Query("jenis_rawat"))
 	if err != nil {
 		h.error(c, err)
 		return

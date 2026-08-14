@@ -8,6 +8,7 @@ const model = defineModel({ default: () => [] })
 const props = defineProps({
   token: { type: String, required: true },
   noRawat: { type: String, required: true },
+  jenisRawat: { type: String, default: 'ranap' },
   multiple: { type: Boolean, default: true },
   disabled: Boolean,
   required: Boolean,
@@ -20,7 +21,7 @@ const labelKelas = (kelas) => {
   return value.toLowerCase().startsWith('kelas') ? value : `Kelas ${value}`
 }
 const cariTindakan = async (kataKunci) => {
-  const daftar = await cariTindakanPenanganan(props.token, props.noRawat, kataKunci)
+  const daftar = await cariTindakanPenanganan(props.token, props.noRawat, kataKunci, props.jenisRawat)
   return (Array.isArray(daftar) ? daftar : []).map((item) => ({
     ...item,
     keterangan: [item.kategori, labelKelas(item.kelas)].filter(Boolean).join(' · '),
@@ -54,7 +55,7 @@ function hapus(kode) {
     <InputPencarian
       v-model="pilihan"
       label="Tindakan / Tagihan"
-      placeholder="Cari kode atau nama tindakan rawat inap..."
+      :placeholder="jenisRawat === 'ralan' ? 'Cari kode atau nama tindakan IGD/rawat jalan...' : 'Cari kode atau nama tindakan rawat inap...'"
       :search="cariTindakan"
       description-field="keterangan"
       right-field="total"

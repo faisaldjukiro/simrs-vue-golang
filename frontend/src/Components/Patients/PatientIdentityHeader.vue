@@ -31,8 +31,14 @@ function jenisKelamin(kode) {
 }
 
 const poliAtauKamar = computed(() => nilai(props.patient.kamar, props.patient.poliklinik))
+const warnaJenisKelamin = computed(() => {
+  const kode = String(props.patient.jenis_kelamin || '').trim().toUpperCase()
+  if (kode === 'P') return 'gender-female'
+  if (kode === 'L') return 'gender-male'
+  return 'gender-neutral'
+})
 const ringkasan = computed(() => [
-  { label: jenisKelamin(props.patient.jenis_kelamin), icon: VenusAndMars },
+  { label: jenisKelamin(props.patient.jenis_kelamin), icon: VenusAndMars, className: warnaJenisKelamin.value },
   { label: `Umur ${nilai(props.patient.umur)}`, icon: CalendarClock },
   { label: `Lahir ${nilai(props.patient.tanggal_lahir)}`, icon: CalendarClock },
 ])
@@ -47,7 +53,7 @@ const detailUtama = computed(() => [
 </script>
 
 <template>
-  <header class="patient-identity-header">
+  <header class="patient-identity-header" :class="warnaJenisKelamin">
     <div class="patient-identity-heading">
       <i><UserRound :size="28" /></i>
       <div>
@@ -56,9 +62,9 @@ const detailUtama = computed(() => [
           <small>{{ moduleName }}</small>
         </div>
         <h2>{{ patient.nama_pasien || `RM ${patient.no_rekam_medis}` }}</h2>
-        <p>{{ poliAtauKamar }} · {{ patient.dokter || '-' }}</p>
+        <p>{{ poliAtauKamar }}</p>
         <div class="patient-identity-summary">
-          <span v-for="item in ringkasan" :key="item.label">
+          <span v-for="item in ringkasan" :key="item.label" :class="item.className">
             <component :is="item.icon" :size="14" />
             {{ item.label }}
           </span>
@@ -75,8 +81,14 @@ const detailUtama = computed(() => [
     </div>
 
     <div class="patient-identity-contact">
-      <span><MapPin :size="15" />{{ patient.alamat || 'Alamat belum tersedia' }}</span>
-      <span><Stethoscope :size="15" />{{ patient.dokter || 'DPJP belum tersedia' }}</span>
+      <article>
+        <span><MapPin :size="14" />Alamat</span>
+        <strong :title="patient.alamat || 'Alamat belum tersedia'">{{ patient.alamat || 'Alamat belum tersedia' }}</strong>
+      </article>
+      <article>
+        <span><Stethoscope :size="14" />DPJP / Dokter</span>
+        <strong :title="patient.dokter || 'DPJP belum tersedia'">{{ patient.dokter || 'DPJP belum tersedia' }}</strong>
+      </article>
     </div>
   </header>
 </template>

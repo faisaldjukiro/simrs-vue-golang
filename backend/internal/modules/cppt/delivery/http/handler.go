@@ -48,7 +48,7 @@ func (h *Handler) Daftar(c *gin.Context) {
 		httpresponse.Error(c, http.StatusUnauthorized, "UNAUTHENTICATED", "Sesi login tidak valid")
 		return
 	}
-	data, err := h.layanan.Daftar(c.Request.Context(), user.ID, user.Username, c.Query("no_rawat"))
+	data, err := h.layanan.Daftar(c.Request.Context(), user.ID, user.Username, c.Query("no_rawat"), c.Query("jenis_rawat"))
 	if err != nil {
 		h.tulisError(c, err)
 		return

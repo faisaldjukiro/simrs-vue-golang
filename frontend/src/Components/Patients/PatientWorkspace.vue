@@ -25,6 +25,7 @@ import CpptPage from '../../Pages/RawatInap/CpptPage.vue'
 import PenangananDokterPetugasPage from '../../Pages/RawatInap/PenangananDokterPetugasPage.vue'
 import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologiPage.vue'
 import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
+import TriaseIgdPage from '../../Pages/IGD/TriaseIgdPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -57,6 +58,8 @@ const iconMap = {
 }
 
 const fallbackMenus = [
+  { label: 'Cppt/Soap', icon: 'FileSignature', modules: ['IGD/UGD', 'Rawat Inap'] },
+  { label: 'Penanganan Dokter & Petugas', icon: 'Users', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Input Resep', icon: 'Pill', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Permintaan Lab', icon: 'FlaskConical', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Permintaan Radiologi', icon: 'ScanSearch', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
@@ -64,7 +67,20 @@ const fallbackMenus = [
 ]
 
 const menusAktif = computed(() => {
-  const sumber = props.menus.length > 0 ? props.menus : fallbackMenus
+  const sumber = (props.menus.length > 0 ? props.menus : fallbackMenus).map((menu) => ({
+    ...menu,
+    modules: [...(Array.isArray(menu.modules) ? menu.modules : [])],
+  }))
+  if (['IGD/UGD', 'Rawat Jalan'].includes(props.moduleName)) {
+    const menuPenanganan = sumber.find((menu) => menu.label === 'Penanganan Dokter & Petugas')
+    if (menuPenanganan && !menuPenanganan.modules.includes(props.moduleName)) menuPenanganan.modules.push(props.moduleName)
+    if (!menuPenanganan) sumber.push({ label: 'Penanganan Dokter & Petugas', icon: 'Users', modules: [props.moduleName] })
+  }
+  if (props.moduleName === 'IGD/UGD') {
+    const menuCppt = sumber.find((menu) => menu.label === 'Cppt/Soap')
+    if (menuCppt && !menuCppt.modules.includes(props.moduleName)) menuCppt.modules.push(props.moduleName)
+    if (!menuCppt) sumber.push({ label: 'Cppt/Soap', icon: 'FileSignature', modules: [props.moduleName] })
+  }
   const daftar = [{ label: 'Ringkasan', icon: 'LayoutDashboard', modules: [props.moduleName] }]
   const sudahAda = new Set(['Ringkasan'])
 
@@ -168,12 +184,16 @@ watch(() => props.patient.no_rawat, () => {
         v-else-if="activeSection === 'Cppt/Soap'"
         :token="token"
         :patient="patient"
+        :jenis-rawat="moduleName === 'Rawat Inap' ? 'ranap' : 'ralan'"
+        :nama-modul="moduleName"
       />
 
       <PenangananDokterPetugasPage
         v-else-if="['Penangangan Dokter & Petugas', 'Penanganan Dokter & Petugas'].includes(activeSection)"
         :token="token"
         :patient="patient"
+        :jenis-rawat="moduleName === 'Rawat Inap' ? 'ranap' : 'ralan'"
+        :nama-modul="moduleName"
       />
 
       <PermintaanRadiologiPage
@@ -184,6 +204,12 @@ watch(() => props.patient.no_rawat, () => {
 
       <RiwayatPerawatanPage
         v-else-if="activeSection === 'Riwayat Perawatan'"
+        :token="token"
+        :patient="patient"
+      />
+
+      <TriaseIgdPage
+        v-else-if="activeSection === 'Triase IGD'"
         :token="token"
         :patient="patient"
       />

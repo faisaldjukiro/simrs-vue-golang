@@ -89,8 +89,8 @@ export function ubahAksesUserManagement(token, id, payload) {
   })
 }
 
-export function cpptData(token, noRawat) {
-  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+export function cpptData(token, noRawat, jenisRawat = 'ranap') {
+  const query = new URLSearchParams({ no_rawat: noRawat, jenis_rawat: jenisRawat }).toString()
   return request(`/api/cppt?${query}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -127,8 +127,8 @@ export function cariPetugasCppt(token, kataKunci) {
   })
 }
 
-export function penangananDokterPetugasData(token, noRawat) {
-  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+export function penangananDokterPetugasData(token, noRawat, jenisRawat = 'ranap') {
+  const query = new URLSearchParams({ no_rawat: noRawat, jenis_rawat: jenisRawat }).toString()
   return request(`/api/penanganan-dokter-petugas?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
@@ -142,8 +142,8 @@ export function cariPetugasPenanganan(token, kataKunci) {
   return request(`/api/penanganan-dokter-petugas/petugas?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
-export function cariTindakanPenanganan(token, noRawat, kataKunci) {
-  const query = new URLSearchParams({ no_rawat: noRawat, q: kataKunci }).toString()
+export function cariTindakanPenanganan(token, noRawat, kataKunci, jenisRawat = 'ranap') {
+  const query = new URLSearchParams({ no_rawat: noRawat, q: kataKunci, jenis_rawat: jenisRawat }).toString()
   return request(`/api/penanganan-dokter-petugas/tindakan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
@@ -194,4 +194,22 @@ export function hapusPermintaanRadiologi(token, noRawat, nomor) {
 export function riwayatPerawatanData(token, params = {}) {
   const query = new URLSearchParams(params).toString()
   return request(`/api/riwayat-perawatan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function triaseIgdData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/triase-igd?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanTriaseIgd(token, payload) {
+  return request('/api/triase-igd', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahTriaseIgd(token, payload) {
+  return request('/api/triase-igd', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusTriaseIgd(token, noRawat, jenis) {
+  const query = new URLSearchParams({ no_rawat: noRawat, jenis }).toString()
+  return request(`/api/triase-igd?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }

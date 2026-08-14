@@ -596,13 +596,19 @@ body.sirava-dark .user-dialog{--surface:#0f172a;--surface-soft:#1e293b;--line:rg
 .patient-identity-status{display:inline-flex;align-items:center;border-radius:10px;padding:8px 11px;color:#0f766e;background:rgba(20,184,166,.12);font-size:10px}
 .patient-identity-summary{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .patient-identity-summary span{display:flex;align-items:center;gap:5px;border-radius:8px;padding:5px 8px;color:var(--muted);background:rgba(100,116,139,.08);font-size:10px;font-weight:700}
+.patient-identity-summary span.gender-female{color:#be185d;background:#fce7f3}
+.patient-identity-summary span.gender-male{color:#1d4ed8;background:#dbeafe}
+.patient-identity-header.gender-female .patient-identity-heading>i{color:#db2777;background:#fce7f3}
+.patient-identity-header.gender-male .patient-identity-heading>i{color:#2563eb;background:#dbeafe}
 .patient-identity-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:15px}
 .patient-identity-grid article{min-width:0;padding:11px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
 .patient-identity-grid article span{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:9px;font-weight:750}
 .patient-identity-grid article strong{display:block;overflow:hidden;margin-top:7px;color:var(--text);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
 .patient-identity-grid article strong.mono{font-family:ui-monospace,monospace}
 .patient-identity-contact{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:9px}
-.patient-identity-contact span{display:flex;min-width:0;align-items:center;gap:7px;overflow:hidden;padding:10px 11px;border:1px solid var(--line);border-radius:10px;color:var(--text);background:var(--surface);font-size:10px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.patient-identity-contact article{display:grid;min-width:0;gap:6px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.patient-identity-contact span{display:flex;min-width:0;align-items:center;gap:6px;color:var(--muted);font-size:9px}
+.patient-identity-contact strong{display:block;overflow:hidden;color:var(--text);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
 .patient-identity-contact svg{flex:0 0 auto;color:var(--muted)}
 .patient-workspace-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:15px}
 .patient-workspace-summary article{min-width:0;padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--surface-soft)}
@@ -613,8 +619,12 @@ body.sirava-dark .user-dialog{--surface:#0f172a;--surface-soft:#1e293b;--line:rg
 .patient-workspace-placeholder span{color:#0d9488;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
 .patient-workspace-placeholder h3{margin:0;color:var(--text);font-size:20px}
 .patient-workspace-placeholder p{max-width:540px;margin:0;font-size:11px;line-height:1.7}
-.theme-dark .patient-workspace-sidebar-tools button,.theme-dark .patient-workspace-search,.theme-dark .patient-identity-grid article,.theme-dark .patient-identity-contact span{background:rgba(15,23,42,.72)}
+.theme-dark .patient-workspace-sidebar-tools button,.theme-dark .patient-workspace-search,.theme-dark .patient-identity-grid article,.theme-dark .patient-identity-contact article{background:rgba(15,23,42,.72)}
 .theme-dark .patient-identity-badges span,.theme-dark .patient-identity-status{color:#5eead4}
+.theme-dark .patient-identity-summary span.gender-female{color:#f9a8d4;background:rgba(190,24,93,.2)}
+.theme-dark .patient-identity-summary span.gender-male{color:#93c5fd;background:rgba(29,78,216,.2)}
+.theme-dark .patient-identity-header.gender-female .patient-identity-heading>i{color:#f9a8d4;background:rgba(190,24,93,.2)}
+.theme-dark .patient-identity-header.gender-male .patient-identity-heading>i{color:#93c5fd;background:rgba(29,78,216,.2)}
 .theme-dark .patient-workspace-menu button.active{color:#042f2e;background:#2dd4bf}
 .theme-dark .patient-workspace-menu button.active i{color:#042f2e;background:rgba(255,255,255,.25)}
 @media(max-width:1050px){.patient-workspace{grid-template-columns:230px minmax(0,1fr)}.patient-workspace.collapsed{grid-template-columns:70px minmax(0,1fr)}.patient-identity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -798,15 +808,37 @@ input.form-input-element{height:42px;padding:0 11px}
 .theme-dark .patient-list-table .p-datatable-thead>tr>th,.sirava-dark .patient-list-table .p-datatable-thead>tr>th{border-right:1px solid rgba(148,163,184,.14);border-bottom:1px solid #285064;color:#eaf6f7;background:#123744}
 .theme-dark .patient-list-table .p-datatable-thead>tr>th:last-child,.sirava-dark .patient-list-table .p-datatable-thead>tr>th:last-child{border-right:0}
 
+/* Ukuran CPPT konsisten pada light dan dark mode; hanya palet warnanya yang berbeda. */
+.cppt-form-card .cppt-section-header{padding:18px 20px}
+.cppt-form-card .cppt-section-header>div>span{font-size:10px;letter-spacing:.09em}
+.cppt-form-card .cppt-section-header h3{margin-top:5px;font-size:18px;line-height:1.25}
+.cppt-form-card .cppt-section-header p{margin-top:5px;font-size:11px}
+.cppt-form fieldset{padding:20px}
+.cppt-form .cppt-time-grid,.cppt-form .cppt-vital-grid,.cppt-form .cppt-soap-grid{gap:12px}
+.cppt-form .cppt-vital-grid,.cppt-form .cppt-soap-grid{margin-top:14px}
+.cppt-form .form-input-label{font-size:10px;letter-spacing:.025em}
+.cppt-form .form-compact .form-input-field,.cppt-form .staff-search,.cppt-form .staff-search-wrapper{gap:6px}
+.cppt-form .form-compact input.form-input-element,.cppt-form .form-compact .form-input-select.ui-select,.cppt-form .staff-search-selected,.cppt-form .staff-search-box{height:40px;min-height:40px}
+.cppt-form .form-compact input.form-input-element,.cppt-form .form-input-field .p-select-label{padding-right:11px;padding-left:11px;font-size:12px}
+.cppt-form .staff-search-selected strong,.cppt-form .staff-search-box input{font-size:12px}
+.cppt-form .staff-search-selected small{font-size:9px}
+.cppt-form .cppt-soap-grid .form-input-field{padding:10px}
+.cppt-form .form-compact .form-input-textarea{min-height:82px;padding:10px 12px;font-size:12px;line-height:1.55}
+.cppt-form-actions{margin-top:18px;padding-top:17px}
+.cppt-form .cppt-button{min-height:40px;font-size:11px}
+
 /* Form CPPT light mode dibuat netral; teal cukup menjadi aksen. */
-.theme-light .cppt-form-card{border-color:#cbdde3;background:#f4f8fa;box-shadow:0 7px 20px rgba(15,23,42,.055)}
-.theme-light .cppt-form-card .cppt-section-header{border-bottom-color:#d9e5ea;background:#fff}
-.theme-light .cppt-form{background:linear-gradient(135deg,#f8fbfc 0%,#f1f7f8 100%)}
-.theme-light .cppt-form .form-input-label{color:#40586c}
-.theme-light .cppt-form .form-input-element,.theme-light .cppt-form .form-input-select.ui-select{border-color:#bdcfd8!important;background:#fff!important;box-shadow:0 1px 2px rgba(15,23,42,.045)}
-.theme-light .cppt-form .form-input-element:hover,.theme-light .cppt-form .form-input-select.ui-select:hover{border-color:#7fa9ad!important}
-.theme-light .cppt-form .cppt-soap-grid .form-input-field{border-color:#d3e1e6;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.035)}
-.theme-light .cppt-form-actions{border-top-color:#d9e5ea}
+.theme-light .cppt-form-card{border-color:#d5dee8;background:#f8fafc;box-shadow:0 7px 20px rgba(15,23,42,.05)}
+.theme-light .cppt-form-card .cppt-section-header{border-bottom-color:#e0e6ed;background:#fff}
+.theme-light .cppt-form-card .cppt-section-header>div>span{color:#0f766e}
+.theme-light .cppt-form-card .cppt-section-header p{color:#526477}
+.theme-light .cppt-form{background:#f6f8fb}
+.theme-light .cppt-form .form-input-label{color:#334155}
+.theme-light .cppt-form .form-input-element,.theme-light .cppt-form .form-input-select.ui-select{border-color:#b8c7d6!important;color:#172033!important;background:#fff!important;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.theme-light .cppt-form .form-input-element::placeholder{color:#8796a8}
+.theme-light .cppt-form .form-input-element:hover,.theme-light .cppt-form .form-input-select.ui-select:hover,.theme-light .cppt-form .staff-search-selected:hover,.theme-light .cppt-form .staff-search-box:hover{border-color:#7897a9!important}
+.theme-light .cppt-form .cppt-soap-grid .form-input-field{border-color:#d5dee8;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.04)}
+.theme-light .cppt-form-actions{border-top-color:#dce4ec}
 
 /* Riwayat CPPT light mode mengikuti form yang lebih netral. */
 .theme-light .cppt-history-card{border-color:#cbdde3;background:#f4f8fa;box-shadow:0 7px 20px rgba(15,23,42,.055)}
@@ -1131,3 +1163,142 @@ input.form-input-element{height:42px;padding:0 11px}
 }
 @media(max-width:980px){.care-history-report-layout{grid-template-columns:190px minmax(0,1fr)}.care-history-identity>div{grid-template-columns:25px 190px 16px minmax(0,1fr)}}
 @media(max-width:700px){.care-history-report-layout{grid-template-columns:1fr}.care-history-report-layout.options-hidden{grid-template-columns:1fr}.care-history-report-options{display:grid;max-height:320px;grid-template-columns:repeat(2,minmax(0,1fr));position:static;border-right:0;border-bottom:1px solid var(--line)}.care-history-options-head{grid-column:1/-1}.care-history-report-options .care-history-preset{top:-10px}.care-history-report-options .care-history-select-all{top:25px}.care-history-options-rail{justify-content:flex-end;border-right:0;border-bottom:1px solid var(--line);padding:7px 9px}.care-history-identity>div{grid-template-columns:22px 125px 14px minmax(0,1fr)}.care-history-identity i,.care-history-identity b,.care-history-identity em,.care-history-identity span{padding:6px 5px;font-size:10px}.care-history-report-caption{grid-template-columns:minmax(0,1fr) auto}.care-history-report-caption small{display:none}.care-history-report-content .care-history-section{grid-template-columns:1fr}.care-history-report-content .care-history-section>h4{grid-row:auto;grid-column:1;border-right:0;border-bottom:1px solid var(--line)}.care-history-report-content .care-history-section>*:not(h4){grid-column:1}.care-history-file-list iframe{height:480px}}
+
+/* Triase IGD mengikuti alur RMTriaseIGD Khanza. */
+.triage-page{--triage-surface:#fff;--triage-soft:#f7fafc;--triage-panel:#f1f6f8;--triage-line:#d6e1e8;--triage-text:#0f172a;--triage-muted:#64748b;display:grid;gap:15px;color:var(--triage-text)}
+.triage-form-card,.triage-history-card{overflow:hidden;border:1px solid var(--triage-line);border-radius:14px;background:var(--triage-surface)}
+.triage-section-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 19px;border-bottom:1px solid var(--triage-line)}
+.triage-section-header>div{display:grid;gap:3px}.triage-section-header span{color:#0f8f84;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.triage-section-header h3{margin:0;color:var(--triage-text);font-size:19px}.triage-section-header p{margin:0;color:var(--triage-muted);font-size:11px;line-height:1.45}
+.triage-icon-button{display:grid;width:40px;height:40px;place-items:center;border:0;border-radius:10px;color:#fff;background:#0d9488;cursor:pointer}
+.triage-state{display:flex;min-height:180px;align-items:center;justify-content:center;gap:10px;color:var(--triage-muted);font-size:12px}
+.triage-form{background:var(--triage-soft)}.triage-form fieldset{display:grid;gap:12px;margin:0;border:0;padding:15px}.triage-form fieldset:disabled{opacity:.72}
+.triage-type-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.triage-type-tabs>button{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;border:1px solid var(--triage-line);border-radius:11px;padding:12px 14px;color:var(--triage-muted);background:var(--triage-surface);text-align:left;cursor:pointer}.triage-type-tabs>button>span{display:grid;gap:2px}.triage-type-tabs b{color:var(--triage-text);font-size:12px}.triage-type-tabs small{font-size:10px}.triage-type-tabs i{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 7px;color:#0f766e;background:rgba(20,184,166,.12);font-size:9px;font-style:normal;font-weight:800}.triage-type-tabs>button.active{border-color:rgba(13,148,136,.5);color:#0d9488;background:rgba(20,184,166,.08);box-shadow:0 0 0 2px rgba(20,184,166,.07)}
+.triage-form-section{display:grid;gap:12px;border:1px solid var(--triage-line);border-radius:12px;padding:14px;background:var(--triage-surface)}.triage-form-section>header{display:flex;align-items:center;gap:10px}.triage-form-section>header>span{display:grid;width:29px;height:29px;flex:0 0 29px;place-items:center;border-radius:8px;color:#0f766e;background:rgba(20,184,166,.12);font-size:10px;font-weight:900}.triage-form-section>header>div{display:grid;gap:2px}.triage-form-section h4{margin:0;color:var(--triage-text);font-size:13px}.triage-form-section header p{margin:0;color:var(--triage-muted);font-size:10px}
+.triage-arrival-grid{display:grid;grid-template-columns:1.2fr repeat(5,minmax(130px,1fr));gap:10px}.triage-arrival-grid .wide{grid-column:1/-1}.triage-assessment-grid{display:grid;grid-template-columns:repeat(6,minmax(115px,1fr));gap:10px}.triage-assessment-grid .main-note{grid-column:span 3;grid-row:span 2}.triage-assessment-grid .officer,.triage-assessment-grid .note{grid-column:span 3}.triage-page .form-input-label,.triage-page .input-search-label{font-size:9px}.triage-page .form-input-element{min-height:40px}.triage-page textarea.form-input-element{line-height:1.5}
+.triage-scale-tabs{display:grid;grid-template-columns:repeat(5,minmax(115px,1fr));gap:8px}.triage-scale-tabs button{display:grid;gap:2px;border:1px solid var(--triage-line);border-radius:9px;padding:10px 11px;color:var(--triage-muted);background:var(--triage-soft);text-align:left;cursor:pointer}.triage-scale-tabs b{color:var(--triage-text);font-size:11px}.triage-scale-tabs small{font-size:9px}.triage-scale-tabs button.active{color:#fff;box-shadow:0 0 0 2px rgba(15,23,42,.08)}.triage-scale-tabs button.active b{color:#fff}.triage-scale-tabs .scale-1.active{border-color:#dc2626;background:#dc2626}.triage-scale-tabs .scale-2.active{border-color:#ea580c;background:#ea580c}.triage-scale-tabs .scale-3.active{border-color:#d97706;background:#d97706}.triage-scale-tabs .scale-4.active{border-color:#16a34a;background:#16a34a}.triage-scale-tabs .scale-5.active{border-color:#64748b;background:#64748b}
+.triage-examination-picker{display:grid;gap:7px}.triage-examination-picker>strong{color:var(--triage-text);font-size:9px;text-transform:uppercase}.triage-examination-picker>strong i{color:#ef4444;font-style:normal}.triage-examination-picker>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.triage-examination-picker button{display:grid;min-width:0;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:7px;border:1px solid var(--triage-line);border-radius:9px;padding:9px 10px;color:var(--triage-text);background:var(--triage-soft);text-align:left;cursor:pointer}.triage-examination-picker button b{display:grid;min-width:35px;height:24px;place-items:center;border-radius:6px;color:#0f766e;background:rgba(20,184,166,.11);font-size:9px}.triage-examination-picker button span{overflow:hidden;font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}.triage-examination-picker button.active{border-color:#0d9488;background:rgba(20,184,166,.09);box-shadow:0 0 0 2px rgba(20,184,166,.06)}.triage-examination-picker button.active b{color:#fff;background:#0d9488}.triage-examination-picker p{grid-column:1/-1;margin:0;border:1px dashed var(--triage-line);border-radius:9px;padding:16px;color:var(--triage-muted);font-size:10px;text-align:center}
+.triage-criteria-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:270px;overflow-y:auto;padding:3px;scrollbar-width:thin}.triage-criteria-list label{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--triage-line);border-radius:9px;padding:10px;color:var(--triage-text);background:var(--triage-soft);cursor:pointer}.triage-criteria-list label.selected{border-color:rgba(13,148,136,.48);background:rgba(20,184,166,.09)}.triage-criteria-list input{width:15px;height:15px;flex:0 0 15px;margin:1px 0 0;accent-color:#0d9488}.triage-criteria-list label span{display:grid;gap:2px}.triage-criteria-list label b,.triage-criteria-list label small{font-size:10px}.triage-criteria-list label small{line-height:1.45}.triage-criteria-list>p{grid-column:1/-1;margin:0;padding:25px;color:var(--triage-muted);font-size:11px;text-align:center}
+.triage-selected-criteria{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border-top:1px solid var(--triage-line);padding-top:10px}.triage-selected-criteria>strong{width:100%;font-size:10px}.triage-selected-criteria>span{display:inline-flex;align-items:center;gap:5px;border-radius:7px;padding:6px 7px;color:#0f766e;background:rgba(20,184,166,.1);font-size:9px}.triage-selected-criteria button{display:grid;width:17px;height:17px;place-items:center;border:0;border-radius:50%;color:inherit;background:rgba(13,148,136,.12);cursor:pointer}
+.triage-decision-options{display:flex;flex-wrap:wrap;gap:8px}.triage-decision-options label{display:flex;min-width:145px;align-items:center;gap:8px;border:1px solid var(--triage-line);border-radius:9px;padding:10px 12px;color:var(--triage-text);background:var(--triage-soft);font-size:10px;font-weight:800;cursor:pointer}.triage-decision-options input{position:absolute;opacity:0}.triage-decision-options i{width:11px;height:11px;border:2px solid #94a3b8;border-radius:50%}.triage-decision-options label.selected{border-color:#0d9488}.triage-decision-options label.selected i{border-color:#fff;box-shadow:0 0 0 3px #0d9488}.triage-decision-options .decision-ruang-resusitasi.selected{color:#fff;background:#b91c1c}.triage-decision-options .decision-ruang-kritis.selected{color:#fff;background:#dc2626}.triage-decision-options .decision-zona-kuning.selected{color:#422006;background:#facc15}.triage-decision-options .decision-zona-hijau.selected{color:#fff;background:#16a34a}.triage-decision-options .decision-zona-hitam.selected{color:#fff;background:#111827}
+.triage-actions{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--triage-line);padding-top:12px}.triage-actions button,.triage-record header button,.triage-confirm-backdrop button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--triage-line);border-radius:8px;padding:9px 12px;color:var(--triage-text);background:var(--triage-surface);font-size:10px;font-weight:850;cursor:pointer}.triage-actions button.primary{border-color:#0d9488;color:#fff;background:#0d9488}.triage-actions button:disabled{opacity:.55;cursor:wait}
+.triage-common-summary{display:grid;grid-template-columns:1fr 1fr 1fr 2fr;margin:0;border-bottom:1px solid var(--triage-line);background:var(--triage-soft)}.triage-common-summary>div{padding:10px 13px;border-right:1px solid var(--triage-line)}.triage-common-summary dt{margin-bottom:3px;color:var(--triage-muted);font-size:8px;font-weight:850;text-transform:uppercase}.triage-common-summary dd{margin:0;color:var(--triage-text);font-size:10px;font-weight:750;line-height:1.45}
+.triage-records{display:grid;gap:10px;padding:14px}.triage-record{overflow:hidden;border:1px solid var(--triage-line);border-left:5px solid #64748b;border-radius:10px;background:var(--triage-surface)}.triage-record.scale-1{border-left-color:#dc2626}.triage-record.scale-2{border-left-color:#ea580c}.triage-record.scale-3{border-left-color:#d97706}.triage-record.scale-4{border-left-color:#16a34a}.triage-record>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid var(--triage-line);background:var(--triage-soft)}.triage-record>header>span{display:grid;gap:3px}.triage-record>header b{font-size:12px}.triage-record>header small{color:var(--triage-muted);font-size:10px}.triage-record>header div{display:flex;gap:6px}.triage-record header button{padding:7px 9px}.triage-record header button.danger,.triage-confirm-backdrop button.danger{border-color:rgba(220,38,38,.25);color:#dc2626;background:rgba(220,38,38,.07)}
+.triage-record dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0}.triage-record dl>div{padding:11px 13px;border-right:1px solid var(--triage-line)}.triage-record dt{margin-bottom:4px;color:var(--triage-muted);font-size:9px;font-weight:800;text-transform:uppercase}.triage-record dd{display:grid;gap:2px;margin:0;font-size:10px;line-height:1.5;white-space:pre-wrap}.triage-record dd small{color:var(--triage-muted)}.triage-record-criteria{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--triage-line);padding:10px 13px}.triage-record-criteria span{display:inline-flex;gap:5px;border-radius:6px;padding:6px 8px;color:var(--triage-text);background:var(--triage-panel);font-size:9px}
+.triage-confirm-backdrop{position:fixed;z-index:1300;inset:0;display:grid;place-items:center;padding:20px;background:rgba(2,6,23,.56)}.triage-confirm-backdrop>section{display:grid;width:min(420px,100%);justify-items:center;gap:9px;border:1px solid var(--triage-line);border-radius:13px;padding:22px;color:var(--triage-text);background:var(--triage-surface);text-align:center}.triage-confirm-backdrop h3,.triage-confirm-backdrop p{margin:0}.triage-confirm-backdrop h3{font-size:16px}.triage-confirm-backdrop p{color:var(--triage-muted);font-size:11px;line-height:1.55}.triage-confirm-backdrop section>div{display:flex;gap:7px;margin-top:4px}
+:where(.theme-dark,.sirava-dark) .triage-page{--triage-surface:#0d1929;--triage-soft:#101d2f;--triage-panel:#14243a;--triage-line:rgba(148,163,184,.18);--triage-text:#f1f5f9;--triage-muted:#94a3b8}:where(.theme-dark,.sirava-dark) .triage-selected-criteria>span,:where(.theme-dark,.sirava-dark) .triage-type-tabs i,:where(.theme-dark,.sirava-dark) .triage-form-section>header>span{color:#5eead4}
+@media(max-width:1250px){.triage-arrival-grid{grid-template-columns:repeat(3,minmax(150px,1fr))}.triage-assessment-grid{grid-template-columns:repeat(4,minmax(120px,1fr))}.triage-assessment-grid .main-note,.triage-assessment-grid .officer,.triage-assessment-grid .note{grid-column:span 2}.triage-examination-picker>div{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){.triage-type-tabs,.triage-criteria-list{grid-template-columns:1fr}.triage-arrival-grid,.triage-assessment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.triage-scale-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.triage-record dl,.triage-common-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.triage-arrival-grid,.triage-assessment-grid,.triage-record dl,.triage-examination-picker>div{grid-template-columns:1fr}.triage-assessment-grid .main-note,.triage-assessment-grid .officer,.triage-assessment-grid .note{grid-column:auto}.triage-type-tabs>button{grid-template-columns:auto 1fr}.triage-type-tabs i{grid-column:2}.triage-actions{flex-direction:column}.triage-actions button{width:100%}}
+
+/* Triase IGD: susunan ringkas mengikuti form RMTriaseIGD Khanza. */
+.triage-khanza-form{position:relative;z-index:4}
+.triage-khanza-form fieldset{display:grid;gap:10px;margin:0;padding:0;border:0}
+.triage-khanza-arrival,.triage-khanza-clinical{border:1px solid var(--triage-line);border-radius:8px;background:var(--triage-surface);box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.triage-khanza-arrival{position:relative;z-index:3;overflow:visible}
+.triage-khanza-clinical{position:relative;z-index:1;overflow:visible}
+.triage-khanza-arrival>header{display:flex;min-height:58px;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid var(--triage-line);background:var(--triage-soft)}
+.triage-khanza-arrival>header>strong{font-size:14px}
+.triage-khanza-arrival>header>div{display:flex;gap:7px}
+.triage-khanza-arrival>header button{display:inline-flex;min-height:36px;align-items:center;justify-content:center;gap:6px;border:1px solid var(--triage-line);border-radius:6px;padding:7px 13px;font-size:11px;font-weight:800;cursor:pointer}
+.triage-khanza-arrival>header button.secondary{color:var(--triage-text);background:var(--triage-surface)}
+.triage-khanza-arrival>header button.primary{border-color:#0d9488;color:#fff;background:#0d9488}
+.triage-khanza-arrival-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 12px;padding:14px 16px 16px}
+.triage-khanza-arrival-grid .case-field{grid-column:span 2}
+.triage-khanza-arrival-grid .arrival-note{grid-column:span 2}
+.triage-khanza-arrival-grid .form-input-label,.triage-khanza-body .form-input-label,.triage-khanza-body .input-search-label{font-size:10px;font-weight:600;text-transform:none}
+.triage-khanza-arrival-grid .form-input-element,.triage-khanza-body .form-input-element{min-height:38px;border-radius:6px;padding-top:8px;padding-bottom:8px;font-size:11px}
+.triage-khanza-arrival-grid .form-input-field,.triage-khanza-body .form-input-field{gap:4px}
+.triage-khanza-tabs{display:flex;align-items:end;gap:4px;padding:9px 10px 0;border-bottom:1px solid var(--triage-line);background:var(--triage-soft)}
+.triage-khanza-tabs button{display:inline-flex;min-width:110px;align-items:center;justify-content:center;gap:5px;border:1px solid var(--triage-line);border-bottom:0;border-radius:5px 5px 0 0;padding:8px 15px;color:var(--triage-muted);background:var(--triage-panel);font-size:11px;font-weight:750;cursor:pointer}
+.triage-khanza-tabs button.active{border-color:#0d9488;color:#fff;background:#0d9488}
+.triage-khanza-body{display:grid;grid-template-columns:minmax(310px,.39fr) minmax(520px,.61fr);gap:12px;padding:12px}
+.triage-khanza-left{position:relative;z-index:3;display:grid;align-content:start;gap:12px}
+.triage-khanza-box,.triage-khanza-examination{border:1px solid var(--triage-line);border-radius:7px;background:var(--triage-soft)}
+.triage-khanza-box{display:grid;gap:10px;padding:12px}
+.triage-khanza-assessment textarea.form-input-element{min-height:112px;resize:vertical;line-height:1.55}
+.triage-khanza-vitals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+.triage-khanza-decision{grid-template-columns:1fr}
+.triage-khanza-decision .staff-search-wrapper,.triage-khanza-decision .staff-search{z-index:100}
+.triage-khanza-decision .staff-search-results{z-index:1000}
+.triage-khanza-plan{display:grid;gap:6px;color:var(--triage-text)}
+.triage-khanza-plan>strong{font-size:10px;font-weight:700}
+.triage-khanza-plan>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.triage-khanza-plan label{display:flex;min-height:38px;align-items:center;gap:7px;border:1px solid var(--triage-line);border-radius:6px;padding:8px 10px;background:var(--triage-surface);font-size:11px;cursor:pointer}
+.triage-khanza-plan label.selected{border-color:rgba(13,148,136,.5);background:rgba(20,184,166,.08)}
+.triage-khanza-plan input,.triage-khanza-criteria input{width:13px;height:13px;margin:0;accent-color:#0d9488}
+.triage-khanza-examination{display:grid;min-width:0;grid-template-rows:auto auto minmax(280px,1fr) auto;align-self:stretch;overflow:hidden}
+.triage-khanza-examination>header{display:flex;min-height:38px;align-items:center;justify-content:space-between;gap:10px;padding:7px 11px;border-bottom:1px solid var(--triage-line);background:var(--triage-surface)}
+.triage-khanza-examination>header>strong{font-size:11px}
+.triage-khanza-scales{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+.triage-khanza-scales button{border:0;border-radius:4px;padding:6px 8px;color:#fff;font-size:9px;font-weight:850;cursor:pointer;opacity:.58}
+.triage-khanza-scales button.active{opacity:1;box-shadow:0 0 0 2px var(--triage-surface),0 0 0 3px currentColor}
+.triage-khanza-scales .scale-1{background:#dc2626}.triage-khanza-scales .scale-2{background:#ea580c}.triage-khanza-scales .scale-3{background:#b8bd00}.triage-khanza-scales .scale-4{background:#16a34a}.triage-khanza-scales .scale-5{background:#737373}
+.triage-khanza-examination>h4{margin:0;padding:8px 11px;color:#fff;font-size:11px;text-align:center}
+.triage-khanza-examination.scale-1>h4{background:#dc2626}.triage-khanza-examination.scale-2>h4{background:#ea580c}.triage-khanza-examination.scale-3>h4{background:#c3c900}.triage-khanza-examination.scale-4>h4{background:#16a34a}.triage-khanza-examination.scale-5>h4{background:#737373}
+.triage-khanza-criteria{max-height:500px;overflow:auto;background:var(--triage-surface);scrollbar-width:thin}
+.triage-khanza-criteria section{display:grid}
+.triage-khanza-criteria h5{position:sticky;top:0;z-index:1;margin:0;padding:8px 11px;border-bottom:1px solid var(--triage-line);color:var(--triage-text);background:var(--triage-panel);font-size:10px;text-transform:uppercase}
+.triage-khanza-criteria label{display:grid;min-height:37px;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:8px;border-bottom:1px solid var(--triage-line);padding:8px 11px;color:var(--triage-text);background:var(--triage-surface);font-size:10px;line-height:1.45;cursor:pointer}
+.triage-khanza-criteria label:hover{background:var(--triage-soft)}
+.triage-khanza-criteria label.selected{box-shadow:inset 3px 0 #0d9488;background:rgba(20,184,166,.06)}
+.triage-khanza-criteria>p{margin:0;padding:35px 15px;color:var(--triage-muted);font-size:10px;text-align:center}
+.triage-khanza-examination>footer{padding:7px 11px;border-top:1px solid var(--triage-line);color:var(--triage-muted);background:var(--triage-soft);font-size:9px;text-align:right}
+.triage-khanza-examination>footer b{color:#0d9488}
+.triage-history-card{position:relative;z-index:1}
+:where(.theme-dark,.sirava-dark) .triage-khanza-arrival,:where(.theme-dark,.sirava-dark) .triage-khanza-clinical{box-shadow:none}
+:where(.theme-dark,.sirava-dark) .triage-khanza-plan label.selected,:where(.theme-dark,.sirava-dark) .triage-khanza-criteria label.selected{background:rgba(20,184,166,.12)}
+@media(max-width:1200px){.triage-khanza-arrival-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.triage-khanza-body{grid-template-columns:1fr}.triage-khanza-examination{min-height:500px}}
+@media(max-width:700px){.triage-khanza-arrival-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.triage-khanza-arrival-grid .case-field,.triage-khanza-arrival-grid .arrival-note{grid-column:span 2}.triage-khanza-body{padding:8px}.triage-khanza-examination>header{align-items:flex-start;flex-direction:column}.triage-khanza-scales{justify-content:flex-start}.triage-khanza-vitals{grid-template-columns:1fr}.triage-khanza-tabs button{flex:1;min-width:0}}
+
+/* Tipografi seluruh modul: isi ringan, penekanan hanya pada informasi penting. */
+.dashboard-app{
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.dashboard-app *{text-shadow:none!important}
+.dashboard-app :where(p,span,small,li,td,dd,input,textarea,select,option){font-weight:400!important}
+.dashboard-app :where(label,code){font-weight:500!important}
+.dashboard-app :where(th,dt,.form-input-label,.input-search-label){font-weight:600!important}
+.dashboard-app :where(strong,b){font-weight:600!important}
+.dashboard-app :where(h1,h2,h3,h4){font-weight:700!important}
+.dashboard-app :where(h5,h6){font-weight:600!important}
+.dashboard-app button,.dashboard-app button :where(span,strong,b){font-weight:600!important}
+.dashboard-app :where([class*="badge"],[class*="status"],[class*="pill"]){font-weight:600!important}
+.dashboard-app :where([class*="header"]>span,[class*="header"]>div>span){font-weight:600!important}
+.dashboard-app.theme-dark{--text:#e2e8f0;--muted:#9aa9bc}
+.dashboard-app.theme-dark :where([class*="table"] strong,[class*="table"] b){color:#e2e8f0}
+
+/* Palet light mode mengikuti karakter visual SIMRS Khanza. */
+.dashboard-app.theme-light .patient-identity-header{
+  border-color:#ccd9e6;
+  background:linear-gradient(135deg,#fff,#f6f9fc);
+  box-shadow:0 2px 8px rgba(30,58,95,.06);
+}
+.dashboard-app.theme-light .patient-identity-header:after{background:rgba(148,163,184,.08)}
+.dashboard-app.theme-light .patient-identity-grid article,
+.dashboard-app.theme-light .patient-identity-contact article{
+  border-color:#ccd9e6;
+  background:#fff;
+}
+.dashboard-app.theme-light .patient-identity-grid article span,
+.dashboard-app.theme-light .patient-identity-contact span{color:#526b87}
+.dashboard-app.theme-light .patient-identity-grid article strong,
+.dashboard-app.theme-light .patient-identity-contact strong{color:#17233a}
+.dashboard-app.theme-light .triage-page{
+  --triage-surface:#fff;
+  --triage-soft:#f7f9fc;
+  --triage-panel:#edf3f8;
+  --triage-line:#ccd9e6;
+  --triage-text:#17233a;
+  --triage-muted:#526b87;
+}
+.dashboard-app.theme-light .triage-khanza-arrival,
+.dashboard-app.theme-light .triage-khanza-clinical,
+.dashboard-app.theme-light .triage-history-card{box-shadow:0 2px 7px rgba(30,58,95,.07)}
+.dashboard-app.theme-light .triage-khanza-arrival>header,
+.dashboard-app.theme-light .triage-khanza-tabs,
+.dashboard-app.theme-light .triage-khanza-criteria h5{background:#f3f6f9}
+.dashboard-app.theme-light .triage-khanza-arrival-grid .form-input-element,
+.dashboard-app.theme-light .triage-khanza-body .form-input-element,
+.dashboard-app.theme-light .triage-khanza-plan label{border-color:#c7d5e4;background:#fff;color:#17233a}

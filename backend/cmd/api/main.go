@@ -31,6 +31,8 @@ import (
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
 	"simrs-backend/internal/modules/riwayat_perawatan"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
+	"simrs-backend/internal/modules/triase_igd"
+	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
 	"simrs-backend/internal/platform/database"
 	faisalroutes "simrs-backend/internal/routes/faisal"
 	sahrulroutes "simrs-backend/internal/routes/sahrul"
@@ -91,6 +93,8 @@ func main() {
 	permintaanRadiologiHandler := permintaanradiologihttp.NewHandler(permintaan_radiologi.NewLayanan(permintaanRadiologiRepositori))
 	riwayatPerawatanRepositori := riwayat_perawatan.NewRepositori(simrsDB, config.SIMRSWebBaseURL())
 	riwayatPerawatanHandler := riwayatperawatanhttp.NewHandler(riwayat_perawatan.NewLayanan(riwayatPerawatanRepositori))
+	triaseIGDRepositori := triase_igd.NewRepositori(simrsDB)
+	triaseIGDHandler := triaseigdhttp.NewHandler(triase_igd.NewLayanan(triaseIGDRepositori))
 
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
@@ -103,6 +107,7 @@ func main() {
 		PenangananDokterPetugas: penangananHandler,
 		PermintaanRadiologi:     permintaanRadiologiHandler,
 		RiwayatPerawatan:        riwayatPerawatanHandler,
+		TriaseIGD:               triaseIGDHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 

@@ -11,6 +11,8 @@ import { useNotifikasi } from '../../lib/shared/useNotifikasi'
 const props = defineProps({
   token: { type: String, required: true },
   patient: { type: Object, required: true },
+  jenisRawat: { type: String, default: 'ranap' },
+  namaModul: { type: String, default: 'Rawat Inap' },
 })
 
 const notifikasi = useNotifikasi()
@@ -27,6 +29,7 @@ const awarenessOptions = ref(toSelectOptions(defaultAwareness))
 const editingKey = ref(null)
 const deleteTarget = ref(null)
 const formVisible = ref(false)
+const judulCatatan = computed(() => props.jenisRawat === 'ralan' ? 'Pemeriksaan & SOAP' : 'CPPT & SOAP')
 
 const form = reactive(emptyForm())
 const tableRecords = computed(() => records.value.map((item) => ({
@@ -56,6 +59,7 @@ function currentTime() {
 
 function emptyForm() {
   return {
+    jenis_rawat: props.jenisRawat,
     no_rawat: props.patient?.no_rawat || '',
     tgl_perawatan: currentDate(),
     jam_rawat: currentTime(),
@@ -71,6 +75,7 @@ function emptyForm() {
     subjek: '',
     objek: '',
     alergi: '',
+    lingkar_perut: '',
     asesmen: '',
     plan: '',
     instruksi: '',
@@ -94,6 +99,7 @@ function keyFor(item) {
 
 function recordKey(item) {
   return {
+    jenis_rawat: item.jenis_rawat || props.jenisRawat,
     no_rawat: String(item?.no_rawat || props.patient?.no_rawat || '').trim(),
     tgl_perawatan: item.tgl_perawatan,
     jam_rawat: item.jam_rawat,
@@ -105,7 +111,7 @@ async function loadRecords() {
   loading.value = true
   error.value = ''
   try {
-    const data = await cpptData(props.token, props.patient.no_rawat)
+    const data = await cpptData(props.token, props.patient.no_rawat, props.jenisRawat)
     records.value = data?.catatan || []
     petugas.value = data?.petugas || { nip: '', nama: '', jabatan: '' }
     canChooseOfficer.value = Boolean(data?.bisa_memilih_petugas)
@@ -150,6 +156,7 @@ function editRecord(item) {
     subjek: item.subjek,
     objek: item.objek,
     alergi: item.alergi,
+    lingkar_perut: item.lingkar_perut,
     asesmen: item.asesmen,
     plan: item.plan,
     instruksi: item.instruksi,
@@ -166,13 +173,14 @@ function hasClinicalContent() {
   return [
     form.suhu_tubuh, form.tensi, form.nadi, form.respirasi, form.tinggi,
     form.berat, form.spo2, form.gcs, form.subjek, form.objek, form.alergi,
-    form.asesmen, form.plan, form.instruksi, form.evaluasi,
+    form.lingkar_perut, form.asesmen, form.plan, form.instruksi, form.evaluasi,
   ].some((value) => String(value || '').trim())
 }
 
 function payload() {
   return {
     kunci_lama: editingKey.value,
+    jenis_rawat: props.jenisRawat,
     no_rawat: String(form.no_rawat || '').trim(),
     tgl_perawatan: String(form.tgl_perawatan || '').trim(),
     jam_rawat: String(form.jam_rawat || '').trim(),
@@ -188,6 +196,7 @@ function payload() {
     subjek: String(form.subjek || '').trim(),
     objek: String(form.objek || '').trim(),
     alergi: String(form.alergi || '').trim(),
+    lingkar_perut: String(form.lingkar_perut || '').trim(),
     asesmen: String(form.asesmen || '').trim(),
     plan: String(form.plan || '').trim(),
     instruksi: String(form.instruksi || '').trim(),
@@ -237,7 +246,7 @@ function formatDate(value) {
   return `${day}/${month}/${year}`
 }
 
-watch(() => props.patient.no_rawat, () => {
+watch([() => props.patient.no_rawat, () => props.jenisRawat], () => {
   formVisible.value = false
   loadRecords()
 }, { immediate: true })
@@ -249,7 +258,7 @@ watch(() => props.patient.no_rawat, () => {
       <header class="cppt-section-header">
         <div>
           <span>Catatan Perkembangan Pasien Terintegrasi</span>
-          <h3>{{ editingKey ? 'Edit CPPT & SOAP' : 'Input CPPT & SOAP' }}</h3>
+          <h3>{{ editingKey ? `Edit ${judulCatatan}` : `Input ${judulCatatan}` }}</h3>
           <p>Petugas: {{ petugas.nama || '-' }} <small v-if="petugas.jabatan">· {{ petugas.jabatan }}</small></p>
         </div>
         <div class="cppt-section-tools">
@@ -294,6 +303,7 @@ watch(() => props.patient.no_rawat, () => {
             <FormInput v-model="form.tinggi" label="Tinggi (cm)" maxlength="5" inputmode="decimal" />
             <FormInput v-model="form.berat" label="Berat (kg)" maxlength="5" inputmode="decimal" />
             <FormInput v-model="form.alergi" class="allergy" label="Alergi" maxlength="50" placeholder="Tuliskan alergi pasien" />
+            <FormInput v-if="jenisRawat === 'ralan'" v-model="form.lingkar_perut" label="Lingkar Perut (cm)" maxlength="5" inputmode="decimal" />
           </div>
 
           <div class="cppt-soap-grid">
@@ -310,7 +320,7 @@ watch(() => props.patient.no_rawat, () => {
             <button type="submit" class="cppt-button primary">
               <LoaderCircle v-if="saving" class="spin" :size="15" />
               <Save v-else :size="15" />
-              {{ saving ? 'Menyimpan...' : editingKey ? 'Simpan Perubahan' : 'Simpan CPPT' }}
+              {{ saving ? 'Menyimpan...' : editingKey ? 'Simpan Perubahan' : `Simpan ${judulCatatan}` }}
             </button>
           </footer>
         </fieldset>
@@ -321,7 +331,7 @@ watch(() => props.patient.no_rawat, () => {
       <header class="cppt-section-header">
         <div>
           <span>Riwayat Pasien</span>
-          <h3>Catatan CPPT & SOAP</h3>
+          <h3>Catatan {{ judulCatatan }}</h3>
           <p>{{ records.length }} catatan ditemukan</p>
         </div>
       </header>
@@ -344,6 +354,7 @@ watch(() => props.patient.no_rawat, () => {
               <span>Tensi <b>{{ data.tensi || '-' }}</b></span><span>Nadi <b>{{ data.nadi || '-' }}</b></span>
               <span>RR <b>{{ data.respirasi || '-' }}</b></span><span>SpO2 <b>{{ data.spo2 || '-' }}</b></span>
               <span>GCS <b>{{ data.gcs || '-' }}</b></span><span>TB/BB <b>{{ data.tinggi || '-' }}/{{ data.berat || '-' }}</b></span>
+              <span v-if="jenisRawat === 'ralan'">Lingkar Perut <b>{{ data.lingkar_perut || '-' }}</b></span>
             </div>
           </template>
         </PrimeColumn>
