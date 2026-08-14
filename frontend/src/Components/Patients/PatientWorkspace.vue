@@ -26,6 +26,7 @@ import PenangananDokterPetugasPage from '../../Pages/RawatInap/PenangananDokterP
 import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologiPage.vue'
 import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
 import TriaseIgdPage from '../../Pages/IGD/TriaseIgdPage.vue'
+import AwalKeperawatanIgdPage from '../../Pages/IGD/AwalKeperawatanIgdPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -64,6 +65,7 @@ const fallbackMenus = [
   { label: 'Permintaan Lab', icon: 'FlaskConical', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Permintaan Radiologi', icon: 'ScanSearch', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Triase IGD', icon: 'Stethoscope', modules: ['IGD/UGD'] },
+  { label: 'Awal Keperawatan IGD', icon: 'ClipboardList', modules: ['IGD/UGD'] },
 ]
 
 const menusAktif = computed(() => {
@@ -80,6 +82,9 @@ const menusAktif = computed(() => {
     const menuCppt = sumber.find((menu) => menu.label === 'Cppt/Soap')
     if (menuCppt && !menuCppt.modules.includes(props.moduleName)) menuCppt.modules.push(props.moduleName)
     if (!menuCppt) sumber.push({ label: 'Cppt/Soap', icon: 'FileSignature', modules: [props.moduleName] })
+    const menuAwalKeperawatan = sumber.find((menu) => menu.label === 'Awal Keperawatan IGD')
+    if (menuAwalKeperawatan && !menuAwalKeperawatan.modules.includes(props.moduleName)) menuAwalKeperawatan.modules.push(props.moduleName)
+    if (!menuAwalKeperawatan) sumber.push({ label: 'Awal Keperawatan IGD', icon: 'ClipboardList', modules: [props.moduleName] })
   }
   const daftar = [{ label: 'Ringkasan', icon: 'LayoutDashboard', modules: [props.moduleName] }]
   const sudahAda = new Set(['Ringkasan'])
@@ -210,6 +215,12 @@ watch(() => props.patient.no_rawat, () => {
 
       <TriaseIgdPage
         v-else-if="activeSection === 'Triase IGD'"
+        :token="token"
+        :patient="patient"
+      />
+
+      <AwalKeperawatanIgdPage
+        v-else-if="activeSection === 'Awal Keperawatan IGD'"
         :token="token"
         :patient="patient"
       />

@@ -213,3 +213,21 @@ export function hapusTriaseIgd(token, noRawat, jenis) {
   const query = new URLSearchParams({ no_rawat: noRawat, jenis }).toString()
   return request(`/api/triase-igd?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
+
+export function awalKeperawatanIgdData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/awal-keperawatan-igd?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanAwalKeperawatanIgd(token, payload) {
+  return request('/api/awal-keperawatan-igd', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahAwalKeperawatanIgd(token, payload) {
+  return request('/api/awal-keperawatan-igd', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusAwalKeperawatanIgd(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/awal-keperawatan-igd?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+}

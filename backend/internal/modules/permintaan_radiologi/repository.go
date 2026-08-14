@@ -222,12 +222,10 @@ func (r *Repositori) CariTindakan(ctx context.Context, noRawat, kata string) ([]
 		SELECT kd_jenis_prw, COALESCE(nm_perawatan,''), kd_pj, kelas, COALESCE(total_byr,0)
 		FROM jns_perawatan_radiologi
 		WHERE status='1'
-			AND (?=0 OR kd_pj IN (?,'-'))
-			AND (?=0 OR kelas IN (?,'-'))
+			AND kd_pj=?
 			AND (kd_jenis_prw LIKE ? OR nm_perawatan LIKE ?)
 		ORDER BY nm_perawatan LIMIT 50
-	`, boolAngka(lingkup.FilterCaraBayar), lingkup.KodeCaraBayar,
-		boolAngka(lingkup.FilterKelas), lingkup.Kelas, seperti, seperti)
+	`, lingkup.KodeCaraBayar, seperti, seperti)
 	if err != nil {
 		return nil, fmt.Errorf("cari tindakan radiologi: %w", err)
 	}
@@ -427,11 +425,9 @@ func (r *Repositori) tindakan(ctx context.Context, q queryer, lingkup lingkupTar
 		SELECT kd_jenis_prw, COALESCE(nm_perawatan,''), kd_pj, kelas, COALESCE(total_byr,0)
 		FROM jns_perawatan_radiologi
 		WHERE kd_jenis_prw=? AND status='1'
-			AND (?=0 OR kd_pj IN (?,'-'))
-			AND (?=0 OR kelas IN (?,'-'))
+			AND kd_pj=?
 		LIMIT 1
-	`, kode, boolAngka(lingkup.FilterCaraBayar), lingkup.KodeCaraBayar,
-		boolAngka(lingkup.FilterKelas), lingkup.Kelas).Scan(
+	`, kode, lingkup.KodeCaraBayar).Scan(
 		&item.Kode, &item.Nama, &item.KodeCaraBayar, &item.Kelas, &item.Total)
 	if errors.Is(err, sql.ErrNoRows) {
 		return item, fmt.Errorf("tindakan radiologi %s tidak tersedia untuk pasien", kode)
@@ -441,10 +437,12 @@ func (r *Repositori) tindakan(ctx context.Context, q queryer, lingkup lingkupTar
 
 func (r *Repositori) lingkup(ctx context.Context, q queryer, noRawat string) (lingkupTarif, error) {
 	var hasil lingkupTarif
+	var kodeCaraBayarPasien string
 	var statusLanjut string
-	if err := q.QueryRowContext(ctx, `SELECT kd_pj,status_lanjut FROM reg_periksa WHERE no_rawat=? LIMIT 1`, noRawat).Scan(&hasil.KodeCaraBayar, &statusLanjut); err != nil {
+	if err := q.QueryRowContext(ctx, `SELECT kd_pj,status_lanjut FROM reg_periksa WHERE no_rawat=? LIMIT 1`, noRawat).Scan(&kodeCaraBayarPasien, &statusLanjut); err != nil {
 		return hasil, err
 	}
+	hasil.KodeCaraBayar = kodeCaraBayarTarifRadiologi(kodeCaraBayarPasien)
 	hasil.StatusRawat = strings.ToLower(statusLanjut)
 	if strings.EqualFold(statusLanjut, "Ralan") {
 		hasil.Kelas = "Rawat Jalan"
@@ -461,17 +459,16 @@ func (r *Repositori) lingkup(ctx context.Context, q queryer, noRawat string) (li
 			return hasil, err
 		}
 	}
-	var caraBayar, kelas string
-	err := q.QueryRowContext(ctx, `SELECT cara_bayar_radiologi,kelas_radiologi FROM set_tarif LIMIT 1`).Scan(&caraBayar, &kelas)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return hasil, err
-	}
-	if errors.Is(err, sql.ErrNoRows) {
-		caraBayar, kelas = "Yes", "Yes"
-	}
-	hasil.FilterCaraBayar = strings.EqualFold(caraBayar, "Yes")
-	hasil.FilterKelas = strings.EqualFold(kelas, "Yes")
+	hasil.FilterCaraBayar = true
+	hasil.FilterKelas = false
 	return hasil, nil
+}
+
+func kodeCaraBayarTarifRadiologi(kode string) string {
+	if strings.EqualFold(strings.TrimSpace(kode), "BPJ") || strings.TrimSpace(kode) == "36" {
+		return "BPJ"
+	}
+	return "A09"
 }
 
 func (r *Repositori) nomorBerikutnya(ctx context.Context, q queryer, tanggal string) (string, error) {
@@ -487,13 +484,6 @@ func (r *Repositori) billingTerkunci(ctx context.Context, q queryer, noRawat str
 	var jumlah int
 	err := q.QueryRowContext(ctx, `SELECT (SELECT COUNT(*) FROM billing WHERE no_rawat=?) + (SELECT COUNT(*) FROM reg_periksa WHERE no_rawat=? AND stts='Batal')`, noRawat, noRawat).Scan(&jumlah)
 	return jumlah > 0, err
-}
-
-func boolAngka(value bool) int {
-	if value {
-		return 1
-	}
-	return 0
 }
 
 func perbaruiStatusPermintaan(permintaan *Permintaan) {

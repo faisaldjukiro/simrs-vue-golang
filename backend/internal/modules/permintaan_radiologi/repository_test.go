@@ -2,6 +2,26 @@ package permintaan_radiologi
 
 import "testing"
 
+func TestKodeCaraBayarTarifRadiologi(t *testing.T) {
+	tests := []struct {
+		kode  string
+		ingin string
+	}{
+		{kode: "BPJ", ingin: "BPJ"},
+		{kode: "bpj", ingin: "BPJ"},
+		{kode: "36", ingin: "BPJ"},
+		{kode: "A09", ingin: "A09"},
+		{kode: "UMU", ingin: "A09"},
+		{kode: "", ingin: "A09"},
+	}
+
+	for _, tt := range tests {
+		if hasil := kodeCaraBayarTarifRadiologi(tt.kode); hasil != tt.ingin {
+			t.Fatalf("kode %q menghasilkan %q, ingin %q", tt.kode, hasil, tt.ingin)
+		}
+	}
+}
+
 func TestPerbaruiStatusPermintaan(t *testing.T) {
 	tests := []struct {
 		nama              string

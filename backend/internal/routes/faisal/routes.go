@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
+	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
@@ -20,6 +21,7 @@ import (
 
 type Dependencies struct {
 	Autentikasi             *autentikasihttp.Handler
+	AwalKeperawatanIGD      *awalkeperawatanigdhttp.Handler
 	Beranda                 *berandahttp.Handler
 	IDRG                    *idrghttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
@@ -48,6 +50,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	dependencies.PermintaanRadiologi.Register(protectedAPI.Group("/permintaan-radiologi"))
 	dependencies.RiwayatPerawatan.Register(protectedAPI.Group("/riwayat-perawatan"))
 	dependencies.TriaseIGD.Register(protectedAPI.Group("/triase-igd"))
+	dependencies.AwalKeperawatanIGD.Register(protectedAPI.Group("/awal-keperawatan-igd"))
 	protectedAPI.GET("/user-management", dependencies.ManajemenPengguna.Daftar)
 	protectedAPI.GET("/user-management/pegawai", dependencies.ManajemenPengguna.CariPegawai)
 	protectedAPI.POST("/user-management", dependencies.ManajemenPengguna.Tambah)
