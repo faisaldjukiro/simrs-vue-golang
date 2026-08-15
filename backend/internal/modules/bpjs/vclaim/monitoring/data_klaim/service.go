@@ -59,8 +59,9 @@ type Periode struct {
 }
 
 type TanggalGagal struct {
-	Tanggal string `json:"tanggal"`
-	Pesan   string `json:"pesan"`
+	Tanggal        string `json:"tanggal"`
+	JenisPelayanan string `json:"jenis_pelayanan,omitempty"`
+	Pesan          string `json:"pesan"`
 }
 
 type KesalahanBPJS struct {
@@ -99,7 +100,18 @@ func (l *Layanan) Data(ctx context.Context, input Input) (Hasil, error) {
 	}
 
 	if periode == nil {
-		return l.dataPerTanggalDenganPercobaanUlang(ctx, strings.TrimSpace(input.TanggalPulang), input)
+		tanggalPulang := strings.TrimSpace(input.TanggalPulang)
+		if input.JenisPelayanan == "semua" {
+			return l.dataSemuaPelayananPerTanggal(ctx, tanggalPulang, input)
+		}
+		hasil, err := l.dataPerTanggalDenganPercobaanUlang(ctx, tanggalPulang, input)
+		if err != nil {
+			return Hasil{}, err
+		}
+		if err := tandaiJenisPelayanan(&hasil, input.JenisPelayanan); err != nil {
+			return Hasil{}, err
+		}
+		return hasil, nil
 	}
 
 	semuaKlaim := make([]any, 0)
@@ -108,28 +120,42 @@ func (l *Layanan) Data(ctx context.Context, input Input) (Hasil, error) {
 	jumlahTanggalBerhasil := 0
 	for tanggal := periode.mulai; !tanggal.After(periode.selesai); tanggal = tanggal.AddDate(0, 0, 1) {
 		tanggalTeks := tanggal.Format("2006-01-02")
-		hasil, err := l.dataPerTanggal(ctx, tanggalTeks, input)
-		if err != nil {
-			if dataTidakDitemukan(err) {
-				tanggalTanpaData = append(tanggalTanpaData, tanggalTeks)
-				continue
+		tanggalBerhasil := false
+		jumlahTanpaDataPadaTanggal := 0
+		for _, jenisPelayanan := range daftarJenisPelayanan(input.JenisPelayanan) {
+			inputPerJenis := input
+			inputPerJenis.JenisPelayanan = jenisPelayanan
+			hasil, err := l.dataPerTanggal(ctx, tanggalTeks, inputPerJenis)
+			if err != nil {
+				if dataTidakDitemukan(err) {
+					jumlahTanpaDataPadaTanggal++
+					continue
+				}
+				if gangguanSementara(err) {
+					tanggalGagal = append(tanggalGagal, TanggalGagal{
+						Tanggal:        tanggalTeks,
+						JenisPelayanan: labelJenisPelayanan(jenisPelayanan),
+						Pesan:          err.Error(),
+					})
+					continue
+				}
+				return Hasil{}, fmt.Errorf("data klaim tanggal %s (%s): %w", tanggalTeks, labelJenisPelayanan(jenisPelayanan), err)
 			}
-			if gangguanSementara(err) {
-				tanggalGagal = append(tanggalGagal, TanggalGagal{
-					Tanggal: tanggalTeks,
-					Pesan:   err.Error(),
-				})
-				continue
-			}
-			return Hasil{}, fmt.Errorf("data klaim tanggal %s: %w", tanggalTeks, err)
-		}
-		jumlahTanggalBerhasil++
 
-		klaim, err := ekstrakKlaim(hasil.Response)
-		if err != nil {
-			return Hasil{}, err
+			klaim, err := ekstrakKlaim(hasil.Response)
+			if err != nil {
+				return Hasil{}, err
+			}
+			tandaiKlaimDenganJenis(klaim, jenisPelayanan)
+			semuaKlaim = append(semuaKlaim, klaim...)
+			tanggalBerhasil = true
 		}
-		semuaKlaim = append(semuaKlaim, klaim...)
+
+		if tanggalBerhasil {
+			jumlahTanggalBerhasil++
+		} else if jumlahTanpaDataPadaTanggal == len(daftarJenisPelayanan(input.JenisPelayanan)) {
+			tanggalTanpaData = append(tanggalTanpaData, tanggalTeks)
+		}
 	}
 
 	pesan := "Sukses"
@@ -151,6 +177,79 @@ func (l *Layanan) Data(ctx context.Context, input Input) (Hasil, error) {
 			JumlahTanggalGagal:     len(tanggalGagal),
 		},
 	}, nil
+}
+
+func (l *Layanan) dataSemuaPelayananPerTanggal(ctx context.Context, tanggalPulang string, input Input) (Hasil, error) {
+	semuaKlaim := make([]any, 0)
+	tanggalGagal := make([]TanggalGagal, 0)
+
+	for _, jenisPelayanan := range daftarJenisPelayanan("semua") {
+		inputPerJenis := input
+		inputPerJenis.JenisPelayanan = jenisPelayanan
+		hasil, err := l.dataPerTanggalDenganPercobaanUlang(ctx, tanggalPulang, inputPerJenis)
+		if err != nil {
+			if dataTidakDitemukan(err) {
+				continue
+			}
+			if gangguanSementara(err) {
+				tanggalGagal = append(tanggalGagal, TanggalGagal{
+					Tanggal:        tanggalPulang,
+					JenisPelayanan: labelJenisPelayanan(jenisPelayanan),
+					Pesan:          err.Error(),
+				})
+				continue
+			}
+			return Hasil{}, err
+		}
+		klaim, err := ekstrakKlaim(hasil.Response)
+		if err != nil {
+			return Hasil{}, err
+		}
+		tandaiKlaimDenganJenis(klaim, jenisPelayanan)
+		semuaKlaim = append(semuaKlaim, klaim...)
+	}
+
+	pesan := "Sukses"
+	if len(tanggalGagal) > 0 {
+		pesan = "Sukses dengan sebagian pelayanan gagal diproses VClaim"
+	}
+	return Hasil{
+		MetaData:     MetaData{Code: "200", Message: pesan},
+		Response:     map[string]any{"klaim": semuaKlaim},
+		TanggalGagal: tanggalGagal,
+	}, nil
+}
+
+func daftarJenisPelayanan(jenis string) []string {
+	if jenis == "semua" {
+		return []string{"1", "2"}
+	}
+	return []string{jenis}
+}
+
+func labelJenisPelayanan(jenis string) string {
+	if jenis == "1" {
+		return "Rawat Inap"
+	}
+	return "Rawat Jalan"
+}
+
+func tandaiJenisPelayanan(hasil *Hasil, jenisPelayanan string) error {
+	klaim, err := ekstrakKlaim(hasil.Response)
+	if err != nil {
+		return err
+	}
+	tandaiKlaimDenganJenis(klaim, jenisPelayanan)
+	hasil.Response = map[string]any{"klaim": klaim}
+	return nil
+}
+
+func tandaiKlaimDenganJenis(klaim []any, jenisPelayanan string) {
+	for _, item := range klaim {
+		if objek, ok := item.(map[string]any); ok {
+			objek["jenisPelayanan"] = labelJenisPelayanan(jenisPelayanan)
+		}
+	}
 }
 
 func (l *Layanan) dataPerTanggalDenganPercobaanUlang(ctx context.Context, tanggalPulang string, input Input) (Hasil, error) {
@@ -196,7 +295,8 @@ func dataTidakDitemukan(err error) bool {
 	}
 	pesan := strings.ToLower(kesalahanBPJS.Message)
 	return strings.Contains(pesan, "data tidak ditemukan") ||
-		strings.Contains(pesan, "data klaim tidak ditemukan")
+		strings.Contains(pesan, "data klaim tidak ditemukan") ||
+		(kesalahanBPJS.Code == "201" && strings.Contains(pesan, "data tidak ada"))
 }
 
 func (l *Layanan) dataPerTanggal(ctx context.Context, tanggalPulang string, input Input) (Hasil, error) {
@@ -293,8 +393,8 @@ func validasi(input Input) (*rentangTanggal, error) {
 }
 
 func validasiPilihan(input Input) error {
-	if input.JenisPelayanan != "1" && input.JenisPelayanan != "2" {
-		return fmt.Errorf("%w: jenis_pelayanan hanya boleh 1 (inap) atau 2 (jalan)", ErrInputTidakValid)
+	if input.JenisPelayanan != "1" && input.JenisPelayanan != "2" && input.JenisPelayanan != "semua" {
+		return fmt.Errorf("%w: jenis_pelayanan hanya boleh 1 (inap), 2 (jalan), atau semua", ErrInputTidakValid)
 	}
 	if input.StatusKlaim != "1" && input.StatusKlaim != "2" && input.StatusKlaim != "3" {
 		return fmt.Errorf("%w: status_klaim hanya boleh 1, 2, atau 3", ErrInputTidakValid)

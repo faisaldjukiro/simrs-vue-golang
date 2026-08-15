@@ -44,6 +44,13 @@ export function idrgData(token, params = {}) {
   })
 }
 
+export function monitoringDataKlaim(token, params = {}) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/bpjs/monitoring/klaim?${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
 export function idrgDiagnosa(token, noRawat) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/idrg/diagnosa?${query}`, {

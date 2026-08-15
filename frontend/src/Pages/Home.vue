@@ -20,6 +20,7 @@ import DashboardLayout from '../Components/Layout/DashboardLayout.vue'
 import PatientWorkspace from '../Components/Patients/PatientWorkspace.vue'
 import BerandaTab from '../Components/Tabs/BerandaTab.vue'
 import IdrgPage from './Eklaim/IdrgPage.vue'
+import MonitoringDataKlaimPage from './BPJS/MonitoringDataKlaimPage.vue'
 import ModulePlaceholder from '../Components/Tabs/ModulePlaceholder.vue'
 import ModuleTab from '../Components/Tabs/ModuleTab.vue'
 import UserManagementTab from '../Components/Tabs/UserManagementTab.vue'
@@ -147,6 +148,7 @@ const dashboardMenus = [
   { label: 'Rawat Inap', description: 'Kamar inap dan daftar pasien rawat inap.', icon: Bed, tone: 'indigo' },
   { label: 'Rawat Jalan', description: 'Daftar pasien dan pelayanan rawat jalan.', icon: Stethoscope, tone: 'cyan' },
   { label: 'IDRG', description: 'Bridging klaim BPJS E-Klaim iDRG / INA-CBG.', icon: FileSpreadsheet, tone: 'emerald' },
+  { label: 'Monitoring Klaim BPJS', description: 'Monitoring data klaim VClaim berdasarkan periode.', icon: FileSpreadsheet, tone: 'blue' },
   { label: 'Kelola Menu', description: 'Pengaturan menu navigasi dan hak akses.', icon: LayoutDashboard, tone: 'slate' },
   { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
 ]
@@ -490,6 +492,11 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
       v-else-if="currentTab === 'IDRG'"
       :token="token"
       :user="user"
+    />
+
+    <MonitoringDataKlaimPage
+      v-else-if="currentTab === 'Monitoring Klaim BPJS'"
+      :token="token"
     />
 
     <ModulePlaceholder

@@ -344,7 +344,8 @@ Parameter:
 - `tanggal_mulai` dan `tanggal_selesai`: format `yyyy-mm-dd`, wajib diisi
   bersamaan untuk mengambil rentang maksimal 31 hari. Jika parameter rentang
   dipakai, `tanggal_pulang` tidak perlu dikirim.
-- `jenis_pelayanan`: `1` rawat inap atau `2` rawat jalan.
+- `jenis_pelayanan`: `1` rawat inap, `2` rawat jalan, atau `semua` untuk
+  menarik keduanya dalam satu request.
 - `status_klaim`: `1` proses verifikasi, `2` pending verifikasi, atau `3` klaim.
 
 Backend membuat header BPJS `X-cons-id`, `X-timestamp`, `X-signature`,
@@ -363,6 +364,9 @@ sebagai gangguan VClaim. Pada request satu tanggal, backend mencoba ulang
 otomatis maksimal tiga kali. Pada request rentang, tanggal tersebut dicatat
 di field `tanggal_gagal` dan proses dilanjutkan ke tanggal berikutnya agar
 data tanggal lain tetap dapat ditarik.
+
+Respons BPJS `201` dengan pesan `Data Tidak Ada` juga diperlakukan sebagai
+tanggal tanpa data, bukan sebagai kegagalan aplikasi.
 
 Tambah user mengikuti pola `simrs-lama`: pilih pegawai dari tabel `pegawai` pada database SIMRS lama, lalu berikan permission di database lokal SIRAVA. Password tidak dibuat di SIRAVA; saat login user tetap memakai password dari tabel `user` SIMRS lama.
 
