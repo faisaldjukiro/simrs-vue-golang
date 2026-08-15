@@ -9,6 +9,8 @@ import (
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
+	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
+	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
@@ -23,6 +25,8 @@ type Dependencies struct {
 	Autentikasi             *autentikasihttp.Handler
 	AwalKeperawatanIGD      *awalkeperawatanigdhttp.Handler
 	Beranda                 *berandahttp.Handler
+	BPJS                    *bpjshttp.Handler
+	BPJSDataKlaim           *dataklaimhttp.Handler
 	IDRG                    *idrghttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
 	CPPT                    *cppthttp.Handler
@@ -44,6 +48,8 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	protectedAPI := router.Group("/api")
 	protectedAPI.Use(dependencies.Autentikasi.Middleware())
 	protectedAPI.GET("/beranda", dependencies.Beranda.Beranda)
+	dependencies.BPJS.Register(protectedAPI.Group("/bpjs"))
+	dependencies.BPJSDataKlaim.Register(protectedAPI.Group("/bpjs/monitoring/klaim"))
 	dependencies.IDRG.Register(protectedAPI.Group("/idrg"))
 	dependencies.CPPT.Register(protectedAPI.Group("/cppt"))
 	dependencies.PenangananDokterPetugas.Register(protectedAPI.Group("/penanganan-dokter-petugas"))

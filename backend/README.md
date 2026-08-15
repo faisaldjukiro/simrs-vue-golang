@@ -275,6 +275,95 @@ POST http://localhost:8080/api/user-management
 PUT http://localhost:8080/api/user-management/2/akses
 ```
 
+## Mencoba Signature BPJS VClaim
+
+Struktur awal module BPJS:
+
+```text
+internal/modules/bpjs/
+|-- signature.go                    # generator signature bersama
+|-- response.go                     # membuka response AES + LZString bersama
+|-- delivery/http/handler.go        # endpoint uji signature
+`-- vclaim/
+    `-- monitoring/
+        `-- data_klaim/
+            |-- service.go          # fungsi Monitoring Data Klaim
+            `-- delivery/http/
+                `-- handler.go
+```
+
+Backend membaca konfigurasi BPJS dari file `.env` saat dijalankan. Pastikan
+nilai berikut sudah terisi di `.env` (bukan hanya di `.env.example`):
+
+```env
+BPJS_CONS_ID=
+BPJS_SECRET=
+BPJS_USER_KEY=
+BPJS_VCLAIM_URL=
+```
+
+Jalankan API, login, lalu gunakan Bearer Token dari response login untuk
+mencoba endpoint berikut di Postman:
+
+```text
+GET http://localhost:8080/api/bpjs/signature
+Authorization: Bearer <access_token>
+```
+
+Endpoint ini hanya membuat signature lokal dan **belum memanggil servis
+BPJS**. Rumus yang digunakan sama dengan Khanza:
+
+```text
+timestamp = Unix time dalam detik
+data      = BPJS_CONS_ID + "&" + timestamp
+signature = Base64(HMAC-SHA256(data, BPJS_SECRET))
+```
+
+Response hanya menampilkan `X-timestamp` dan `X-signature`. Nilai
+`BPJS_SECRET` dan `BPJS_USER_KEY` tidak dikirim ke frontend/Postman.
+
+### Mencoba Monitoring Data Klaim
+
+Setelah signature berhasil, koneksi VClaim dapat diuji melalui endpoint:
+
+```text
+GET http://localhost:8080/api/bpjs/monitoring/klaim?tanggal_pulang=2026-08-14&jenis_pelayanan=1&status_klaim=1
+Authorization: Bearer <access_token>
+```
+
+Untuk mengambil data dalam rentang tanggal (maksimal 31 hari):
+
+```text
+GET http://localhost:8080/api/bpjs/monitoring/klaim?tanggal_mulai=2026-08-01&tanggal_selesai=2026-08-14&jenis_pelayanan=1&status_klaim=1
+Authorization: Bearer <access_token>
+```
+
+Parameter:
+
+- `tanggal_pulang`: format `yyyy-mm-dd`.
+- `tanggal_mulai` dan `tanggal_selesai`: format `yyyy-mm-dd`, wajib diisi
+  bersamaan untuk mengambil rentang maksimal 31 hari. Jika parameter rentang
+  dipakai, `tanggal_pulang` tidak perlu dikirim.
+- `jenis_pelayanan`: `1` rawat inap atau `2` rawat jalan.
+- `status_klaim`: `1` proses verifikasi, `2` pending verifikasi, atau `3` klaim.
+
+Backend membuat header BPJS `X-cons-id`, `X-timestamp`, `X-signature`,
+`user_key`, `Content-Type: application/json`, `Accept: application/json`, dan
+`User-Agent: SIMRS-BRIDGING-BPJS/1.0`, lalu memanggil endpoint Monitoring Klaim.
+Jika response VClaim terenkripsi, backend otomatis melakukan dekripsi
+AES-256-CBC dan dekompresi LZString sebelum mengirim JSON ke Postman.
+Karena endpoint resmi BPJS hanya menerima satu tanggal pulang, backend akan
+memanggil VClaim per tanggal lalu menggabungkan seluruh item `klaim` menjadi
+satu response. Field `periode` pada response menunjukkan tanggal mulai,
+tanggal selesai, dan jumlah hari yang diproses. Jika BPJS mengembalikan kode
+`404` dengan pesan bahwa data tidak ditemukan, tanggal tersebut dilewati dan
+dicantumkan pada field `tanggal_tanpa_data`; data dari tanggal lain tetap
+dikembalikan. Respons `404` dengan pesan `Silakan coba lagi nanti` dianggap
+sebagai gangguan VClaim. Pada request satu tanggal, backend mencoba ulang
+otomatis maksimal tiga kali. Pada request rentang, tanggal tersebut dicatat
+di field `tanggal_gagal` dan proses dilanjutkan ke tanggal berikutnya agar
+data tanggal lain tetap dapat ditarik.
+
 Tambah user mengikuti pola `simrs-lama`: pilih pegawai dari tabel `pegawai` pada database SIMRS lama, lalu berikan permission di database lokal SIRAVA. Password tidak dibuat di SIRAVA; saat login user tetap memakai password dari tabel `user` SIMRS lama.
 
 Body tambah user:

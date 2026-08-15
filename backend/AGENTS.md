@@ -142,3 +142,11 @@ go vet ./...
 - Jangan mengubah endpoint publik tanpa memberi tahu user.
 - Pertahankan response API memakai Bahasa Indonesia.
 - Setelah mengubah Go code, jalankan `gofmt`, `go test ./...`, dan `go vet ./...` jika memungkinkan.
+
+## Aturan File Test Sementara
+
+- File Go dengan akhiran `_test.go` hanya boleh dibuat sementara untuk memverifikasi implementasi.
+- Jalankan pengujian sampai berhasil sebelum menyerahkan hasil pekerjaan.
+- Setelah pengujian berhasil, hapus kembali file `_test.go` yang dibuat untuk pekerjaan tersebut agar struktur project tetap ringkas.
+- Setelah file test sementara dihapus, jalankan pemeriksaan kompilasi package terkait untuk memastikan kode utama tetap dapat dibangun.
+- Untuk integrasi servis eksternal seperti BPJS, berikan URL, parameter, dan cara pengujian Postman kepada user. Pengujian respons nyata dilakukan user melalui Postman.

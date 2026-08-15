@@ -21,6 +21,10 @@ import (
 	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
 	"simrs-backend/internal/modules/beranda"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
+	"simrs-backend/internal/modules/bpjs"
+	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
+	dataklaim "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim"
+	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
 	"simrs-backend/internal/modules/cppt"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	"simrs-backend/internal/modules/idrg"
@@ -63,6 +67,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	bpjsConfig, err := config.BPJSConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ctx := context.Background()
 	db, err := database.OpenMySQL(ctx, databaseConfig)
@@ -84,6 +92,17 @@ func main() {
 	autentikasiLayanan := autentikasi.NewLayanan(autentikasiRepositori, tokenTTL)
 	autentikasiHandler := autentikasihttp.NewHandler(autentikasiLayanan)
 	berandaHandler := berandahttp.NewHandler(beranda.NewRepositori(simrsDB, db))
+	bpjsHandler := bpjshttp.NewHandler(bpjs.NewLayanan(bpjs.Konfigurasi{
+		ConsumerID: bpjsConfig.ConsumerID,
+		SecretKey:  bpjsConfig.SecretKey,
+		UserKey:    bpjsConfig.UserKey,
+	}))
+	bpjsDataKlaimHandler := dataklaimhttp.NewHandler(dataklaim.NewLayanan(dataklaim.Konfigurasi{
+		ConsumerID: bpjsConfig.ConsumerID,
+		SecretKey:  bpjsConfig.SecretKey,
+		UserKey:    bpjsConfig.UserKey,
+		BaseURL:    bpjsConfig.VClaimURL,
+	}))
 	idrgRepositori := idrg.NewRepositori(simrsDB)
 	idrgHandler := idrghttp.NewHandler(idrgRepositori, idrg.NewLayanan(idrgRepositori, eklaimConfig))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
@@ -105,6 +124,8 @@ func main() {
 	faisalroutes.Register(router, faisalroutes.Dependencies{
 		Autentikasi:             autentikasiHandler,
 		Beranda:                 berandaHandler,
+		BPJS:                    bpjsHandler,
+		BPJSDataKlaim:           bpjsDataKlaimHandler,
 		IDRG:                    idrgHandler,
 		ManajemenPengguna:       manajemenPenggunaHandler,
 		CPPT:                    cpptHandler,
