@@ -16,11 +16,12 @@ const confirmDelete = ref(false)
 const formOpen = ref(true)
 const problemSearch = ref('')
 const planSearch = ref('')
-const data = reactive({ petugas: {}, masalah_keperawatan: [], rencana_keperawatan: [], penilaian: null })
+const data = reactive({ petugas: {}, masalah_keperawatan: [], rencana_keperawatan: [], penilaian: null, billing_terkunci: false })
 const petugas = ref({ nip: '', nama: '', jabatan: '' })
 const form = reactive(emptyForm())
 
 const editing = computed(() => Boolean(data.penilaian))
+const billingLocked = computed(() => Boolean(data.billing_terkunci))
 const selectedProblems = computed(() => new Set(form.kode_masalah))
 const visibleProblems = computed(() => {
   const keyword = problemSearch.value.trim().toLocaleLowerCase('id')
@@ -74,6 +75,7 @@ async function loadData() {
 
 function payload() { return { ...form, tanggal: form.tanggal.replace('T', ' '), nip: petugas.value?.nip || '', kode_masalah: [...form.kode_masalah], kode_rencana: [...form.kode_rencana] } }
 async function save() {
+  if (billingLocked.value) { notifikasi.peringatan('Kunjungan sudah masuk billing. Penilaian hanya dapat dilihat.'); return }
   if (!petugas.value?.nip) { notifikasi.peringatan('Pilih petugas yang melakukan pengkajian.'); return }
   saving.value = true
   try { const response = editing.value ? await ubahAwalKeperawatanIgd(props.token, payload()) : await simpanAwalKeperawatanIgd(props.token, payload()); notifikasi.sukses(response?.pesan || 'Penilaian berhasil disimpan.'); await loadData() }
@@ -81,6 +83,7 @@ async function save() {
   finally { saving.value = false }
 }
 async function remove() {
+  if (billingLocked.value) { confirmDelete.value = false; notifikasi.peringatan('Kunjungan sudah masuk billing. Penilaian tidak dapat dihapus.'); return }
   deleting.value = true
   try { const response = await hapusAwalKeperawatanIgd(props.token, props.patient.no_rawat); confirmDelete.value = false; notifikasi.sukses(response?.pesan || 'Penilaian berhasil dihapus.'); await loadData() }
   catch (error) { notifikasi.gagal(error.message || 'Penilaian gagal dihapus.') }
@@ -108,12 +111,13 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
         <header class="cppt-section-header">
           <div><span>PENGKAJIAN KEPERAWATAN</span><h3>{{ editing ? 'Edit' : 'Input' }} Awal Keperawatan IGD</h3><p>Pengkajian menyeluruh pasien saat menerima pelayanan IGD.</p></div>
           <div class="form-header-actions">
-            <button v-if="editing" type="button" class="cppt-button danger" :disabled="deleting" @click="confirmDelete = true"><Trash2 :size="15"/>Hapus</button>
+            <button v-if="editing && !billingLocked" type="button" class="cppt-button danger" :disabled="deleting" @click="confirmDelete = true"><Trash2 :size="15"/>Hapus</button>
             <button type="button" class="collapse cppt-button toggle icon-only" :title="formOpen ? 'Sembunyikan form input' : 'Tampilkan form input'" @click="formOpen = !formOpen"><ChevronUp v-if="formOpen" :size="18"/><ChevronDown v-else :size="18"/></button>
           </div>
         </header>
 
-        <fieldset v-show="formOpen" class="form-compact" :disabled="saving">
+        <div v-if="billingLocked" class="handling-lock">Billing sudah terverifikasi atau kunjungan dibatalkan. Form Awal Keperawatan IGD hanya dapat dilihat.</div>
+        <fieldset v-show="formOpen" class="form-compact" :disabled="saving || billingLocked">
           <div class="nursing-sheet">
             <section class="assessment-strip assessment-meta">
               <div class="nursing-grid intro-grid">

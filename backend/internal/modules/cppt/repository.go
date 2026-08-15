@@ -63,6 +63,19 @@ func NewRepositori(aplikasiDB, simrsDB *sql.DB) *Repositori {
 	return &Repositori{aplikasiDB: aplikasiDB, simrsDB: simrsDB}
 }
 
+func (r *Repositori) BillingTerkunci(ctx context.Context, noRawat string) (bool, error) {
+	var jumlah int
+	err := r.simrsDB.QueryRowContext(ctx, `
+		SELECT
+			(SELECT COUNT(*) FROM billing WHERE no_rawat = ?) +
+			(SELECT COUNT(*) FROM reg_periksa WHERE no_rawat = ? AND stts = 'Batal')
+	`, strings.TrimSpace(noRawat), strings.TrimSpace(noRawat)).Scan(&jumlah)
+	if err != nil {
+		return false, fmt.Errorf("periksa status billing CPPT: %w", err)
+	}
+	return jumlah > 0, nil
+}
+
 func (r *Repositori) PetugasLogin(ctx context.Context, username string) (Petugas, error) {
 	var petugas Petugas
 	err := r.simrsDB.QueryRowContext(ctx, `

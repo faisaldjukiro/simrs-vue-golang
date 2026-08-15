@@ -16,6 +16,7 @@ import (
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
+	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
 	"simrs-backend/internal/shared/httpresponse"
@@ -32,6 +33,7 @@ type Dependencies struct {
 	CPPT                    *cppthttp.Handler
 	PenangananDokterPetugas *penanganandokterpetugashttp.Handler
 	PermintaanRadiologi     *permintaanradiologihttp.Handler
+	ResumePasienRanap       *resumepasienranaphttp.Handler
 	RiwayatPerawatan        *riwayatperawatanhttp.Handler
 	TriaseIGD               *triaseigdhttp.Handler
 }
@@ -54,6 +56,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	dependencies.CPPT.Register(protectedAPI.Group("/cppt"))
 	dependencies.PenangananDokterPetugas.Register(protectedAPI.Group("/penanganan-dokter-petugas"))
 	dependencies.PermintaanRadiologi.Register(protectedAPI.Group("/permintaan-radiologi"))
+	dependencies.ResumePasienRanap.Register(protectedAPI.Group("/resume-pasien-ranap"))
 	dependencies.RiwayatPerawatan.Register(protectedAPI.Group("/riwayat-perawatan"))
 	dependencies.TriaseIGD.Register(protectedAPI.Group("/triase-igd"))
 	dependencies.AwalKeperawatanIGD.Register(protectedAPI.Group("/awal-keperawatan-igd"))

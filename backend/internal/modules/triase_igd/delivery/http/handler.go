@@ -83,6 +83,8 @@ func (h *Handler) tulisError(c *gin.Context, err error) {
 		httpresponse.Error(c, http.StatusConflict, "TRIASE_IGD_DUPLICATE", err.Error())
 	case errors.Is(err, modul.ErrTidakDitemukan):
 		httpresponse.Error(c, http.StatusNotFound, "TRIASE_IGD_NOT_FOUND", err.Error())
+	case errors.Is(err, modul.ErrBillingTerkunci):
+		httpresponse.Error(c, http.StatusConflict, "TRIASE_IGD_BILLING_LOCKED", err.Error())
 	default:
 		httpresponse.Error(c, http.StatusServiceUnavailable, "TRIASE_IGD_SIMRS_UNAVAILABLE", "Data triase IGD tidak dapat diproses pada SIMRS Khanza")
 	}

@@ -35,6 +35,8 @@ import (
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	"simrs-backend/internal/modules/permintaan_radiologi"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
+	"simrs-backend/internal/modules/resume_pasien_ranap"
+	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	"simrs-backend/internal/modules/riwayat_perawatan"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	"simrs-backend/internal/modules/triase_igd"
@@ -118,6 +120,8 @@ func main() {
 	triaseIGDHandler := triaseigdhttp.NewHandler(triase_igd.NewLayanan(triaseIGDRepositori))
 	awalKeperawatanIGDRepositori := awal_keperawatan_igd.NewRepositori(simrsDB)
 	awalKeperawatanIGDHandler := awalkeperawatanigdhttp.NewHandler(awal_keperawatan_igd.NewLayanan(awalKeperawatanIGDRepositori))
+	resumePasienRanapRepositori := resume_pasien_ranap.NewRepositori(simrsDB)
+	resumePasienRanapHandler := resumepasienranaphttp.NewHandler(resume_pasien_ranap.NewLayanan(resumePasienRanapRepositori))
 
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
@@ -134,6 +138,7 @@ func main() {
 		RiwayatPerawatan:        riwayatPerawatanHandler,
 		TriaseIGD:               triaseIGDHandler,
 		AwalKeperawatanIGD:      awalKeperawatanIGDHandler,
+		ResumePasienRanap:       resumePasienRanapHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 

@@ -18,7 +18,8 @@ const deleting = ref(false)
 const activeType = ref('primer')
 const selectedOfficer = ref({ nip: '', nama: '', jabatan: '' })
 const deleteType = ref('')
-const data = reactive({ petugas: {}, macam_kasus: [], pemeriksaan: [], kriteria_skala: [], mendukung_hand_over: false, triase: null })
+const data = reactive({ petugas: {}, macam_kasus: [], pemeriksaan: [], kriteria_skala: [], mendukung_hand_over: false, triase: null, billing_terkunci: false })
+const billingLocked = computed(() => Boolean(data.billing_terkunci))
 const form = reactive(emptyForm())
 
 const caraMasukOptions = toOptions(['Jalan', 'Brankar', 'Kursi Roda', 'Digendong'])
@@ -127,6 +128,7 @@ async function loadData() {
 }
 
 async function save() {
+  if (billingLocked.value) { notifikasi.peringatan('Kunjungan sudah masuk billing. Triase IGD hanya dapat dilihat.'); return }
   if (!selectedOfficer.value?.nip) { notifikasi.peringatan('Pilih dokter atau petugas triase terlebih dahulu.'); return }
   if (form.kode_kriteria.length === 0) { notifikasi.peringatan('Pilih minimal satu kriteria skala triase.'); return }
   saving.value = true
@@ -140,6 +142,7 @@ async function save() {
 
 async function confirmDelete() {
   if (!deleteType.value) return
+  if (billingLocked.value) { deleteType.value = ''; notifikasi.peringatan('Kunjungan sudah masuk billing. Triase IGD tidak dapat dihapus.'); return }
   deleting.value = true
   try {
     const response = await hapusTriaseIgd(props.token, props.patient.no_rawat, deleteType.value)
@@ -158,8 +161,9 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
     <article class="triage-khanza-form">
       <div v-if="loading" class="triage-state"><LoaderCircle class="spin" :size="26"/><strong>Menarik data triase IGD...</strong></div>
 
-      <form v-else @submit.prevent="save">
-        <fieldset :disabled="saving">
+      <div v-if="!loading && billingLocked" class="handling-lock">Billing sudah terverifikasi atau kunjungan dibatalkan. Form Triase IGD hanya dapat dilihat.</div>
+      <form v-if="!loading" @submit.prevent="save">
+        <fieldset :disabled="saving || billingLocked">
           <section class="triage-khanza-arrival">
             <header>
               <strong>Data Triase IGD</strong>
@@ -253,7 +257,7 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
       </dl>
       <div class="triage-records">
         <section v-for="record in existingRecords" :key="record.jenis" :class="['triage-record', `scale-${record.bagian.skala}`]">
-          <header><span><b>{{ record.label }} · Skala {{ record.bagian.skala }}</b><small>{{ scaleNames[record.bagian.skala] }} · {{ record.bagian.plan }}</small></span><div><button type="button" title="Edit triase" @click="fillForm(record.jenis)"><Pencil :size="14"/> Edit</button><button type="button" class="danger" title="Hapus triase" @click="deleteType = record.jenis"><Trash2 :size="14"/> Hapus</button></div></header>
+          <header><span><b>{{ record.label }} · Skala {{ record.bagian.skala }}</b><small>{{ scaleNames[record.bagian.skala] }} · {{ record.bagian.plan }}</small></span><div v-if="!billingLocked"><button type="button" title="Edit triase" @click="fillForm(record.jenis)"><Pencil :size="14"/> Edit</button><button type="button" class="danger" title="Hapus triase" @click="deleteType = record.jenis"><Trash2 :size="14"/> Hapus</button></div><small v-else>Terkunci billing</small></header>
           <dl><div><dt>{{ record.jenis === 'primer' ? 'Keluhan Utama' : 'Anamnesa Singkat' }}</dt><dd>{{ record.bagian.isi_utama }}</dd></div><div><dt>Catatan</dt><dd>{{ record.bagian.catatan }}</dd></div><div><dt>Petugas Triase</dt><dd>{{ record.bagian.nama_petugas || record.bagian.nip }}<small>{{ record.bagian.jabatan_petugas }}</small></dd></div><div><dt>Tanggal Triase</dt><dd>{{ record.bagian.tanggal_triase }}</dd></div></dl>
           <div class="triage-record-criteria"><span v-for="item in record.bagian.kriteria_terpilih" :key="item.kode"><b>{{ item.kode }}</b>{{ item.pengkajian }}</span></div>
         </section>

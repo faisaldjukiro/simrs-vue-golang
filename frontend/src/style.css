@@ -1365,3 +1365,46 @@ input.form-input-element{height:42px;padding:0 11px}
 .theme-dark .bpjs-claim-information span.warning{color:#fbbf24;background:rgba(245,158,11,.13)}
 @media(max-width:1250px){.bpjs-claim-filter{grid-template-columns:repeat(2,minmax(0,1fr))}.bpjs-claim-filter>button{grid-column:1/-1}.bpjs-claim-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.bpjs-claim-module{width:calc(100% - 20px);margin:10px;padding:15px}.bpjs-claim-header{align-items:flex-start}.bpjs-claim-filter,.bpjs-claim-summary{grid-template-columns:1fr}.bpjs-claim-filter>button{grid-column:auto}.bpjs-claim-header>i{display:none}}
+/* Toast PrimeVue mengikuti tema global karena komponen berada di luar DashboardLayout. */
+.p-toast .p-toast-message {
+  border: 1px solid #dbe4ee;
+  background: #fff;
+}
+
+.p-toast .p-toast-summary { color: #0f172a; }
+.p-toast .p-toast-detail { color: #475569; }
+.p-toast .p-toast-close-button { color: #64748b; }
+
+body.sirava-dark .p-toast .p-toast-message {
+  border-color: rgba(148, 163, 184, .24) !important;
+  color: #f8fafc !important;
+  background: #111c2c !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .48) !important;
+}
+
+body.sirava-dark .p-toast .p-toast-summary { color: #f8fafc !important; }
+body.sirava-dark .p-toast .p-toast-detail { color: #cbd5e1 !important; }
+body.sirava-dark .p-toast .p-toast-close-button {
+  color: #cbd5e1 !important;
+  background: transparent !important;
+}
+body.sirava-dark .p-toast .p-toast-close-button:hover {
+  color: #fff !important;
+  background: rgba(148, 163, 184, .14) !important;
+}
+body.sirava-dark .p-toast .p-toast-message-warn {
+  border-color: rgba(245, 158, 11, .42) !important;
+  background: linear-gradient(90deg, rgba(120, 53, 15, .32), #111c2c 38%) !important;
+}
+body.sirava-dark .p-toast .p-toast-message-error {
+  border-color: rgba(248, 113, 113, .4) !important;
+  background: linear-gradient(90deg, rgba(127, 29, 29, .3), #111c2c 38%) !important;
+}
+body.sirava-dark .p-toast .p-toast-message-success {
+  border-color: rgba(52, 211, 153, .36) !important;
+  background: linear-gradient(90deg, rgba(6, 78, 59, .3), #111c2c 38%) !important;
+}
+body.sirava-dark .p-toast .p-toast-message-info {
+  border-color: rgba(96, 165, 250, .36) !important;
+  background: linear-gradient(90deg, rgba(30, 64, 175, .28), #111c2c 38%) !important;
+}

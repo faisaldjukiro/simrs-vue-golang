@@ -27,6 +27,7 @@ import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologiPage.
 import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
 import TriaseIgdPage from '../../Pages/IGD/TriaseIgdPage.vue'
 import AwalKeperawatanIgdPage from '../../Pages/IGD/AwalKeperawatanIgdPage.vue'
+import ResumePasienRanapPage from '../../Pages/RawatInap/ResumePasienRanapPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -66,6 +67,7 @@ const fallbackMenus = [
   { label: 'Permintaan Radiologi', icon: 'ScanSearch', modules: ['IGD/UGD', 'Rawat Jalan', 'Rawat Inap'] },
   { label: 'Triase IGD', icon: 'Stethoscope', modules: ['IGD/UGD'] },
   { label: 'Awal Keperawatan IGD', icon: 'ClipboardList', modules: ['IGD/UGD'] },
+  { label: 'Resume Pasien', icon: 'NotebookText', modules: ['Rawat Inap'] },
 ]
 
 const menusAktif = computed(() => {
@@ -221,6 +223,12 @@ watch(() => props.patient.no_rawat, () => {
 
       <AwalKeperawatanIgdPage
         v-else-if="activeSection === 'Awal Keperawatan IGD'"
+        :token="token"
+        :patient="patient"
+      />
+
+      <ResumePasienRanapPage
+        v-else-if="['Resume Pasien', 'Resume Pasien Ranap'].includes(activeSection)"
         :token="token"
         :patient="patient"
       />

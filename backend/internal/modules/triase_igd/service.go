@@ -8,7 +8,10 @@ import (
 	"time"
 )
 
-var ErrInputTidakValid = errors.New("input triase IGD tidak valid")
+var (
+	ErrInputTidakValid = errors.New("input triase IGD tidak valid")
+	ErrBillingTerkunci = errors.New("kunjungan sudah masuk billing; triase IGD tidak dapat ditambah, diubah, atau dihapus")
+)
 
 type Input struct {
 	NoRawat              string   `json:"no_rawat"`

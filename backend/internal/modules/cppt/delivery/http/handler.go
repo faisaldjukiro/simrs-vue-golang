@@ -122,6 +122,8 @@ func (h *Handler) tulisError(c *gin.Context, err error) {
 		httpresponse.Error(c, http.StatusNotFound, "CPPT_NOT_FOUND", err.Error())
 	case errors.Is(err, cppt.ErrTidakBerhak):
 		httpresponse.Error(c, http.StatusForbidden, "CPPT_FORBIDDEN", err.Error())
+	case errors.Is(err, cppt.ErrBillingTerkunci):
+		httpresponse.Error(c, http.StatusConflict, "CPPT_BILLING_LOCKED", err.Error())
 	default:
 		httpresponse.Error(c, http.StatusServiceUnavailable, "CPPT_SIMRS_UNAVAILABLE", "Data CPPT/SOAP tidak dapat diproses pada SIMRS Khanza")
 	}

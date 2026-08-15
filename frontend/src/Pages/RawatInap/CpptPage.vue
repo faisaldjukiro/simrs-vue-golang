@@ -24,6 +24,7 @@ const records = ref([])
 const petugas = ref({ nip: '', nama: '', jabatan: '' })
 const selectedOfficer = ref({ nip: '', nama: '', jabatan: '' })
 const canChooseOfficer = ref(false)
+const billingLocked = ref(false)
 const defaultAwareness = ['Compos Mentis', 'Apatis', 'Somnolence', 'Sopor', 'Coma']
 const awarenessOptions = ref(toSelectOptions(defaultAwareness))
 const editingKey = ref(null)
@@ -115,6 +116,7 @@ async function loadRecords() {
     records.value = data?.catatan || []
     petugas.value = data?.petugas || { nip: '', nama: '', jabatan: '' }
     canChooseOfficer.value = Boolean(data?.bisa_memilih_petugas)
+    billingLocked.value = Boolean(data?.billing_terkunci)
     awarenessOptions.value = toSelectOptions(
       data?.pilihan_kesadaran?.length ? data.pilihan_kesadaran : defaultAwareness,
     )
@@ -128,6 +130,10 @@ async function loadRecords() {
 }
 
 function editRecord(item) {
+  if (billingLocked.value) {
+    notifikasi.peringatan('Kunjungan sudah masuk billing. Catatan hanya dapat dilihat.')
+    return
+  }
   if (!item.bisa_diubah) {
     notifikasi.peringatan('Catatan ini hanya dapat diedit oleh petugas yang membuatnya.')
     return
@@ -206,6 +212,10 @@ function payload() {
 }
 
 async function saveRecord() {
+  if (billingLocked.value) {
+    notifikasi.peringatan('Kunjungan sudah masuk billing. Catatan tidak dapat disimpan.')
+    return
+  }
   if (!hasClinicalContent()) {
     notifikasi.peringatan('Isi minimal satu pemeriksaan atau catatan SOAP.')
     return
@@ -227,6 +237,11 @@ async function saveRecord() {
 
 async function confirmDelete() {
   if (!deleteTarget.value) return
+  if (billingLocked.value) {
+    deleteTarget.value = null
+    notifikasi.peringatan('Kunjungan sudah masuk billing. Catatan tidak dapat dihapus.')
+    return
+  }
   deleting.value = true
   try {
     const response = await hapusCppt(props.token, recordKey(deleteTarget.value))
@@ -278,8 +293,9 @@ watch([() => props.patient.no_rawat, () => props.jenisRawat], () => {
         </div>
       </header>
 
+      <div v-if="billingLocked" class="handling-lock">Billing sudah terverifikasi atau kunjungan dibatalkan. Form {{ judulCatatan }} hanya dapat dilihat.</div>
       <form v-show="formVisible" class="cppt-form" @submit.prevent="saveRecord">
-        <fieldset class="form-compact" :disabled="saving">
+        <fieldset class="form-compact" :disabled="saving || billingLocked">
           <div class="cppt-time-grid">
             <FormInput v-model="form.tgl_perawatan" label="Tanggal Perawatan" type="date" required />
             <FormInput v-model="form.jam_rawat" label="Jam Rawat" type="time" step="1" required />
@@ -367,11 +383,11 @@ watch([() => props.patient.no_rawat, () => props.jenisRawat], () => {
         </PrimeColumn>
         <PrimeColumn header="AKSI" frozen align-frozen="right" style="min-width:135px">
           <template #body="{ data }">
-            <div v-if="data.bisa_diubah" class="cppt-table-actions">
+            <div v-if="data.bisa_diubah && !billingLocked" class="cppt-table-actions">
               <button type="button" title="Edit catatan" @click="editRecord(data)"><Pencil :size="14" /> Edit</button>
               <button type="button" class="danger" title="Hapus catatan" @click="deleteTarget = data"><Trash2 :size="14" /> Hapus</button>
             </div>
-            <span v-else class="cppt-owner-note">Bukan milik Anda</span>
+            <span v-else class="cppt-owner-note">{{ billingLocked ? 'Terkunci billing' : 'Bukan milik Anda' }}</span>
           </template>
         </PrimeColumn>
       </DataTable>

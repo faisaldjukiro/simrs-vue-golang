@@ -76,6 +76,7 @@ type Data struct {
 	KriteriaSkala     []KriteriaSkala `json:"kriteria_skala"`
 	MendukungHandOver bool            `json:"mendukung_hand_over"`
 	Triase            *Triase         `json:"triase"`
+	BillingTerkunci   bool            `json:"billing_terkunci"`
 }
 
 type Repositori struct{ db *sql.DB }
@@ -110,7 +111,32 @@ func (r *Repositori) Data(ctx context.Context, noRawat, username string) (Data, 
 	if err != nil {
 		return Data{}, err
 	}
+	data.BillingTerkunci, err = r.BillingTerkunci(ctx, noRawat)
+	if err != nil {
+		return Data{}, err
+	}
 	return data, nil
+}
+
+func (r *Repositori) BillingTerkunci(ctx context.Context, noRawat string) (bool, error) {
+	return billingTerkunci(ctx, r.db, noRawat)
+}
+
+type pembacaBaris interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+func billingTerkunci(ctx context.Context, db pembacaBaris, noRawat string) (bool, error) {
+	var jumlah int
+	err := db.QueryRowContext(ctx, `
+		SELECT
+			(SELECT COUNT(*) FROM billing WHERE no_rawat = ?) +
+			(SELECT COUNT(*) FROM reg_periksa WHERE no_rawat = ? AND stts = 'Batal')
+	`, strings.TrimSpace(noRawat), strings.TrimSpace(noRawat)).Scan(&jumlah)
+	if err != nil {
+		return false, fmt.Errorf("periksa status billing triase IGD: %w", err)
+	}
+	return jumlah > 0, nil
 }
 
 func (r *Repositori) petugasLogin(ctx context.Context, username string) (Petugas, error) {
@@ -317,6 +343,13 @@ func (r *Repositori) Simpan(ctx context.Context, input Input, ubah bool) error {
 		return err
 	}
 	defer tx.Rollback()
+	terkunci, err := billingTerkunci(ctx, tx, input.NoRawat)
+	if err != nil {
+		return err
+	}
+	if terkunci {
+		return ErrBillingTerkunci
+	}
 
 	tabelBagian := "data_triase_igdprimer"
 	if input.Jenis == "sekunder" {
@@ -423,6 +456,13 @@ func (r *Repositori) Hapus(ctx context.Context, noRawat, jenis string) error {
 		return err
 	}
 	defer tx.Rollback()
+	terkunci, err := billingTerkunci(ctx, tx, noRawat)
+	if err != nil {
+		return err
+	}
+	if terkunci {
+		return ErrBillingTerkunci
+	}
 	tabel := "data_triase_igdprimer"
 	awal, akhir := 1, 2
 	if jenis == "sekunder" {

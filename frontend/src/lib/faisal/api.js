@@ -238,3 +238,31 @@ export function hapusAwalKeperawatanIgd(token, noRawat) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/awal-keperawatan-igd?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
+
+export function resumePasienRanapData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/resume-pasien-ranap?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function validasiCodingResumePasienRanap(token, params) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/resume-pasien-ranap/validasi-coding?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariCodingResumePasienRanap(token, params) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/resume-pasien-ranap/cari-coding?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanResumePasienRanap(token, payload) {
+  return request('/api/resume-pasien-ranap', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahResumePasienRanap(token, payload) {
+  return request('/api/resume-pasien-ranap', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusResumePasienRanap(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/resume-pasien-ranap?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+}

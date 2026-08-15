@@ -40,10 +40,11 @@ type Rekaman struct {
 }
 
 type Data struct {
-	Petugas   Petugas              `json:"petugas"`
-	Masalah   []Masalah            `json:"masalah_keperawatan"`
-	Rencana   []RencanaKeperawatan `json:"rencana_keperawatan"`
-	Penilaian *Rekaman             `json:"penilaian"`
+	Petugas         Petugas              `json:"petugas"`
+	Masalah         []Masalah            `json:"masalah_keperawatan"`
+	Rencana         []RencanaKeperawatan `json:"rencana_keperawatan"`
+	Penilaian       *Rekaman             `json:"penilaian"`
+	BillingTerkunci bool                 `json:"billing_terkunci"`
 }
 
 type Repositori struct{ db *sql.DB }
@@ -68,7 +69,32 @@ func (r *Repositori) Data(ctx context.Context, noRawat, username string) (Data, 
 		return Data{}, err
 	}
 	data.Penilaian, err = r.penilaian(ctx, noRawat)
+	if err != nil {
+		return Data{}, err
+	}
+	data.BillingTerkunci, err = r.BillingTerkunci(ctx, noRawat)
 	return data, err
+}
+
+func (r *Repositori) BillingTerkunci(ctx context.Context, noRawat string) (bool, error) {
+	return billingTerkunci(ctx, r.db, noRawat)
+}
+
+type pembacaBaris interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+func billingTerkunci(ctx context.Context, db pembacaBaris, noRawat string) (bool, error) {
+	var jumlah int
+	err := db.QueryRowContext(ctx, `
+		SELECT
+			(SELECT COUNT(*) FROM billing WHERE no_rawat = ?) +
+			(SELECT COUNT(*) FROM reg_periksa WHERE no_rawat = ? AND stts = 'Batal')
+	`, strings.TrimSpace(noRawat), strings.TrimSpace(noRawat)).Scan(&jumlah)
+	if err != nil {
+		return false, fmt.Errorf("periksa status billing awal keperawatan IGD: %w", err)
+	}
+	return jumlah > 0, nil
 }
 
 func (r *Repositori) petugasLogin(ctx context.Context, username string) (Petugas, error) {
@@ -192,6 +218,13 @@ func (r *Repositori) Simpan(ctx context.Context, input Input, ubah bool) error {
 		return err
 	}
 	defer tx.Rollback()
+	terkunci, err := billingTerkunci(ctx, tx, input.NoRawat)
+	if err != nil {
+		return err
+	}
+	if terkunci {
+		return ErrBillingTerkunci
+	}
 	var jumlah int
 	if err := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM reg_periksa WHERE no_rawat=?`, input.NoRawat).Scan(&jumlah); err != nil || jumlah == 0 {
 		return fmt.Errorf("%w: nomor rawat tidak terdaftar", ErrInputTidakValid)
@@ -250,7 +283,19 @@ func simpanRelasi(ctx context.Context, tx *sql.Tx, input Input) error {
 }
 
 func (r *Repositori) Hapus(ctx context.Context, noRawat string) error {
-	result, err := r.db.ExecContext(ctx, `DELETE FROM penilaian_awal_keperawatan_igd WHERE no_rawat=?`, noRawat)
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	terkunci, err := billingTerkunci(ctx, tx, noRawat)
+	if err != nil {
+		return err
+	}
+	if terkunci {
+		return ErrBillingTerkunci
+	}
+	result, err := tx.ExecContext(ctx, `DELETE FROM penilaian_awal_keperawatan_igd WHERE no_rawat=?`, noRawat)
 	if err != nil {
 		return fmt.Errorf("hapus penilaian awal keperawatan IGD: %w", err)
 	}
@@ -258,7 +303,7 @@ func (r *Repositori) Hapus(ctx context.Context, noRawat string) error {
 	if jumlah == 0 {
 		return ErrTidakDitemukan
 	}
-	return nil
+	return tx.Commit()
 }
 
 func inputArgs(i Input) []any {

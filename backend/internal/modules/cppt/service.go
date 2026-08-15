@@ -16,6 +16,7 @@ var (
 	ErrInputTidakValid       = errors.New("input CPPT tidak valid")
 	ErrPetugasTidakDitemukan = errors.New("akun login belum terhubung ke data pegawai SIMRS")
 	ErrCatatanSudahAda       = errors.New("catatan CPPT pada tanggal dan jam tersebut sudah ada")
+	ErrBillingTerkunci       = errors.New("kunjungan sudah masuk billing; catatan tidak dapat ditambah, diubah, atau dihapus")
 )
 
 var DaftarKesadaran = []string{"Compos Mentis", "Apatis", "Somnolence", "Sopor", "Coma"}
@@ -25,6 +26,7 @@ type Data struct {
 	BisaMemilihPetugas bool      `json:"bisa_memilih_petugas"`
 	Kesadaran          []string  `json:"pilihan_kesadaran"`
 	Catatan            []Catatan `json:"catatan"`
+	BillingTerkunci    bool      `json:"billing_terkunci"`
 }
 
 type Input struct {
@@ -59,7 +61,11 @@ func (l *Layanan) Daftar(ctx context.Context, userID uint64, username, noRawat, 
 	if err != nil {
 		return Data{}, err
 	}
-	return Data{Petugas: petugas, BisaMemilihPetugas: aksesPenuh, Kesadaran: DaftarKesadaran, Catatan: catatan}, nil
+	billingTerkunci, err := l.repositori.BillingTerkunci(ctx, noRawat)
+	if err != nil {
+		return Data{}, err
+	}
+	return Data{Petugas: petugas, BisaMemilihPetugas: aksesPenuh, Kesadaran: DaftarKesadaran, Catatan: catatan, BillingTerkunci: billingTerkunci}, nil
 }
 
 func (l *Layanan) CariPetugas(ctx context.Context, userID uint64, username, kataKunci string) ([]Petugas, error) {
@@ -83,6 +89,9 @@ func (l *Layanan) Simpan(ctx context.Context, userID uint64, username string, in
 		return err
 	}
 	if err := validasiCatatan(&input.Catatan); err != nil {
+		return err
+	}
+	if err := l.pastikanBelumBilling(ctx, input.Catatan.NoRawat); err != nil {
 		return err
 	}
 	if input.Catatan.JenisRawat == "ralan" {
@@ -119,6 +128,14 @@ func (l *Layanan) Ubah(ctx context.Context, userID uint64, username string, inpu
 	if input.KunciLama.JenisRawat != input.Catatan.JenisRawat {
 		return fmt.Errorf("%w: jenis rawat catatan lama dan baru harus sama", ErrInputTidakValid)
 	}
+	if err := l.pastikanBelumBilling(ctx, input.KunciLama.NoRawat); err != nil {
+		return err
+	}
+	if input.Catatan.NoRawat != input.KunciLama.NoRawat {
+		if err := l.pastikanBelumBilling(ctx, input.Catatan.NoRawat); err != nil {
+			return err
+		}
+	}
 	if input.Catatan.JenisRawat == "ralan" {
 		err = l.repositori.UbahRalan(ctx, input.KunciLama, input.Catatan, petugas.NIP, aksesPenuh)
 	} else {
@@ -154,10 +171,24 @@ func (l *Layanan) Hapus(ctx context.Context, userID uint64, username string, kun
 	if err := validasiKunci(kunci); err != nil {
 		return err
 	}
+	if err := l.pastikanBelumBilling(ctx, kunci.NoRawat); err != nil {
+		return err
+	}
 	if kunci.JenisRawat == "ralan" {
 		return l.repositori.HapusRalan(ctx, kunci, petugas.NIP, aksesPenuh)
 	}
 	return l.repositori.Hapus(ctx, kunci, petugas.NIP, aksesPenuh)
+}
+
+func (l *Layanan) pastikanBelumBilling(ctx context.Context, noRawat string) error {
+	terkunci, err := l.repositori.BillingTerkunci(ctx, noRawat)
+	if err != nil {
+		return err
+	}
+	if terkunci {
+		return ErrBillingTerkunci
+	}
+	return nil
 }
 
 func (l *Layanan) identitas(ctx context.Context, userID uint64, username string) (Petugas, bool, error) {
