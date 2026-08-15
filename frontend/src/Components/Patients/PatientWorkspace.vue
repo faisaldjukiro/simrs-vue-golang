@@ -28,6 +28,7 @@ import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
 import TriaseIgdPage from '../../Pages/IGD/TriaseIgdPage.vue'
 import AwalKeperawatanIgdPage from '../../Pages/IGD/AwalKeperawatanIgdPage.vue'
 import ResumePasienRanapPage from '../../Pages/RawatInap/ResumePasienRanapPage.vue'
+import DiagnosaPasienPage from '../../Pages/Pasien/DiagnosaPasienPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -233,9 +234,16 @@ watch(() => props.patient.no_rawat, () => {
         :patient="patient"
       />
 
+      <DiagnosaPasienPage
+        v-else-if="activeSection === 'Diagnosa'"
+        :token="token"
+        :patient="patient"
+        :module-name="moduleName"
+      />
+
       <section v-else class="patient-workspace-placeholder">
         <component :is="menusAktif.find((menu) => menu.label === activeSection)?.iconComponent || LayoutDashboard" :size="32" />
-        <span>Administrasi Pasien</span>
+        <span>Administrasi Pasien oke</span>
         <h3>{{ activeSection }}</h3>
         <p>Ruang kerja {{ activeSection }} untuk pasien ini sudah disiapkan. Form dan prosesnya akan dipindahkan bertahap dari SIMRS lama.</p>
       </section>

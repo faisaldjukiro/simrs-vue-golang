@@ -266,3 +266,25 @@ export function hapusResumePasienRanap(token, noRawat) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/resume-pasien-ranap?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
+
+export function diagnosaPasienData(token, params) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/diagnosa-pasien?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariCodingDiagnosaPasien(token, params) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/diagnosa-pasien/cari-coding?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanDiagnosaPasien(token, payload) {
+  return request('/api/diagnosa-pasien', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusCodingDiagnosaPasien(token, { noRawat, status, jenis, kode }) {
+  const query = new URLSearchParams({ no_rawat: noRawat, status }).toString()
+  return request(`/api/diagnosa-pasien/${encodeURIComponent(jenis)}/${encodeURIComponent(kode)}?${query}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}

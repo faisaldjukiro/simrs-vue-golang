@@ -27,6 +27,8 @@ import (
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
 	"simrs-backend/internal/modules/cppt"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
+	"simrs-backend/internal/modules/diagnosa_pasien"
+	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
 	"simrs-backend/internal/modules/idrg"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	"simrs-backend/internal/modules/manajemen_pengguna"
@@ -110,6 +112,8 @@ func main() {
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
 	cpptRepositori := cppt.NewRepositori(db, simrsDB)
 	cpptHandler := cppthttp.NewHandler(cppt.NewLayanan(cpptRepositori))
+	diagnosaPasienRepositori := diagnosa_pasien.NewRepositori(simrsDB)
+	diagnosaPasienHandler := diagnosapasienhttp.NewHandler(diagnosa_pasien.NewLayanan(diagnosaPasienRepositori))
 	penangananRepositori := penanganan_dokter_petugas.NewRepositori(simrsDB)
 	penangananHandler := penanganandokterpetugashttp.NewHandler(penanganan_dokter_petugas.NewLayanan(penangananRepositori))
 	permintaanRadiologiRepositori := permintaan_radiologi.NewRepositori(simrsDB)
@@ -133,6 +137,7 @@ func main() {
 		IDRG:                    idrgHandler,
 		ManajemenPengguna:       manajemenPenggunaHandler,
 		CPPT:                    cpptHandler,
+		DiagnosaPasien:          diagnosaPasienHandler,
 		PenangananDokterPetugas: penangananHandler,
 		PermintaanRadiologi:     permintaanRadiologiHandler,
 		RiwayatPerawatan:        riwayatPerawatanHandler,

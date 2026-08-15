@@ -12,6 +12,7 @@ import (
 	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
+	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
@@ -31,6 +32,7 @@ type Dependencies struct {
 	IDRG                    *idrghttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
 	CPPT                    *cppthttp.Handler
+	DiagnosaPasien          *diagnosapasienhttp.Handler
 	PenangananDokterPetugas *penanganandokterpetugashttp.Handler
 	PermintaanRadiologi     *permintaanradiologihttp.Handler
 	ResumePasienRanap       *resumepasienranaphttp.Handler
@@ -54,6 +56,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	dependencies.BPJSDataKlaim.Register(protectedAPI.Group("/bpjs/monitoring/klaim"))
 	dependencies.IDRG.Register(protectedAPI.Group("/idrg"))
 	dependencies.CPPT.Register(protectedAPI.Group("/cppt"))
+	dependencies.DiagnosaPasien.Register(protectedAPI.Group("/diagnosa-pasien"))
 	dependencies.PenangananDokterPetugas.Register(protectedAPI.Group("/penanganan-dokter-petugas"))
 	dependencies.PermintaanRadiologi.Register(protectedAPI.Group("/permintaan-radiologi"))
 	dependencies.ResumePasienRanap.Register(protectedAPI.Group("/resume-pasien-ranap"))
