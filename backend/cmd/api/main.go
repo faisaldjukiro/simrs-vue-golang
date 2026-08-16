@@ -15,6 +15,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"simrs-backend/internal/config"
+	"simrs-backend/internal/modules/aktivitas_log"
+	aktivitasloghttp "simrs-backend/internal/modules/aktivitas_log/delivery/http"
 	"simrs-backend/internal/modules/autentikasi"
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	"simrs-backend/internal/modules/awal_keperawatan_igd"
@@ -126,10 +128,13 @@ func main() {
 	awalKeperawatanIGDHandler := awalkeperawatanigdhttp.NewHandler(awal_keperawatan_igd.NewLayanan(awalKeperawatanIGDRepositori))
 	resumePasienRanapRepositori := resume_pasien_ranap.NewRepositori(simrsDB)
 	resumePasienRanapHandler := resumepasienranaphttp.NewHandler(resume_pasien_ranap.NewLayanan(resumePasienRanapRepositori))
+	aktivitasLogRepositori := aktivitas_log.NewRepositori(db, simrsDB)
+	aktivitasLogHandler := aktivitasloghttp.NewHandler(aktivitasLogRepositori)
 
 	router := gin.New()
-	router.Use(gin.Logger(), gin.Recovery())
+	router.Use(gin.Logger(), aktivitas_log.Middleware(aktivitasLogRepositori), gin.Recovery())
 	faisalroutes.Register(router, faisalroutes.Dependencies{
+		AktivitasLog:            aktivitasLogHandler,
 		Autentikasi:             autentikasiHandler,
 		Beranda:                 berandaHandler,
 		BPJS:                    bpjsHandler,

@@ -124,6 +124,7 @@ GET  /api/user-management
 GET  /api/user-management/pegawai?q=fa
 POST /api/user-management
 PUT  /api/user-management/:id/akses
+GET  /api/aktivitas-log
 ```
 
 ## Database
@@ -188,6 +189,8 @@ migrations/
 |-- 000001_create_application_schema.down.sql
 |-- 000002_create_access_tokens.up.sql
 |-- 000002_create_access_tokens.down.sql
+|-- 000003_expand_aktivitas_log.up.sql
+|-- 000003_expand_aktivitas_log.down.sql
 `-- seeders/
     `-- 000001_seed_application_data.sql
 ```
@@ -274,6 +277,18 @@ GET http://localhost:8080/api/user-management/pegawai?q=faisal
 POST http://localhost:8080/api/user-management
 PUT http://localhost:8080/api/user-management/2/akses
 ```
+
+Log Aktivitas:
+
+```text
+GET http://localhost:8080/api/aktivitas-log?halaman=1&batas=25&tanggal_mulai=2026-08-01&tanggal_selesai=2026-08-16
+```
+
+Endpoint ini hanya dapat dibuka oleh user dengan permission `*` atau
+`sistem.audit_log`. Audit trail disimpan ke database aplikasi lokal `DB_*`,
+bukan ke database SIMRS Khanza. Password, token, signature, dan secret selalu
+disamarkan. Log mencatat login/logout, GET, tambah, ubah, hapus, proses,
+status HTTP, durasi, alamat IP, serta snapshot request perubahan.
 
 ## Mencoba Signature BPJS VClaim
 

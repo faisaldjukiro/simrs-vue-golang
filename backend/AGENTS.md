@@ -65,6 +65,15 @@ Untuk query data yang tampil di halaman beranda. Query SQL utama berada di:
 internal/modules/beranda/repository.go
 ```
 
+```text
+internal/modules/aktivitas_log
+```
+
+Middleware audit trail untuk seluruh endpoint `/api`. Log hanya disimpan ke
+database aplikasi lokal `DB_*`. Jangan mencatat password, token, signature,
+secret, atau credential lain. Penambahan endpoint mutasi baru otomatis
+tercatat oleh middleware ini.
+
 Gunakan penamaan Bahasa Indonesia untuk module, struct, fungsi, dan variabel baru jika masih nyaman secara Go.
 
 ## Route Developer

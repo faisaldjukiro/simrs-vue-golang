@@ -17,6 +17,7 @@ INSERT INTO permissions (`group`, name, code, created_at, updated_at) VALUES
     ('Rawat Jalan', 'Billing Rawat Jalan', 'billing_ralan', NOW(), NOW()),
     ('Klaim', 'E-Klaim iDRG/INACBG', 'eklaim', NOW(), NOW()),
     ('Sistem', 'Kelola Menu Navigasi', 'kelola_menu', NOW(), NOW()),
+    ('Sistem', 'Log Aktivitas', 'sistem.audit_log', NOW(), NOW()),
     ('Sistem', 'Akses Penuh', '*', NOW(), NOW())
 ON DUPLICATE KEY UPDATE
     `group` = VALUES(`group`),

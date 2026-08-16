@@ -12,6 +12,7 @@ import {
   LogOut,
   Microscope,
   Pill,
+  ScrollText,
   Stethoscope,
   UsersRound,
 } from '@lucide/vue'
@@ -21,6 +22,7 @@ import PatientWorkspace from '../Components/Patients/PatientWorkspace.vue'
 import BerandaTab from '../Components/Tabs/BerandaTab.vue'
 import IdrgPage from './Eklaim/IdrgPage.vue'
 import MonitoringDataKlaimPage from './BPJS/MonitoringDataKlaimPage.vue'
+import AktivitasLogPage from './Sistem/AktivitasLogPage.vue'
 import ModulePlaceholder from '../Components/Tabs/ModulePlaceholder.vue'
 import ModuleTab from '../Components/Tabs/ModuleTab.vue'
 import UserManagementTab from '../Components/Tabs/UserManagementTab.vue'
@@ -151,6 +153,7 @@ const dashboardMenus = [
   { label: 'Monitoring Klaim BPJS', description: 'Monitoring data klaim VClaim berdasarkan periode.', icon: FileSpreadsheet, tone: 'blue' },
   { label: 'Kelola Menu', description: 'Pengaturan menu navigasi dan hak akses.', icon: LayoutDashboard, tone: 'slate' },
   { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
+  { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate' },
 ]
 
 const filteredMenus = computed(() => {
@@ -496,6 +499,11 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
 
     <MonitoringDataKlaimPage
       v-else-if="currentTab === 'Monitoring Klaim BPJS'"
+      :token="token"
+    />
+
+    <AktivitasLogPage
+      v-else-if="currentTab === 'Log Aktivitas'"
       :token="token"
     />
 

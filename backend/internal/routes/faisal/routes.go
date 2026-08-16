@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	aktivitasloghttp "simrs-backend/internal/modules/aktivitas_log/delivery/http"
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
@@ -24,6 +25,7 @@ import (
 )
 
 type Dependencies struct {
+	AktivitasLog            *aktivitasloghttp.Handler
 	Autentikasi             *autentikasihttp.Handler
 	AwalKeperawatanIGD      *awalkeperawatanigdhttp.Handler
 	Beranda                 *berandahttp.Handler
@@ -51,6 +53,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 
 	protectedAPI := router.Group("/api")
 	protectedAPI.Use(dependencies.Autentikasi.Middleware())
+	dependencies.AktivitasLog.Register(protectedAPI.Group("/aktivitas-log"))
 	protectedAPI.GET("/beranda", dependencies.Beranda.Beranda)
 	dependencies.BPJS.Register(protectedAPI.Group("/bpjs"))
 	dependencies.BPJSDataKlaim.Register(protectedAPI.Group("/bpjs/monitoring/klaim"))

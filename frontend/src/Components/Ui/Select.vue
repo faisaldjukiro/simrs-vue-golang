@@ -14,6 +14,8 @@ defineProps({
   placeholder: { type: String, default: 'Pilih Data' },
   emptyMessage: { type: String, default: 'Data tidak ditemukan' },
   filterPlaceholder: { type: String, default: 'Cari data' },
+  appendTo: { type: [String, Object], default: 'self' },
+  overlayClass: { type: [String, Object], default: undefined },
   filter: Boolean,
   disabled: Boolean,
 })
@@ -35,8 +37,9 @@ const atributTurunan = computed(() => {
     :empty-message="emptyMessage"
     :filter="filter"
     :filter-placeholder="filterPlaceholder"
+    :append-to="appendTo"
+    :overlay-class="overlayClass"
     :disabled="disabled"
-    append-to="self"
     v-bind="atributTurunan"
   />
 </template>

@@ -35,6 +35,12 @@ export function userManagementData(token) {
   })
 }
 
+export function aktivitasLogData(token, params = {}) {
+  const query = new URLSearchParams(params).toString()
+  const path = query ? `/api/aktivitas-log?${query}` : '/api/aktivitas-log'
+  return request(path, { headers: { Authorization: `Bearer ${token}` } })
+}
+
 export function idrgData(token, params = {}) {
   const query = new URLSearchParams(params).toString()
   const path = query ? `/api/idrg?${query}` : '/api/idrg'

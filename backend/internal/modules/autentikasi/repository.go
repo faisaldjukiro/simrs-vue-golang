@@ -10,6 +10,8 @@ import (
 const (
 	kunciIDUserSIMRS   = "nur"
 	kunciPasswordSIMRS = "windi"
+	ContextKeyPengguna = "authenticated_user"
+	ContextKeyToken    = "access_token"
 )
 
 type Pengguna struct {

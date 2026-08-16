@@ -11,11 +11,6 @@ import (
 	"simrs-backend/internal/shared/httpresponse"
 )
 
-const (
-	userContextKey  = "authenticated_user"
-	tokenContextKey = "access_token"
-)
-
 type Handler struct {
 	layanan *autentikasi.Layanan
 }
@@ -44,6 +39,7 @@ func (h *Handler) login(c *gin.Context) {
 		httpresponse.Error(c, http.StatusUnprocessableEntity, "VALIDATION_ERROR", "Username dan password wajib diisi")
 		return
 	}
+	c.Set("audit_username", strings.TrimSpace(request.Username))
 
 	result, err := h.layanan.Login(c.Request.Context(), request.Username, request.Password)
 	if errors.Is(err, autentikasi.ErrKredensialTidakValid) {
@@ -54,11 +50,12 @@ func (h *Handler) login(c *gin.Context) {
 		httpresponse.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Terjadi kesalahan pada server")
 		return
 	}
+	c.Set(autentikasi.ContextKeyPengguna, result.User)
 	httpresponse.Success(c, http.StatusOK, result)
 }
 
 func (h *Handler) me(c *gin.Context) {
-	user, exists := c.Get(userContextKey)
+	user, exists := c.Get(autentikasi.ContextKeyPengguna)
 	if !exists {
 		httpresponse.Error(c, http.StatusUnauthorized, "UNAUTHENTICATED", "Token tidak valid")
 		return
@@ -67,7 +64,7 @@ func (h *Handler) me(c *gin.Context) {
 }
 
 func (h *Handler) logout(c *gin.Context) {
-	token := c.GetString(tokenContextKey)
+	token := c.GetString(autentikasi.ContextKeyToken)
 	if err := h.layanan.Logout(c.Request.Context(), token); err != nil {
 		httpresponse.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Terjadi kesalahan pada server")
 		return
@@ -94,8 +91,8 @@ func (h *Handler) Middleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set(userContextKey, user)
-		c.Set(tokenContextKey, parts[1])
+		c.Set(autentikasi.ContextKeyPengguna, user)
+		c.Set(autentikasi.ContextKeyToken, parts[1])
 		c.Next()
 	}
 }
