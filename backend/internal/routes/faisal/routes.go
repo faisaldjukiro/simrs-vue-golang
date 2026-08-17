@@ -15,8 +15,10 @@ import (
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
+	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
+	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
@@ -32,11 +34,13 @@ type Dependencies struct {
 	BPJS                    *bpjshttp.Handler
 	BPJSDataKlaim           *dataklaimhttp.Handler
 	IDRG                    *idrghttp.Handler
+	KelolaMenu              *kelolamenuhttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
 	CPPT                    *cppthttp.Handler
 	DiagnosaPasien          *diagnosapasienhttp.Handler
 	PenangananDokterPetugas *penanganandokterpetugashttp.Handler
 	PermintaanRadiologi     *permintaanradiologihttp.Handler
+	PermintaanLaboratorium  *permintaanlaboratoriumhttp.Handler
 	ResumePasienRanap       *resumepasienranaphttp.Handler
 	RiwayatPerawatan        *riwayatperawatanhttp.Handler
 	TriaseIGD               *triaseigdhttp.Handler
@@ -58,14 +62,29 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	dependencies.BPJS.Register(protectedAPI.Group("/bpjs"))
 	dependencies.BPJSDataKlaim.Register(protectedAPI.Group("/bpjs/monitoring/klaim"))
 	dependencies.IDRG.Register(protectedAPI.Group("/idrg"))
-	dependencies.CPPT.Register(protectedAPI.Group("/cppt"))
-	dependencies.DiagnosaPasien.Register(protectedAPI.Group("/diagnosa-pasien"))
-	dependencies.PenangananDokterPetugas.Register(protectedAPI.Group("/penanganan-dokter-petugas"))
-	dependencies.PermintaanRadiologi.Register(protectedAPI.Group("/permintaan-radiologi"))
-	dependencies.ResumePasienRanap.Register(protectedAPI.Group("/resume-pasien-ranap"))
-	dependencies.RiwayatPerawatan.Register(protectedAPI.Group("/riwayat-perawatan"))
-	dependencies.TriaseIGD.Register(protectedAPI.Group("/triase-igd"))
-	dependencies.AwalKeperawatanIGD.Register(protectedAPI.Group("/awal-keperawatan-igd"))
+	kelolaMenuGroup := protectedAPI.Group("/kelola-menu")
+	kelolaMenuGroup.Use(dependencies.Autentikasi.WajibPermission("kelola_menu"))
+	dependencies.KelolaMenu.Register(kelolaMenuGroup)
+	daftarRouteSidebar := []struct {
+		path       string
+		permission string
+		register   func(*gin.RouterGroup)
+	}{
+		{"/cppt", "pasien.cppt", dependencies.CPPT.Register},
+		{"/diagnosa-pasien", "pasien.diagnosa", dependencies.DiagnosaPasien.Register},
+		{"/penanganan-dokter-petugas", "pasien.penanganan_dokter_petugas", dependencies.PenangananDokterPetugas.Register},
+		{"/permintaan-radiologi", "permintaan_radiologi", dependencies.PermintaanRadiologi.Register},
+		{"/permintaan-laboratorium", "permintaan_lab", dependencies.PermintaanLaboratorium.Register},
+		{"/resume-pasien-ranap", "pasien.resume_pasien", dependencies.ResumePasienRanap.Register},
+		{"/riwayat-perawatan", "pasien.riwayat_perawatan", dependencies.RiwayatPerawatan.Register},
+		{"/triase-igd", "pasien.triase_igd", dependencies.TriaseIGD.Register},
+		{"/awal-keperawatan-igd", "pasien.awal_keperawatan_igd", dependencies.AwalKeperawatanIGD.Register},
+	}
+	for _, routeSidebar := range daftarRouteSidebar {
+		group := protectedAPI.Group(routeSidebar.path)
+		group.Use(dependencies.Autentikasi.WajibPermission(routeSidebar.permission))
+		routeSidebar.register(group)
+	}
 	protectedAPI.GET("/user-management", dependencies.ManajemenPengguna.Daftar)
 	protectedAPI.GET("/user-management/pegawai", dependencies.ManajemenPengguna.CariPegawai)
 	protectedAPI.POST("/user-management", dependencies.ManajemenPengguna.Tambah)

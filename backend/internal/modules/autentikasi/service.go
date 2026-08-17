@@ -131,6 +131,10 @@ func (s *Layanan) Logout(ctx context.Context, token string) error {
 	return s.repositori.HapusToken(ctx, hashToken(token))
 }
 
+func (s *Layanan) MemilikiPermission(ctx context.Context, userID uint64, daftarKode ...string) (bool, error) {
+	return s.repositori.MemilikiPermission(ctx, userID, daftarKode...)
+}
+
 func generateToken() (string, error) {
 	buffer := make([]byte, 32)
 	if _, err := rand.Read(buffer); err != nil {

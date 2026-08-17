@@ -577,6 +577,14 @@ body.sirava-dark .user-dialog{--surface:#0f172a;--surface-soft:#1e293b;--line:rg
 .patient-workspace-menu button.active i{color:white;background:rgba(255,255,255,.16)}
 .patient-workspace-menu button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .patient-workspace-menu>p{padding:20px 5px;color:var(--muted);font-size:11px;text-align:center}
+.patient-workspace-menu-state{display:grid;justify-items:center;gap:7px;margin-top:14px;padding:22px 12px;border:1px dashed var(--line);border-radius:13px;color:var(--muted);text-align:center}
+.patient-workspace-menu-state i,.patient-workspace-access-state>i{display:grid;width:46px;height:46px;place-items:center;border-radius:13px;color:#0f766e;background:rgba(20,184,166,.1)}
+.patient-workspace-menu-state strong{color:var(--text);font-size:11px}.patient-workspace-menu-state p{margin:0;font-size:9px;line-height:1.55}
+.patient-workspace.collapsed .patient-workspace-menu-state{padding:10px 4px;border:0}.patient-workspace.collapsed .patient-workspace-menu-state strong,.patient-workspace.collapsed .patient-workspace-menu-state p{display:none}
+.patient-workspace-access-state{display:grid;min-height:420px;place-content:center;justify-items:center;gap:8px;padding:32px;color:var(--muted);text-align:center}
+.patient-workspace-access-state>span{color:#0f766e;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.patient-workspace-access-state h3{margin:0;color:var(--text);font-size:20px}.patient-workspace-access-state p{max-width:430px;margin:0;font-size:11px;line-height:1.6}
+.theme-dark .patient-workspace-menu-state i,.theme-dark .patient-workspace-access-state>i{color:#5eead4;background:rgba(20,184,166,.14)}
 .patient-workspace.collapsed .patient-workspace-sidebar{padding:10px}
 .patient-workspace.collapsed .patient-workspace-sidebar-tools{width:44px;margin-inline:auto}
 .patient-workspace.collapsed .patient-workspace-sidebar-tools button{width:44px;min-width:44px;padding:0}
@@ -632,6 +640,21 @@ body.sirava-dark .user-dialog{--surface:#0f172a;--surface-soft:#1e293b;--line:rg
 .theme-dark .patient-workspace-menu button.active i{color:#042f2e;background:rgba(255,255,255,.25)}
 @media(max-width:1050px){.patient-workspace{grid-template-columns:230px minmax(0,1fr)}.patient-workspace.collapsed{grid-template-columns:70px minmax(0,1fr)}.patient-identity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.patient-workspace,.patient-workspace.collapsed{width:calc(100% - 20px);grid-template-columns:1fr;margin:10px}.patient-workspace-sidebar{border-right:0;border-bottom:1px solid var(--line)}.patient-workspace.collapsed .patient-workspace-sidebar-tools{grid-template-columns:minmax(0,1fr) 44px}.patient-workspace.collapsed .patient-workspace-sidebar-tools button:first-child span{display:inline}.patient-workspace-sidebar-tools button:last-child{display:none}.patient-workspace-search,.patient-workspace.collapsed .patient-workspace-search{display:flex}.patient-workspace-menu,.patient-workspace.collapsed .patient-workspace-menu{max-height:none;flex-direction:row;overflow-x:auto;margin-top:10px;padding:0 0 4px}.patient-workspace-menu button,.patient-workspace.collapsed .patient-workspace-menu button{min-width:150px;grid-template-columns:34px minmax(0,1fr);padding:5px 10px;place-items:initial}.patient-workspace.collapsed .patient-workspace-menu button span{display:block}.patient-workspace-content{padding:12px}.patient-identity-heading{grid-template-columns:48px minmax(0,1fr)}.patient-identity-heading>i{width:46px;height:46px}.patient-identity-status{grid-column:1/-1;width:max-content}.patient-identity-grid,.patient-workspace-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.patient-identity-contact{grid-template-columns:1fr}}
+
+.menu-management-module{position:relative;z-index:1;display:flex;width:calc(100% - 40px);min-height:560px;flex:1;flex-direction:column;margin:20px;padding:22px;border:1px solid var(--line);border-radius:24px;background:var(--surface);box-shadow:var(--shadow)}
+.menu-management-module>.data-table-wrap{margin-top:16px}
+.menu-management-summary{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:12px;margin-top:16px;padding:14px 16px;border:1px solid rgba(13,148,136,.22);border-radius:14px;color:var(--text);background:rgba(20,184,166,.07)}
+.menu-management-summary svg{color:#0d9488}.menu-management-summary span{font-size:12px}.menu-management-summary span strong{font-size:20px}.menu-management-summary small{justify-self:end;color:var(--muted);font-size:10px}
+.sidebar-module-list{display:flex;flex-wrap:wrap;gap:5px}.sidebar-module-list span{display:inline-flex;padding:4px 7px;border:1px solid rgba(13,148,136,.2);border-radius:999px;color:#0f766e;background:rgba(20,184,166,.08);font-size:9px;font-weight:700}
+.sidebar-actions{display:flex;gap:7px}.sidebar-actions button{display:inline-flex;height:32px;align-items:center;gap:5px;padding:0 9px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:var(--surface-soft);font-size:10px;font-weight:750;cursor:pointer}.sidebar-actions button:hover{border-color:#0d9488;color:#0d9488}.sidebar-actions button.danger,.sidebar-delete-confirm .user-form-actions button.danger{border-color:rgba(220,38,38,.25);color:#dc2626;background:rgba(220,38,38,.07)}
+.patient-status.inactive{color:#b45309;background:rgba(245,158,11,.12)}
+.sidebar-option-section{display:flex;flex-direction:column;gap:9px}.sidebar-option-section>header{display:flex;align-items:center;justify-content:space-between}.sidebar-option-section>header strong{font-size:12px}.sidebar-option-section>header span,.sidebar-permission-field>span{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.sidebar-module-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.sidebar-module-picker button{display:flex;height:42px;align-items:center;gap:8px;padding:0 11px;border:1px solid var(--line);border-radius:11px;color:var(--text);background:var(--surface-soft);font-size:11px;font-weight:750;cursor:pointer}.sidebar-module-picker button i{display:grid;width:18px;height:18px;place-items:center;border:1px solid var(--line);border-radius:5px;font-style:normal}.sidebar-module-picker button.selected{border-color:rgba(13,148,136,.5);background:rgba(20,184,166,.1)}.sidebar-module-picker button.selected i{border-color:#0d9488;color:white;background:#0d9488}
+.sidebar-permission-field{display:flex;flex-direction:column;gap:7px}.sidebar-permission-field small{color:var(--muted);font-size:10px}.sidebar-permission-field .p-select{min-height:43px;border-color:var(--line);color:var(--text);background:var(--surface-soft)}
+.sidebar-delete-confirm{display:flex;flex-direction:column;gap:8px}.sidebar-delete-confirm p{margin:0;color:var(--text);font-size:13px;line-height:1.6}.sidebar-delete-confirm small{color:var(--muted)}.sidebar-dialog .user-form-grid label small{color:var(--muted);font-size:9px;line-height:1.45}
+.p-select-overlay{z-index:12000!important;border-color:var(--line)!important;color:var(--text)!important;background:var(--surface)!important;box-shadow:0 18px 50px rgba(0,0,0,.28)!important}.p-select-option{color:var(--text)!important}.p-select-option:hover,.p-select-option.p-focus{background:rgba(20,184,166,.1)!important}
+.theme-dark .sidebar-module-list span{color:#5eead4}.theme-dark .menu-management-summary{background:rgba(20,184,166,.09)}
+@media(max-width:760px){.menu-management-module{width:calc(100% - 20px);margin:10px;padding:14px;border-radius:18px}.menu-management-summary{grid-template-columns:auto 1fr}.menu-management-summary small{grid-column:1/-1;justify-self:start}.sidebar-module-picker{grid-template-columns:1fr}.sidebar-actions{flex-direction:column}}
 @media(max-width:480px){.patient-identity-grid,.patient-workspace-summary{grid-template-columns:1fr}}
 
 /* CPPT / SOAP */
@@ -879,6 +902,24 @@ input.form-input-element{height:42px;padding:0 11px}
 .handling-treatment-list button{display:grid;width:26px;height:26px;flex:0 0 26px;place-items:center;border:1px solid var(--line);border-radius:7px;color:#dc2626;background:transparent;cursor:pointer}
 .theme-dark .handling-treatment-number,.sirava-dark .handling-treatment-number{color:#5eead4;background:rgba(20,184,166,.16)}
 .theme-dark .handling-treatment-price,.sirava-dark .handling-treatment-price{color:#5eead4}
+.laboratory-treatment-list{display:grid;gap:8px}
+.laboratory-treatment-item{overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.laboratory-treatment-item>header{display:flex;align-items:center;gap:9px;padding:9px 10px}
+.laboratory-treatment-name{display:grid;min-width:0;flex:1;gap:2px}
+.laboratory-treatment-name strong{overflow:hidden;color:var(--text);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.laboratory-treatment-name small{color:var(--muted);font-size:8px}
+.laboratory-treatment-item>header button{display:grid;width:26px;height:26px;flex:0 0 26px;place-items:center;border:1px solid var(--line);border-radius:7px;color:#dc2626;background:transparent;cursor:pointer}
+.laboratory-detail-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;padding:1px;border-top:1px solid var(--line);background:var(--line)}
+.laboratory-detail-option,.laboratory-detail-select-all{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;color:var(--text);background:var(--surface-soft);cursor:pointer}
+.laboratory-detail-select-all{grid-column:1/-1;align-items:center;color:#0f766e;font-size:9px;font-weight:750}
+.laboratory-detail-option>span{display:grid;min-width:0;gap:2px}
+.laboratory-detail-option strong{font-size:9px;font-weight:650}.laboratory-detail-option small{color:var(--muted);font-size:8px;line-height:1.4}
+.laboratory-detail-option input,.laboratory-detail-select-all input{margin-top:1px;accent-color:#0f9d92}
+.laboratory-no-detail,.laboratory-detail-message{margin:0;padding:8px 10px;border-top:1px solid var(--line);color:var(--muted);font-size:8px}
+.laboratory-detail-message.error{color:#dc2626}
+.laboratory-detail-summary{overflow:hidden;max-width:310px;text-overflow:ellipsis;white-space:nowrap}
+.theme-dark .laboratory-detail-select-all,.sirava-dark .laboratory-detail-select-all{color:#5eead4}
+@media(max-width:800px){.laboratory-detail-options{grid-template-columns:1fr}}
 .handling-history-card .p-datatable-table{min-width:1400px!important}
 .reference-search .staff-search-results{top:calc(100% + 2px)}
 .theme-dark .handling-lock,.sirava-dark .handling-lock{border-color:rgba(245,158,11,.3);color:#fcd34d;background:rgba(120,53,15,.25)}

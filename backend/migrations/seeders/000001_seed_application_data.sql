@@ -16,6 +16,13 @@ INSERT INTO permissions (`group`, name, code, created_at, updated_at) VALUES
     ('Rawat Jalan', 'Tindakan Rawat Jalan', 'tindakan_ralan', NOW(), NOW()),
     ('Rawat Jalan', 'Billing Rawat Jalan', 'billing_ralan', NOW(), NOW()),
     ('Klaim', 'E-Klaim iDRG/INACBG', 'eklaim', NOW(), NOW()),
+    ('Sidebar Pasien', 'CPPT / SOAP', 'pasien.cppt', NOW(), NOW()),
+    ('Sidebar Pasien', 'Penanganan Dokter & Petugas', 'pasien.penanganan_dokter_petugas', NOW(), NOW()),
+    ('Sidebar Pasien', 'Diagnosa Pasien', 'pasien.diagnosa', NOW(), NOW()),
+    ('Sidebar Pasien', 'Riwayat Perawatan', 'pasien.riwayat_perawatan', NOW(), NOW()),
+    ('Sidebar Pasien', 'Triase IGD', 'pasien.triase_igd', NOW(), NOW()),
+    ('Sidebar Pasien', 'Awal Keperawatan IGD', 'pasien.awal_keperawatan_igd', NOW(), NOW()),
+    ('Sidebar Pasien', 'Resume Pasien', 'pasien.resume_pasien', NOW(), NOW()),
     ('Sistem', 'Kelola Menu Navigasi', 'kelola_menu', NOW(), NOW()),
     ('Sistem', 'Log Aktivitas', 'sistem.audit_log', NOW(), NOW()),
     ('Sistem', 'Akses Penuh', '*', NOW(), NOW())
@@ -64,10 +71,10 @@ VALUES
     ('dashboard', 'IDRG', 'Bridging klaim BPJS E-Klaim iDRG / INA-CBG.', 'FileSpreadsheet', 'emerald', '/faisal/eklaim', JSON_ARRAY('eklaim'), 9, TRUE, NOW(), NOW()),
     ('dashboard', 'Kelola Menu', 'Tambah, ubah, hapus menu navigasi ribbon & dashboard.', 'LayoutDashboard', 'slate', '/admin/menu', JSON_ARRAY('kelola_menu'), 10, TRUE, NOW(), NOW());
 
-DELETE FROM menu_workspace_pasien;
+DELETE FROM sidebar_pasien;
 
-INSERT INTO menu_workspace_pasien
-    (nama_menu, ikon, daftar_modul, urutan, aktif, created_at, updated_at)
+INSERT INTO sidebar_pasien
+    (nama_sidebar, ikon, daftar_modul, urutan, aktif, created_at, updated_at)
 VALUES
     ('Cppt/Soap', 'FileSignature', JSON_ARRAY('IGD/UGD', 'Rawat Inap'), 1, TRUE, NOW(), NOW()),
     ('Penanganan Dokter & Petugas', 'Users', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 2, TRUE, NOW(), NOW()),
@@ -92,7 +99,6 @@ VALUES
     ('Jadwal Operasi', 'CalendarDays', JSON_ARRAY('Rawat Inap'), 21, TRUE, NOW(), NOW()),
     ('Surat Kontrol', 'CalendarCheck', JSON_ARRAY('Rawat Inap'), 22, TRUE, NOW(), NOW()),
     ('Rujuk Keluar', 'ExternalLink', JSON_ARRAY('Rawat Inap'), 23, TRUE, NOW(), NOW()),
-    ('Diagnosa', 'Stethoscope', JSON_ARRAY('Rawat Inap'), 24, TRUE, NOW(), NOW()),
     ('Resume Pasien', 'NotebookText', JSON_ARRAY('Rawat Inap'), 25, TRUE, NOW(), NOW()),
     ('Penilaian Sentinel Pie', 'PieChart', JSON_ARRAY('Rawat Inap'), 26, TRUE, NOW(), NOW()),
     ('Awal Keperawatan Umum', 'HeartPulse', JSON_ARRAY('Rawat Inap'), 27, TRUE, NOW(), NOW()),
@@ -132,5 +138,28 @@ VALUES
     ('Informasi Obat', 'Pill', JSON_ARRAY('Rawat Inap'), 61, TRUE, NOW(), NOW()),
     ('Transfer Antar Ruang', 'ArrowRightLeft', JSON_ARRAY('Rawat Inap'), 62, TRUE, NOW(), NOW()),
     ('Triase IGD', 'Stethoscope', JSON_ARRAY('IGD/UGD'), 64, TRUE, NOW(), NOW());
+
+UPDATE sidebar_pasien
+SET kode_sidebar = CONCAT('sidebar_', LPAD(id, 4, '0')),
+    permission_code = NULL;
+
+UPDATE sidebar_pasien SET kode_sidebar = 'cppt_soap', permission_code = 'pasien.cppt'
+WHERE nama_sidebar = 'Cppt/Soap';
+UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas', permission_code = 'pasien.penanganan_dokter_petugas'
+WHERE nama_sidebar = 'Penanganan Dokter & Petugas';
+UPDATE sidebar_pasien SET kode_sidebar = 'diagnosa', permission_code = 'pasien.diagnosa'
+WHERE nama_sidebar = 'Diagnosa';
+UPDATE sidebar_pasien SET kode_sidebar = 'riwayat_perawatan', permission_code = 'pasien.riwayat_perawatan'
+WHERE nama_sidebar = 'Riwayat Perawatan';
+UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_laboratorium', permission_code = 'permintaan_lab'
+WHERE nama_sidebar IN ('Permintaan Lab', 'Permintaan Laboratorium');
+UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_radiologi', permission_code = 'permintaan_radiologi'
+WHERE nama_sidebar IN ('Permintaan Rad', 'Permintaan Radiologi');
+UPDATE sidebar_pasien SET kode_sidebar = 'triase_igd', permission_code = 'pasien.triase_igd'
+WHERE nama_sidebar = 'Triase IGD';
+UPDATE sidebar_pasien SET kode_sidebar = 'awal_keperawatan_igd', permission_code = 'pasien.awal_keperawatan_igd'
+WHERE nama_sidebar = 'Awal Keperawatan IGD';
+UPDATE sidebar_pasien SET kode_sidebar = 'resume_pasien', permission_code = 'pasien.resume_pasien'
+WHERE nama_sidebar IN ('Resume Pasien', 'Resume Pasien Ranap');
 
 COMMIT;

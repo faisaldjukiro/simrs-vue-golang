@@ -102,6 +102,35 @@ export function ubahAksesUserManagement(token, id, payload) {
   })
 }
 
+export function kelolaMenuData(token) {
+  return request('/api/kelola-menu', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function tambahSidebarPasien(token, payload) {
+  return request('/api/kelola-menu/sidebar', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function ubahSidebarPasien(token, id, payload) {
+  return request(`/api/kelola-menu/sidebar/${id}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function hapusSidebarPasien(token, id) {
+  return request(`/api/kelola-menu/sidebar/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
 export function cpptData(token, noRawat, jenisRawat = 'ranap') {
   const query = new URLSearchParams({ no_rawat: noRawat, jenis_rawat: jenisRawat }).toString()
   return request(`/api/cppt?${query}`, {
@@ -202,6 +231,39 @@ export function ubahPermintaanRadiologi(token, nomor, payload) {
 export function hapusPermintaanRadiologi(token, noRawat, nomor) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/permintaan-radiologi/${encodeURIComponent(nomor)}?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function permintaanLaboratoriumData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/permintaan-laboratorium?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariDokterLaboratorium(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/permintaan-laboratorium/dokter?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariTindakanLaboratorium(token, noRawat, kataKunci) {
+  const query = new URLSearchParams({ no_rawat: noRawat, q: kataKunci }).toString()
+  return request(`/api/permintaan-laboratorium/tindakan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function detailTindakanLaboratorium(token, noRawat, kode) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/permintaan-laboratorium/tindakan/${encodeURIComponent(kode)}/detail?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanPermintaanLaboratorium(token, payload) {
+  return request('/api/permintaan-laboratorium', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahPermintaanLaboratorium(token, nomor, payload) {
+  return request(`/api/permintaan-laboratorium/${encodeURIComponent(nomor)}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusPermintaanLaboratorium(token, noRawat, nomor) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/permintaan-laboratorium/${encodeURIComponent(nomor)}?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
 
 export function riwayatPerawatanData(token, params = {}) {

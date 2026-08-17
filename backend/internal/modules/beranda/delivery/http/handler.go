@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"simrs-backend/internal/modules/autentikasi"
 	"simrs-backend/internal/modules/beranda"
 	"simrs-backend/internal/shared/httpresponse"
 )
@@ -20,9 +21,16 @@ func NewHandler(repositori *beranda.Repositori) *Handler {
 }
 
 func (h *Handler) Beranda(c *gin.Context) {
+	pengguna, ada := c.Get(autentikasi.ContextKeyPengguna)
+	user, valid := pengguna.(autentikasi.Pengguna)
+	if !ada || !valid {
+		httpresponse.Error(c, http.StatusUnauthorized, "UNAUTHENTICATED", "Pengguna tidak terautentikasi")
+		return
+	}
+
 	startedAt := time.Now()
 	filter := bacaFilterBeranda(c)
-	data, err := h.repositori.BacaBeranda(c.Request.Context(), filter)
+	data, err := h.repositori.BacaBeranda(c.Request.Context(), filter, user.ID)
 	if err != nil {
 		httpresponse.Error(c, http.StatusServiceUnavailable, "SIMRS_UNAVAILABLE", "Database SIMRS lama tidak dapat dibaca")
 		return
@@ -33,16 +41,16 @@ func (h *Handler) Beranda(c *gin.Context) {
 			"terhubung":  true,
 			"latensi_ms": time.Since(startedAt).Milliseconds(),
 		},
-		"ringkasan":             data.Ringkasan,
-		"registrasi":            data.Registrasi,
-		"rawat_jalan":           data.RawatJalan,
-		"igd":                   data.IGD,
-		"rawat_inap":            data.RawatInap,
-		"paginasi":              data.Paginasi,
-		"poliklinik":            data.Poliklinik,
-		"dokter":                data.Dokter,
-		"pilihan_status":        data.PilihanStatus,
-		"menu_workspace_pasien": data.MenuWorkspacePasien,
+		"ringkasan":      data.Ringkasan,
+		"registrasi":     data.Registrasi,
+		"rawat_jalan":    data.RawatJalan,
+		"igd":            data.IGD,
+		"rawat_inap":     data.RawatInap,
+		"paginasi":       data.Paginasi,
+		"poliklinik":     data.Poliklinik,
+		"dokter":         data.Dokter,
+		"pilihan_status": data.PilihanStatus,
+		"sidebar_pasien": data.SidebarPasien,
 		"filter": gin.H{
 			"rawat_jalan": filter.RawatJalan,
 			"igd":         filter.IGD,

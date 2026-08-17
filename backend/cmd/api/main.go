@@ -33,10 +33,14 @@ import (
 	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
 	"simrs-backend/internal/modules/idrg"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
+	"simrs-backend/internal/modules/kelola_menu"
+	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	"simrs-backend/internal/modules/manajemen_pengguna"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	"simrs-backend/internal/modules/penanganan_dokter_petugas"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
+	"simrs-backend/internal/modules/permintaan_laboratorium"
+	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	"simrs-backend/internal/modules/permintaan_radiologi"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
 	"simrs-backend/internal/modules/resume_pasien_ranap"
@@ -111,6 +115,7 @@ func main() {
 	}))
 	idrgRepositori := idrg.NewRepositori(simrsDB)
 	idrgHandler := idrghttp.NewHandler(idrgRepositori, idrg.NewLayanan(idrgRepositori, eklaimConfig))
+	kelolaMenuHandler := kelolamenuhttp.NewHandler(kelola_menu.NewRepositori(db))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
 	cpptRepositori := cppt.NewRepositori(db, simrsDB)
 	cpptHandler := cppthttp.NewHandler(cppt.NewLayanan(cpptRepositori))
@@ -120,6 +125,8 @@ func main() {
 	penangananHandler := penanganandokterpetugashttp.NewHandler(penanganan_dokter_petugas.NewLayanan(penangananRepositori))
 	permintaanRadiologiRepositori := permintaan_radiologi.NewRepositori(simrsDB)
 	permintaanRadiologiHandler := permintaanradiologihttp.NewHandler(permintaan_radiologi.NewLayanan(permintaanRadiologiRepositori))
+	permintaanLaboratoriumRepositori := permintaan_laboratorium.NewRepositori(simrsDB)
+	permintaanLaboratoriumHandler := permintaanlaboratoriumhttp.NewHandler(permintaan_laboratorium.NewLayanan(permintaanLaboratoriumRepositori))
 	riwayatPerawatanRepositori := riwayat_perawatan.NewRepositori(simrsDB, config.SIMRSWebBaseURL())
 	riwayatPerawatanHandler := riwayatperawatanhttp.NewHandler(riwayat_perawatan.NewLayanan(riwayatPerawatanRepositori))
 	triaseIGDRepositori := triase_igd.NewRepositori(simrsDB)
@@ -140,11 +147,13 @@ func main() {
 		BPJS:                    bpjsHandler,
 		BPJSDataKlaim:           bpjsDataKlaimHandler,
 		IDRG:                    idrgHandler,
+		KelolaMenu:              kelolaMenuHandler,
 		ManajemenPengguna:       manajemenPenggunaHandler,
 		CPPT:                    cpptHandler,
 		DiagnosaPasien:          diagnosaPasienHandler,
 		PenangananDokterPetugas: penangananHandler,
 		PermintaanRadiologi:     permintaanRadiologiHandler,
+		PermintaanLaboratorium:  permintaanLaboratoriumHandler,
 		RiwayatPerawatan:        riwayatPerawatanHandler,
 		TriaseIGD:               triaseIGDHandler,
 		AwalKeperawatanIGD:      awalKeperawatanIGDHandler,

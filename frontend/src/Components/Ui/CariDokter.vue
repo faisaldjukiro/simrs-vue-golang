@@ -1,6 +1,6 @@
 <script setup>
 import InputPencarian from './InputPencarian.vue'
-import { cariDokterPenanganan, cariDokterRadiologi } from '../../lib/faisal/api'
+import { cariDokterLaboratorium, cariDokterPenanganan, cariDokterRadiologi } from '../../lib/faisal/api'
 
 const model = defineModel({ default: () => ({}) })
 const props = defineProps({
@@ -10,9 +10,11 @@ const props = defineProps({
   required: Boolean,
 })
 
-const cariDokter = (kataKunci) => props.sumber === 'radiologi'
-  ? cariDokterRadiologi(props.token, kataKunci)
-  : cariDokterPenanganan(props.token, kataKunci)
+const cariDokter = (kataKunci) => {
+  if (props.sumber === 'radiologi') return cariDokterRadiologi(props.token, kataKunci)
+  if (props.sumber === 'laboratorium') return cariDokterLaboratorium(props.token, kataKunci)
+  return cariDokterPenanganan(props.token, kataKunci)
+}
 </script>
 
 <template>

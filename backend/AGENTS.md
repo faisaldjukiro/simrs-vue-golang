@@ -74,7 +74,22 @@ database aplikasi lokal `DB_*`. Jangan mencatat password, token, signature,
 secret, atau credential lain. Penambahan endpoint mutasi baru otomatis
 tercatat oleh middleware ini.
 
+```text
+internal/modules/kelola_menu
+```
+
+Untuk CRUD konfigurasi `sidebar_pasien`. Endpoint hanya boleh diakses user
+dengan permission `kelola_menu` atau `*`.
+
 Gunakan penamaan Bahasa Indonesia untuk module, struct, fungsi, dan variabel baru jika masih nyaman secara Go.
+
+## Sidebar Pasien
+
+Sidebar ruang kerja pasien berasal dari tabel aplikasi lokal `sidebar_pasien`.
+Gunakan `kode_sidebar` sebagai identitas stabil untuk pemetaan halaman frontend;
+jangan memakai `nama_sidebar` untuk menentukan komponen. Akses sidebar dan
+endpoint pelayanannya mengikuti `permission_code` serta tabel
+`user_permissions`. User dengan permission `*` memiliki akses penuh.
 
 ## Route Developer
 

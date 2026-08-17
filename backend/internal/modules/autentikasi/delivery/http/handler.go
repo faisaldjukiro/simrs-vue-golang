@@ -96,3 +96,29 @@ func (h *Handler) Middleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func (h *Handler) WajibPermission(daftarKode ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		nilaiPengguna, ada := c.Get(autentikasi.ContextKeyPengguna)
+		pengguna, valid := nilaiPengguna.(autentikasi.Pengguna)
+		if !ada || !valid {
+			httpresponse.Error(c, http.StatusUnauthorized, "UNAUTHENTICATED", "Pengguna tidak terautentikasi")
+			c.Abort()
+			return
+		}
+
+		memilikiAkses, err := h.layanan.MemilikiPermission(c.Request.Context(), pengguna.ID, daftarKode...)
+		if err != nil {
+			httpresponse.Error(c, http.StatusInternalServerError, "PERMISSION_UNAVAILABLE", "Hak akses pengguna tidak dapat diperiksa")
+			c.Abort()
+			return
+		}
+		if !memilikiAkses {
+			httpresponse.Error(c, http.StatusForbidden, "PERMISSION_DENIED", "Anda tidak memiliki akses ke sidebar ini")
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}

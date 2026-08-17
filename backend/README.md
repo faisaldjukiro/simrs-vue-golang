@@ -212,7 +212,41 @@ Setelah migration, jalankan seeder:
 go run ./cmd/seed
 ```
 
-Seeder mengisi data awal seperti permission, user admin development, menu navigasi, dan menu workspace pasien.
+Seeder mengisi data awal seperti permission, user admin development, menu navigasi, dan sidebar pasien.
+
+### Sidebar Pasien
+
+Konfigurasi sidebar ruang kerja pasien disimpan pada tabel lokal
+`sidebar_pasien`. Kolom pentingnya:
+
+```text
+kode_sidebar     kode stabil yang dipakai frontend untuk membuka halaman
+nama_sidebar     nama yang ditampilkan kepada user
+ikon             nama ikon sidebar
+daftar_modul     daftar modul tempat sidebar berlaku dalam format JSON
+permission_code  permission yang wajib dimiliki user
+urutan           urutan tampilan sidebar
+aktif            status tampil atau tidak
+```
+
+Frontend memakai `kode_sidebar`, bukan `nama_sidebar`, sehingga nama tampilan
+bisa diubah tanpa merusak pemetaan halaman. Endpoint `GET /api/beranda`
+mengembalikan field `sidebar_pasien` yang sudah disaring berdasarkan permission
+user login. Endpoint pelayanan terkait juga menolak request user yang tidak
+memiliki permission tersebut. Permission `*` tetap berarti akses penuh.
+
+User dengan permission `kelola_menu` atau `*` dapat mengatur sidebar melalui:
+
+```text
+GET    /api/kelola-menu
+POST   /api/kelola-menu/sidebar
+PUT    /api/kelola-menu/sidebar/:id
+DELETE /api/kelola-menu/sidebar/:id
+```
+
+Perubahan nama, ikon, modul, permission, urutan, dan status aktif langsung
+dibaca kembali oleh Patient Workspace. `kode_sidebar` hanya boleh diubah jika
+pemetaan halaman frontend ikut menggunakan kode baru tersebut.
 
 ## Menjalankan API
 

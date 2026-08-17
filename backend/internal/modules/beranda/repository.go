@@ -55,10 +55,11 @@ type Dokter struct {
 	Status        string `json:"status"`
 }
 
-type MenuWorkspacePasien struct {
-	Label   string   `json:"label"`
-	Ikon    string   `json:"icon"`
-	Modules []string `json:"modules"`
+type SidebarPasien struct {
+	Kode        string   `json:"kode"`
+	Nama        string   `json:"nama"`
+	Ikon        string   `json:"ikon"`
+	DaftarModul []string `json:"daftar_modul"`
 }
 
 type FilterPasien struct {
@@ -102,16 +103,16 @@ type PaginasiBeranda struct {
 }
 
 type Beranda struct {
-	Ringkasan           Ringkasan             `json:"ringkasan"`
-	Registrasi          []Pasien              `json:"registrasi"`
-	RawatJalan          []Pasien              `json:"rawat_jalan"`
-	IGD                 []Pasien              `json:"igd"`
-	RawatInap           []Pasien              `json:"rawat_inap"`
-	Paginasi            PaginasiBeranda       `json:"paginasi"`
-	Poliklinik          []Poliklinik          `json:"poliklinik"`
-	Dokter              []Dokter              `json:"dokter"`
-	PilihanStatus       PilihanStatus         `json:"pilihan_status"`
-	MenuWorkspacePasien []MenuWorkspacePasien `json:"menu_workspace_pasien"`
+	Ringkasan     Ringkasan       `json:"ringkasan"`
+	Registrasi    []Pasien        `json:"registrasi"`
+	RawatJalan    []Pasien        `json:"rawat_jalan"`
+	IGD           []Pasien        `json:"igd"`
+	RawatInap     []Pasien        `json:"rawat_inap"`
+	Paginasi      PaginasiBeranda `json:"paginasi"`
+	Poliklinik    []Poliklinik    `json:"poliklinik"`
+	Dokter        []Dokter        `json:"dokter"`
+	PilihanStatus PilihanStatus   `json:"pilihan_status"`
+	SidebarPasien []SidebarPasien `json:"sidebar_pasien"`
 }
 
 type Repositori struct {
@@ -128,7 +129,7 @@ func NewRepositori(simrsDB *sql.DB, aplikasiDB *sql.DB) *Repositori {
 	return &Repositori{simrsDB: simrsDB, aplikasiDB: aplikasiDB}
 }
 
-func (r *Repositori) BacaBeranda(ctx context.Context, filter FilterBeranda) (Beranda, error) {
+func (r *Repositori) BacaBeranda(ctx context.Context, filter FilterBeranda, userID uint64) (Beranda, error) {
 	tx, err := r.simrsDB.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		return Beranda{}, fmt.Errorf("begin SIMRS read-only transaction: %w", err)
@@ -136,13 +137,13 @@ func (r *Repositori) BacaBeranda(ctx context.Context, filter FilterBeranda) (Ber
 	defer tx.Rollback()
 
 	hasil := Beranda{
-		Registrasi:          make([]Pasien, 0),
-		RawatJalan:          make([]Pasien, 0),
-		IGD:                 make([]Pasien, 0),
-		RawatInap:           make([]Pasien, 0),
-		Poliklinik:          make([]Poliklinik, 0),
-		Dokter:              make([]Dokter, 0),
-		MenuWorkspacePasien: make([]MenuWorkspacePasien, 0),
+		Registrasi:    make([]Pasien, 0),
+		RawatJalan:    make([]Pasien, 0),
+		IGD:           make([]Pasien, 0),
+		RawatInap:     make([]Pasien, 0),
+		Poliklinik:    make([]Poliklinik, 0),
+		Dokter:        make([]Dokter, 0),
+		SidebarPasien: make([]SidebarPasien, 0),
 	}
 
 	registrasi, err := bacaRegistrasiHariIni(ctx, tx)
@@ -193,46 +194,54 @@ func (r *Repositori) BacaBeranda(ctx context.Context, filter FilterBeranda) (Ber
 		return Beranda{}, fmt.Errorf("commit SIMRS read-only transaction: %w", err)
 	}
 
-	hasil.MenuWorkspacePasien, err = r.bacaMenuWorkspacePasien(ctx)
+	hasil.SidebarPasien, err = r.bacaSidebarPasien(ctx, userID)
 	if err != nil {
 		return Beranda{}, err
 	}
 	return hasil, nil
 }
 
-func (r *Repositori) bacaMenuWorkspacePasien(ctx context.Context) ([]MenuWorkspacePasien, error) {
+func (r *Repositori) bacaSidebarPasien(ctx context.Context, userID uint64) ([]SidebarPasien, error) {
 	rows, err := r.aplikasiDB.QueryContext(ctx, `
-		SELECT nama_menu, ikon, daftar_modul
-		FROM menu_workspace_pasien
-		WHERE aktif = TRUE
-		ORDER BY urutan, nama_menu
-	`)
+		SELECT sidebar.kode_sidebar,sidebar.nama_sidebar,sidebar.ikon,sidebar.daftar_modul
+		FROM sidebar_pasien sidebar
+		WHERE sidebar.aktif = TRUE
+		  AND sidebar.kode_sidebar IS NOT NULL
+		  AND EXISTS (
+			SELECT 1
+			FROM user_permissions akses
+			INNER JOIN permissions izin ON izin.id=akses.permission_id
+			WHERE akses.user_id=?
+			  AND (izin.code='*' OR izin.code=sidebar.permission_code)
+		  )
+		ORDER BY sidebar.urutan,sidebar.nama_sidebar
+	`, userID)
 	if err != nil {
-		return nil, fmt.Errorf("read application patient workspace menus: %w", err)
+		return nil, fmt.Errorf("baca sidebar pasien aplikasi: %w", err)
 	}
 	defer rows.Close()
 
-	daftar := make([]MenuWorkspacePasien, 0)
+	daftar := make([]SidebarPasien, 0)
 	sudahAda := make(map[string]bool)
 	for rows.Next() {
-		var menu MenuWorkspacePasien
+		var sidebar SidebarPasien
 		var daftarModulJSON []byte
-		if err := rows.Scan(&menu.Label, &menu.Ikon, &daftarModulJSON); err != nil {
-			return nil, fmt.Errorf("scan application patient workspace menu: %w", err)
+		if err := rows.Scan(&sidebar.Kode, &sidebar.Nama, &sidebar.Ikon, &daftarModulJSON); err != nil {
+			return nil, fmt.Errorf("baca baris sidebar pasien: %w", err)
 		}
-		if sudahAda[menu.Label] {
+		if sudahAda[sidebar.Kode] {
 			continue
 		}
 		if len(daftarModulJSON) > 0 {
-			if err := json.Unmarshal(daftarModulJSON, &menu.Modules); err != nil {
-				return nil, fmt.Errorf("decode application patient workspace modules: %w", err)
+			if err := json.Unmarshal(daftarModulJSON, &sidebar.DaftarModul); err != nil {
+				return nil, fmt.Errorf("baca daftar modul sidebar pasien: %w", err)
 			}
 		}
-		sudahAda[menu.Label] = true
-		daftar = append(daftar, menu)
+		sudahAda[sidebar.Kode] = true
+		daftar = append(daftar, sidebar)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate application patient workspace menus: %w", err)
+		return nil, fmt.Errorf("iterasi sidebar pasien: %w", err)
 	}
 	return daftar, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -165,4 +166,35 @@ func (r *Repositori) HapusToken(ctx context.Context, tokenHash string) error {
 
 func (r *Repositori) HapusTokenKedaluwarsa(ctx context.Context) {
 	_, _ = r.db.ExecContext(ctx, "DELETE FROM access_tokens WHERE expires_at <= UTC_TIMESTAMP()")
+}
+
+func (r *Repositori) MemilikiPermission(ctx context.Context, userID uint64, daftarKode ...string) (bool, error) {
+	if len(daftarKode) == 0 {
+		return false, nil
+	}
+
+	placeholder := make([]string, 0, len(daftarKode))
+	parameter := make([]any, 0, len(daftarKode)+1)
+	parameter = append(parameter, userID)
+	for range daftarKode {
+		placeholder = append(placeholder, "?")
+	}
+	for _, kode := range daftarKode {
+		parameter = append(parameter, kode)
+	}
+
+	var ada bool
+	err := r.db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM user_permissions akses
+			INNER JOIN permissions izin ON izin.id = akses.permission_id
+			WHERE akses.user_id = ?
+			  AND (izin.code = '*' OR izin.code IN (`+strings.Join(placeholder, ",")+`))
+		)
+	`, parameter...).Scan(&ada)
+	if err != nil {
+		return false, fmt.Errorf("check user permission: %w", err)
+	}
+	return ada, nil
 }

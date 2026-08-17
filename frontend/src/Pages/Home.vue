@@ -18,11 +18,12 @@ import {
 } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import DashboardLayout from '../Components/Layout/DashboardLayout.vue'
-import PatientWorkspace from '../Components/Patients/PatientWorkspace.vue'
+import PatientSidebar from '../Components/Patients/PatientSidebar.vue'
 import BerandaTab from '../Components/Tabs/BerandaTab.vue'
 import IdrgPage from './Eklaim/IdrgPage.vue'
 import MonitoringDataKlaimPage from './BPJS/MonitoringDataKlaimPage.vue'
 import AktivitasLogPage from './Sistem/AktivitasLogPage.vue'
+import KelolaMenuPage from './Sistem/KelolaMenuPage.vue'
 import ModulePlaceholder from '../Components/Tabs/ModulePlaceholder.vue'
 import ModuleTab from '../Components/Tabs/ModuleTab.vue'
 import UserManagementTab from '../Components/Tabs/UserManagementTab.vue'
@@ -92,7 +93,7 @@ const dashboard = ref({
   poliklinik: [],
   dokter: [],
   pilihan_status: { periksa: [], rawat_inap: [], status_bayar: [] },
-  menu_workspace_pasien: [],
+  sidebar_pasien: [],
 })
 const userManagement = ref({
   ringkasan: { jumlah_pengguna: 0, jumlah_aktif: 0, jumlah_admin: 0 },
@@ -151,7 +152,7 @@ const dashboardMenus = [
   { label: 'Rawat Jalan', description: 'Daftar pasien dan pelayanan rawat jalan.', icon: Stethoscope, tone: 'cyan' },
   { label: 'IDRG', description: 'Bridging klaim BPJS E-Klaim iDRG / INA-CBG.', icon: FileSpreadsheet, tone: 'emerald' },
   { label: 'Monitoring Klaim BPJS', description: 'Monitoring data klaim VClaim berdasarkan periode.', icon: FileSpreadsheet, tone: 'blue' },
-  { label: 'Kelola Menu', description: 'Pengaturan menu navigasi dan hak akses.', icon: LayoutDashboard, tone: 'slate' },
+  { label: 'Kelola Menu', description: 'Pengaturan sidebar pasien dan hak aksesnya.', icon: LayoutDashboard, tone: 'slate' },
   { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
   { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate' },
 ]
@@ -372,7 +373,7 @@ function selectPatient(patient) {
   selectedPatientModule.value = currentTab.value
 }
 
-function closePatientWorkspace() {
+function closePatientSidebar() {
   selectedPatient.value = null
   selectedPatientModule.value = ''
 }
@@ -453,13 +454,15 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
       @open-menu="openMenu"
     />
 
-    <PatientWorkspace
+    <PatientSidebar
       v-else-if="selectedPatient"
       :module-name="selectedPatientModule"
       :patient="selectedPatient"
-      :menus="dashboard.menu_workspace_pasien"
+      :sidebar="dashboard.sidebar_pasien"
+      :sidebar-loading="dashboardLoading"
+      :sidebar-error="dashboardError"
       :token="token"
-      @back="closePatientWorkspace"
+      @back="closePatientSidebar"
     />
 
     <ModuleTab
@@ -505,6 +508,12 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
     <AktivitasLogPage
       v-else-if="currentTab === 'Log Aktivitas'"
       :token="token"
+    />
+
+    <KelolaMenuPage
+      v-else-if="currentTab === 'Kelola Menu'"
+      :token="token"
+      @saved="loadDashboard"
     />
 
     <ModulePlaceholder
