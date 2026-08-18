@@ -245,7 +245,7 @@ DELETE /api/kelola-menu/sidebar/:id
 ```
 
 Perubahan nama, ikon, modul, permission, urutan, dan status aktif langsung
-dibaca kembali oleh Patient Workspace. `kode_sidebar` hanya boleh diubah jika
+dibaca kembali oleh Patient Sidebar. `kode_sidebar` hanya boleh diubah jika
 pemetaan halaman frontend ikut menggunakan kode baru tersebut.
 
 ## Menjalankan API

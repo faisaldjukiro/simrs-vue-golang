@@ -15,6 +15,8 @@ src/
 |   `-- Home.vue                # halaman utama/dashboard
 |-- Components/
 |   |-- LoginPage.vue           # form login yang ditampilkan sebagai modal
+|   |-- Patients/
+|   |   `-- PatientSidebar.vue  # ruang kerja dan sidebar pelayanan pasien
 |   |-- Common/
 |   |   `-- PatientFilters.vue  # filter pasien rawat jalan/IGD/rawat inap
 |   |-- Layout/
