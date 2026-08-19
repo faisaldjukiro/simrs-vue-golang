@@ -1,12 +1,22 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Edit3, LayoutPanelLeft, LoaderCircle, Plus, Search, Trash2 } from '@lucide/vue'
+import * as LucideIcons from '@lucide/vue'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import DataTable from '../../Components/Ui/DataTable.vue'
 import { hapusSidebarPasien, kelolaMenuData, tambahSidebarPasien, ubahSidebarPasien } from '../../lib/faisal/api'
 import { useNotifikasi } from '../../lib/shared/useNotifikasi'
+
+const { Edit3, LayoutPanelLeft, LoaderCircle, Plus, Search: SearchIcon, Trash2 } = LucideIcons
+
+const daftarIkon = Object.keys(LucideIcons)
+  .filter((key) => key !== 'default' && key !== 'createLucideIcon' && /^[A-Z]/.test(key) && !key.endsWith('Icon'))
+  .map((key) => ({
+    label: key,
+    value: key,
+    component: LucideIcons[key]
+  }))
 
 const props = defineProps({ token: { type: String, required: true } })
 const emit = defineEmits(['saved'])
@@ -153,7 +163,7 @@ onMounted(muatData)
       </div>
 
       <div class="user-management-toolbar">
-        <label><Search :size="17" /><input v-model="pencarian" type="search" placeholder="Cari kode, nama, modul, atau permission..." /></label>
+        <label><SearchIcon :size="17" /><input v-model="pencarian" type="search" placeholder="Cari kode, nama, modul, atau permission..." /></label>
       </div>
 
       <DataTable
@@ -197,7 +207,24 @@ onMounted(muatData)
         <div class="user-form-grid">
           <label><span>Nama Sidebar</span><input v-model="form.nama" maxlength="80" required @blur="buatKodeDariNama" /></label>
           <label><span>Kode Sidebar</span><input v-model="form.kode" maxlength="80" placeholder="contoh: cppt_soap" required /><small>Kode harus sama dengan halaman yang didaftarkan oleh programmer frontend.</small></label>
-          <label><span>Nama Ikon</span><input v-model="form.ikon" maxlength="40" placeholder="LayoutDashboard" required /></label>
+          <label class="sidebar-icon-field">
+            <span>Ikon Sidebar</span>
+            <Select v-model="form.ikon" :options="daftarIkon" option-label="label" option-value="value" append-to="body" fluid placeholder="Pilih Ikon" filter :virtualScrollerOptions="{ itemSize: 34 }">
+              <template #value="slotProps">
+                <div v-if="slotProps.value" style="display: flex; align-items: center; gap: 8px;">
+                  <component :is="daftarIkon.find(i => i.value === slotProps.value)?.component" :size="16" />
+                  <span>{{ slotProps.value }}</span>
+                </div>
+                <span v-else>Pilih Ikon</span>
+              </template>
+              <template #option="slotProps">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <component :is="slotProps.option.component" :size="16" />
+                  <span>{{ slotProps.option.label }}</span>
+                </div>
+              </template>
+            </Select>
+          </label>
           <label><span>Urutan</span><input v-model.number="form.urutan" type="number" min="0" max="65535" required /></label>
         </div>
 

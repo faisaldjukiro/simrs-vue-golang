@@ -650,7 +650,7 @@ body.sirava-dark .user-dialog{--surface:#0f172a;--surface-soft:#1e293b;--line:rg
 .patient-status.inactive{color:#b45309;background:rgba(245,158,11,.12)}
 .sidebar-option-section{display:flex;flex-direction:column;gap:9px}.sidebar-option-section>header{display:flex;align-items:center;justify-content:space-between}.sidebar-option-section>header strong{font-size:12px}.sidebar-option-section>header span,.sidebar-permission-field>span{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .sidebar-module-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.sidebar-module-picker button{display:flex;height:42px;align-items:center;gap:8px;padding:0 11px;border:1px solid var(--line);border-radius:11px;color:var(--text);background:var(--surface-soft);font-size:11px;font-weight:750;cursor:pointer}.sidebar-module-picker button i{display:grid;width:18px;height:18px;place-items:center;border:1px solid var(--line);border-radius:5px;font-style:normal}.sidebar-module-picker button.selected{border-color:rgba(13,148,136,.5);background:rgba(20,184,166,.1)}.sidebar-module-picker button.selected i{border-color:#0d9488;color:white;background:#0d9488}
-.sidebar-permission-field{display:flex;flex-direction:column;gap:7px}.sidebar-permission-field small{color:var(--muted);font-size:10px}.sidebar-permission-field .p-select{min-height:43px;border-color:var(--line);color:var(--text);background:var(--surface-soft)}
+.sidebar-permission-field{display:flex;flex-direction:column;gap:7px}.sidebar-permission-field small{color:var(--muted);font-size:10px}.sidebar-permission-field .p-select, .sidebar-icon-field .p-select{min-height:43px;border-color:var(--line);color:var(--text);background:var(--surface-soft)}
 .sidebar-delete-confirm{display:flex;flex-direction:column;gap:8px}.sidebar-delete-confirm p{margin:0;color:var(--text);font-size:13px;line-height:1.6}.sidebar-delete-confirm small{color:var(--muted)}.sidebar-dialog .user-form-grid label small{color:var(--muted);font-size:9px;line-height:1.45}
 .p-select-overlay{z-index:12000!important;border-color:var(--line)!important;color:var(--text)!important;background:var(--surface)!important;box-shadow:0 18px 50px rgba(0,0,0,.28)!important}.p-select-option{color:var(--text)!important}.p-select-option:hover,.p-select-option.p-focus{background:rgba(20,184,166,.1)!important}
 .theme-dark .sidebar-module-list span{color:#5eead4}.theme-dark .menu-management-summary{background:rgba(20,184,166,.09)}
@@ -1451,4 +1451,50 @@ body.sirava-dark .p-toast .p-toast-message-success {
 body.sirava-dark .p-toast .p-toast-message-info {
   border-color: rgba(96, 165, 250, .36) !important;
   background: linear-gradient(90deg, rgba(30, 64, 175, .28), #111c2c 38%) !important;
+}
+body.sirava-dark .p-select-overlay, body.theme-dark .p-select-overlay {
+  background: #0f172a!important;
+  color: #f8fafc!important;
+  border-color: rgba(148,163,184,.2)!important;
+  box-shadow: 0 22px 55px rgba(0,0,0,.42)!important;
+}
+body.sirava-dark .p-select-option:hover, body.sirava-dark .p-select-option.p-focus,
+body.theme-dark .p-select-option:hover, body.theme-dark .p-select-option.p-focus {
+  background: #1e293b!important;
+  color: #5eead4!important;
+}
+body.sirava-dark .p-select-filter-container .p-select-filter, body.theme-dark .p-select-filter-container .p-select-filter {
+  color: #f8fafc!important;
+  background: #1e293b!important;
+  border-color: rgba(148,163,184,.2)!important;
+}
+body.sirava-dark .p-select-overlay input {
+  background: #1e293b!important;
+  color: #f8fafc!important;
+  border: 1px solid rgba(148,163,184,.2)!important;
+}
+body.sirava-dark .p-select-overlay input:focus {
+  border-color: #0d9488!important;
+}
+body.sirava-dark .p-select-filter-icon {
+  color: #94a3b8!important;
+}
+body.sirava-dark .p-select-option.p-select-option-selected,
+body.theme-dark .p-select-option.p-select-option-selected {
+  background: #0d9488!important;
+  color: white!important;
+}
+body.sirava-dark .p-select-option,
+body.theme-dark .p-select-option {
+  color: #f8fafc!important;
+}
+body.sirava-dark .sidebar-icon-field .p-select-label,
+body.theme-dark .sidebar-icon-field .p-select-label,
+body.sirava-dark .sidebar-permission-field .p-select-label,
+body.theme-dark .sidebar-permission-field .p-select-label {
+  color: #f8fafc!important;
+}
+body.sirava-dark .sidebar-icon-field .p-select-dropdown,
+body.sirava-dark .sidebar-permission-field .p-select-dropdown {
+  color: #cbd5e1!important;
 }

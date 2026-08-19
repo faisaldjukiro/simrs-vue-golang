@@ -1,26 +1,5 @@
 <script setup>
-import {
-  Activity,
-  ArrowLeft,
-  Bed,
-  ClipboardList,
-  FileText,
-  FlaskConical,
-  HeartPulse,
-  History,
-  LayoutDashboard,
-  NotebookText,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Pill,
-  ScanSearch,
-  Search,
-  ShieldX,
-  Stethoscope,
-  Syringe,
-  Users,
-  WifiOff,
-} from '@lucide/vue'
+import * as LucideIcons from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import PatientIdentityHeader from './PatientIdentityHeader.vue'
 import CpptPage from '../../Pages/RawatInap/CpptPage.vue'
@@ -34,6 +13,9 @@ import ResumePasienRanapPage from '../../Pages/RawatInap/ResumePasienRanapPage.v
 import DiagnosaPasienPage from '../../Pages/Pasien/DiagnosaPasienPage.vue'
 import AwalMedisUmumPage from '../../Pages/RawatJalan/AwalMedisUmumPage.vue'
 import AwalMedisRanapPage from '../../Pages/RawatInap/AwalMedisRanapPage.vue'
+import AwalMedisIgdPage from '../../Pages/IGD/AwalMedisIgdPage.vue'
+
+const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -49,24 +31,6 @@ const kodeSidebarAktif = ref('ringkasan')
 const pencarianSidebar = ref('')
 const sidebarCollapsed = ref(localStorage.getItem('sirava.patient_sidebar.collapsed') === '1')
 
-const iconMap = {
-  Activity,
-  Bed,
-  ClipboardList,
-  FileText,
-  FileSignature: FileText,
-  FlaskConical,
-  HeartPulse,
-  History,
-  LayoutDashboard,
-  NotebookText,
-  Pill,
-  ScanSearch,
-  Stethoscope,
-  Syringe,
-  Users,
-}
-
 const halamanSidebar = {
   cppt_soap: CpptPage,
   penanganan_dokter_petugas: PenangananDokterPetugasPage,
@@ -77,6 +41,7 @@ const halamanSidebar = {
   awal_keperawatan_igd: AwalKeperawatanIgdPage,
   resume_pasien: ResumePasienRanapPage,
   diagnosa: DiagnosaPasienPage,
+  awal_medis_igd: AwalMedisIgdPage,
   sidebar_0031: AwalMedisUmumPage,
 }
 
@@ -97,7 +62,7 @@ const daftarSidebarAktif = computed(() => {
 
   return daftar.map((item) => ({
     ...item,
-    iconComponent: iconMap[item.ikon] || LayoutDashboard,
+    iconComponent: LucideIcons[item.ikon] || LayoutDashboard,
   }))
 })
 
