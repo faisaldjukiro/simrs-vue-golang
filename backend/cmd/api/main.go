@@ -21,6 +21,10 @@ import (
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	"simrs-backend/internal/modules/awal_keperawatan_igd"
 	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
+	"simrs-backend/internal/modules/awal_medis_umum"
+	awalmedisumumhttp "simrs-backend/internal/modules/awal_medis_umum/delivery/http"
+	"simrs-backend/internal/modules/awal_medis_ranap"
+	awalmedisranaphttp "simrs-backend/internal/modules/awal_medis_ranap/delivery/http"
 	"simrs-backend/internal/modules/beranda"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
 	"simrs-backend/internal/modules/bpjs"
@@ -133,6 +137,10 @@ func main() {
 	triaseIGDHandler := triaseigdhttp.NewHandler(triase_igd.NewLayanan(triaseIGDRepositori))
 	awalKeperawatanIGDRepositori := awal_keperawatan_igd.NewRepositori(simrsDB)
 	awalKeperawatanIGDHandler := awalkeperawatanigdhttp.NewHandler(awal_keperawatan_igd.NewLayanan(awalKeperawatanIGDRepositori))
+	awalMedisUmumRepositori := awal_medis_umum.NewRepositori(simrsDB)
+	awalMedisUmumHandler := awalmedisumumhttp.NewHandler(awal_medis_umum.NewLayanan(awalMedisUmumRepositori))
+	awalMedisRanapRepositori := awal_medis_ranap.NewRepositori(simrsDB)
+	awalMedisRanapHandler := awalmedisranaphttp.NewHandler(awal_medis_ranap.NewLayanan(awalMedisRanapRepositori))
 	resumePasienRanapRepositori := resume_pasien_ranap.NewRepositori(simrsDB)
 	resumePasienRanapHandler := resumepasienranaphttp.NewHandler(resume_pasien_ranap.NewLayanan(resumePasienRanapRepositori))
 	aktivitasLogRepositori := aktivitas_log.NewRepositori(db, simrsDB)
@@ -157,6 +165,8 @@ func main() {
 		RiwayatPerawatan:        riwayatPerawatanHandler,
 		TriaseIGD:               triaseIGDHandler,
 		AwalKeperawatanIGD:      awalKeperawatanIGDHandler,
+		AwalMedisUmum:           awalMedisUmumHandler,
+		AwalMedisRanap:          awalMedisRanapHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})

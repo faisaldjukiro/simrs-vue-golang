@@ -307,6 +307,29 @@ export function hapusAwalKeperawatanIgd(token, noRawat) {
   return request(`/api/awal-keperawatan-igd?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
 
+export function awalMedisUmumData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/awal-medis-umum?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariDokterAwalMedisUmum(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/awal-medis-umum/dokter?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanAwalMedisUmum(token, payload) {
+  return request('/api/awal-medis-umum', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahAwalMedisUmum(token, payload) {
+  return request('/api/awal-medis-umum', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusAwalMedisUmum(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/awal-medis-umum?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+}
+
 export function resumePasienRanapData(token, noRawat) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/resume-pasien-ranap?${query}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -355,4 +378,27 @@ export function hapusCodingDiagnosaPasien(token, { noRawat, status, jenis, kode 
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   })
+}
+
+export function awalMedisRanapData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/awal-medis-ranap?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function cariDokterAwalMedisRanap(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/awal-medis-ranap/dokter?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function simpanAwalMedisRanap(token, payload) {
+  return request('/api/awal-medis-ranap', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function ubahAwalMedisRanap(token, payload) {
+  return request('/api/awal-medis-ranap', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+}
+
+export function hapusAwalMedisRanap(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/awal-medis-ranap?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }

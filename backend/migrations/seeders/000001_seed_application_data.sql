@@ -22,6 +22,7 @@ INSERT INTO permissions (`group`, name, code, created_at, updated_at) VALUES
     ('Sidebar Pasien', 'Riwayat Perawatan', 'pasien.riwayat_perawatan', NOW(), NOW()),
     ('Sidebar Pasien', 'Triase IGD', 'pasien.triase_igd', NOW(), NOW()),
     ('Sidebar Pasien', 'Awal Keperawatan IGD', 'pasien.awal_keperawatan_igd', NOW(), NOW()),
+    ('Sidebar Pasien', 'Awal Medis Umum', 'pasien.awal_medis_umum', NOW(), NOW()),
     ('Sidebar Pasien', 'Resume Pasien', 'pasien.resume_pasien', NOW(), NOW()),
     ('Sistem', 'Kelola Menu Navigasi', 'kelola_menu', NOW(), NOW()),
     ('Sistem', 'Log Aktivitas', 'sistem.audit_log', NOW(), NOW()),
@@ -106,7 +107,7 @@ VALUES
     ('Awal Fisioterapi', 'Dumbbell', JSON_ARRAY('Rawat Inap'), 29, TRUE, NOW(), NOW()),
     ('Edukasi Pasien', 'BookOpen', JSON_ARRAY('Rawat Inap'), 30, TRUE, NOW(), NOW()),
     ('Registrasi Kanker', 'Ribbon', JSON_ARRAY('Rawat Inap'), 31, TRUE, NOW(), NOW()),
-    ('Awal Medis Umum', 'Stethoscope', JSON_ARRAY('Rawat Inap'), 32, TRUE, NOW(), NOW()),
+    ('Awal Medis Umum', 'Stethoscope', JSON_ARRAY('Rawat Jalan'), 32, TRUE, NOW(), NOW()),
     ('Awal Medis Kandungan', 'Baby', JSON_ARRAY('Rawat Inap'), 33, TRUE, NOW(), NOW()),
     ('Checklist Pre Operasi', 'ClipboardCheck', JSON_ARRAY('Rawat Inap'), 34, TRUE, NOW(), NOW()),
     ('Penilaian Pre Operasi', 'Scissors', JSON_ARRAY('Rawat Inap'), 35, TRUE, NOW(), NOW()),
@@ -159,6 +160,8 @@ UPDATE sidebar_pasien SET kode_sidebar = 'triase_igd', permission_code = 'pasien
 WHERE nama_sidebar = 'Triase IGD';
 UPDATE sidebar_pasien SET kode_sidebar = 'awal_keperawatan_igd', permission_code = 'pasien.awal_keperawatan_igd'
 WHERE nama_sidebar = 'Awal Keperawatan IGD';
+UPDATE sidebar_pasien SET kode_sidebar = 'sidebar_0031', permission_code = 'pasien.awal_medis_umum'
+WHERE nama_sidebar = 'Awal Medis Umum';
 UPDATE sidebar_pasien SET kode_sidebar = 'resume_pasien', permission_code = 'pasien.resume_pasien'
 WHERE nama_sidebar IN ('Resume Pasien', 'Resume Pasien Ranap');
 

@@ -24,7 +24,7 @@ import {
 import { computed, ref, watch } from 'vue'
 import PatientIdentityHeader from './PatientIdentityHeader.vue'
 import CpptPage from '../../Pages/RawatInap/CpptPage.vue'
-import PenangananDokterPetugasPage from '../../Pages/RawatInap/PenangananDokterPetugasPage.vue'
+import PenangananDokterPetugasPage from '../../Pages/Pasien/PenangananDokterPetugasPage.vue'
 import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologiPage.vue'
 import PermintaanLaboratoriumPage from '../../Pages/Pasien/PermintaanLaboratoriumPage.vue'
 import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
@@ -32,6 +32,8 @@ import TriaseIgdPage from '../../Pages/IGD/TriaseIgdPage.vue'
 import AwalKeperawatanIgdPage from '../../Pages/IGD/AwalKeperawatanIgdPage.vue'
 import ResumePasienRanapPage from '../../Pages/RawatInap/ResumePasienRanapPage.vue'
 import DiagnosaPasienPage from '../../Pages/Pasien/DiagnosaPasienPage.vue'
+import AwalMedisUmumPage from '../../Pages/RawatJalan/AwalMedisUmumPage.vue'
+import AwalMedisRanapPage from '../../Pages/RawatInap/AwalMedisRanapPage.vue'
 
 const props = defineProps({
   moduleName: { type: String, required: true },
@@ -75,6 +77,7 @@ const halamanSidebar = {
   awal_keperawatan_igd: AwalKeperawatanIgdPage,
   resume_pasien: ResumePasienRanapPage,
   diagnosa: DiagnosaPasienPage,
+  sidebar_0031: AwalMedisUmumPage,
 }
 
 const daftarSidebarAktif = computed(() => {
@@ -112,7 +115,12 @@ const daftarSidebarTersaring = computed(() => {
 })
 
 const sidebarAktif = computed(() => daftarSidebarAktif.value.find((item) => item.kode === kodeSidebarAktif.value))
-const komponenSidebarAktif = computed(() => halamanSidebar[kodeSidebarAktif.value] || null)
+const komponenSidebarAktif = computed(() => {
+  if (kodeSidebarAktif.value === 'sidebar_0031') {
+    return props.moduleName === 'Rawat Inap' ? AwalMedisRanapPage : AwalMedisUmumPage
+  }
+  return halamanSidebar[kodeSidebarAktif.value] || null
+})
 const propertiHalamanAktif = computed(() => {
   const properti = { token: props.token, patient: props.patient }
   if (['cppt_soap', 'penanganan_dokter_petugas'].includes(kodeSidebarAktif.value)) {

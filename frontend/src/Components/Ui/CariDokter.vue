@@ -1,6 +1,6 @@
 <script setup>
 import InputPencarian from './InputPencarian.vue'
-import { cariDokterLaboratorium, cariDokterPenanganan, cariDokterRadiologi } from '../../lib/faisal/api'
+import { cariDokterAwalMedisUmum, cariDokterAwalMedisRanap, cariDokterLaboratorium, cariDokterPenanganan, cariDokterRadiologi } from '../../lib/faisal/api'
 
 const model = defineModel({ default: () => ({}) })
 const props = defineProps({
@@ -11,6 +11,8 @@ const props = defineProps({
 })
 
 const cariDokter = (kataKunci) => {
+  if (props.sumber === 'awal-medis-umum') return cariDokterAwalMedisUmum(props.token, kataKunci)
+  if (props.sumber === 'awal-medis-ranap') return cariDokterAwalMedisRanap(props.token, kataKunci)
   if (props.sumber === 'radiologi') return cariDokterRadiologi(props.token, kataKunci)
   if (props.sumber === 'laboratorium') return cariDokterLaboratorium(props.token, kataKunci)
   return cariDokterPenanganan(props.token, kataKunci)

@@ -9,6 +9,8 @@ import (
 	aktivitasloghttp "simrs-backend/internal/modules/aktivitas_log/delivery/http"
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
+	awalmedisumumhttp "simrs-backend/internal/modules/awal_medis_umum/delivery/http"
+	awalmedisranaphttp "simrs-backend/internal/modules/awal_medis_ranap/delivery/http"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
 	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
@@ -30,6 +32,8 @@ type Dependencies struct {
 	AktivitasLog            *aktivitasloghttp.Handler
 	Autentikasi             *autentikasihttp.Handler
 	AwalKeperawatanIGD      *awalkeperawatanigdhttp.Handler
+	AwalMedisUmum           *awalmedisumumhttp.Handler
+	AwalMedisRanap          *awalmedisranaphttp.Handler
 	Beranda                 *berandahttp.Handler
 	BPJS                    *bpjshttp.Handler
 	BPJSDataKlaim           *dataklaimhttp.Handler
@@ -79,6 +83,8 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		{"/riwayat-perawatan", "pasien.riwayat_perawatan", dependencies.RiwayatPerawatan.Register},
 		{"/triase-igd", "pasien.triase_igd", dependencies.TriaseIGD.Register},
 		{"/awal-keperawatan-igd", "pasien.awal_keperawatan_igd", dependencies.AwalKeperawatanIGD.Register},
+		{"/awal-medis-umum", "pasien.awal_medis_umum", dependencies.AwalMedisUmum.Register},
+		{"/awal-medis-ranap", "pasien.awal_medis_ranap", dependencies.AwalMedisRanap.Register},
 	}
 	for _, routeSidebar := range daftarRouteSidebar {
 		group := protectedAPI.Group(routeSidebar.path)

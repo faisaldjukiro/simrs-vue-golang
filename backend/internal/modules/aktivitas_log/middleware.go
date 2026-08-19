@@ -234,6 +234,8 @@ func tabelTarget(modul string) string {
 		"resume-pasien-ranap":       "resume_pasien",
 		"triase-igd":                "data_triase_igd",
 		"awal-keperawatan-igd":      "penilaian_awal_keperawatan_igd",
+		"awal-medis-umum":           "penilaian_medis_ralan",
+		"awal-medis-ranap":          "penilaian_medis_ranap",
 		"bpjs/monitoring/klaim":     "bpjs_vclaim",
 	}[modul]
 }
