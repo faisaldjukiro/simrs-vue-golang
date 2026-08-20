@@ -213,19 +213,14 @@ func (r *Repositori) CariDokter(ctx context.Context, kata string) ([]Dokter, err
 }
 
 func (r *Repositori) CariTindakan(ctx context.Context, noRawat, kata string) ([]Tindakan, error) {
-	lingkup, err := r.lingkup(ctx, r.simrsDB, noRawat)
-	if err != nil {
-		return nil, err
-	}
 	seperti := "%" + strings.TrimSpace(kata) + "%"
 	rows, err := r.simrsDB.QueryContext(ctx, `
 		SELECT kd_jenis_prw, COALESCE(nm_perawatan,''), kd_pj, kelas, COALESCE(total_byr,0)
 		FROM jns_perawatan_radiologi
 		WHERE status='1'
-			AND kd_pj=?
 			AND (kd_jenis_prw LIKE ? OR nm_perawatan LIKE ?)
 		ORDER BY nm_perawatan LIMIT 50
-	`, lingkup.KodeCaraBayar, seperti, seperti)
+	`, seperti, seperti)
 	if err != nil {
 		return nil, fmt.Errorf("cari tindakan radiologi: %w", err)
 	}

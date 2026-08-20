@@ -118,7 +118,7 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
           </section>
 
           <section class="medical-section">
-            <h4><span>I.</span> Riwayat Kesehatan</h4>
+            <h4>I. RIWAYAT KESEHATAN</h4>
             <div class="medical-grid history-grid">
               <FormInput v-model="form.anamnesis" label="Anamnesis" jenis="select" :options="pilihan.anamnesis" required/>
               <FormInput v-model="form.hubungan" label="Hubungan" maxlength="30" placeholder="Hubungan pemberi informasi dengan pasien"/>
@@ -132,7 +132,7 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
           </section>
 
           <section class="medical-section">
-            <h4><span>II.</span> Pemeriksaan Fisik</h4>
+            <h4>II. PEMERIKSAAN FISIK</h4>
             <div class="medical-grid vital-grid">
               <FormInput v-model="form.keadaan" label="Keadaan Umum" jenis="select" :options="pilihan.keadaan"/>
               <FormInput v-model="form.gcs" label="GCS" maxlength="10"/>
@@ -160,7 +160,7 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
           </section>
 
           <section class="medical-section">
-            <h4><span>III.</span> Status Lokalis</h4>
+            <h4>III. STATUS LOKALIS</h4>
             <div class="lokalis-container">
               <img src="/img/lokalis.png" alt="Status Lokalis" class="lokalis-image"/>
             </div>
@@ -168,12 +168,12 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
           </section>
 
           <section class="medical-section conclusion-section">
-            <h4><span>IV–VII.</span> Kesimpulan & Rencana Pelayanan</h4>
+            <h4>Kesimpulan & Rencana Pelayanan</h4>
             <div class="medical-grid conclusion-grid">
-              <FormInput v-model="form.penunjang" label="Pemeriksaan Penunjang" jenis="textarea" :rows="4" maxlength="3000"/>
-              <FormInput v-model="form.diagnosis" label="Diagnosis / Asesmen" jenis="textarea" :rows="4" maxlength="500"/>
-              <FormInput v-model="form.tata" label="Tatalaksana" jenis="textarea" :rows="5" maxlength="5000"/>
-              <FormInput v-model="form.konsulrujuk" label="Konsul / Rujuk" jenis="textarea" :rows="5" maxlength="1000"/>
+              <FormInput v-model="form.penunjang" label="IV. PEMERIKSAAN PENUNJANG" jenis="textarea" :rows="4" maxlength="3000"/>
+              <FormInput v-model="form.diagnosis" label="V. DIAGNOSIS / ASESMEN" jenis="textarea" :rows="4" maxlength="500"/>
+              <FormInput v-model="form.tata" label="VI. TATALAKSANA" jenis="textarea" :rows="5" maxlength="5000"/>
+              <FormInput v-model="form.konsulrujuk" label="VII. KONSUL / RUJUK" jenis="textarea" :rows="5" maxlength="1000"/>
             </div>
           </section>
         </div>

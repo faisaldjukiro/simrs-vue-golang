@@ -142,7 +142,7 @@ func (r *Repositori) daftar(ctx context.Context, noRawat string) ([]Permintaan, 
 		INNER JOIN dokter d ON d.kd_dokter=pl.dokter_perujuk
 		INNER JOIN permintaan_pemeriksaan_lab ppl ON ppl.noorder=pl.noorder
 		INNER JOIN jns_perawatan_lab j ON j.kd_jenis_prw=ppl.kd_jenis_prw
-		WHERE pl.no_rawat=? AND j.kategori='PK'
+		WHERE pl.no_rawat=?
 		ORDER BY pl.tgl_permintaan DESC,pl.jam_permintaan DESC,j.nm_perawatan
 	`, noRawat)
 	if err != nil {
@@ -229,17 +229,13 @@ func (r *Repositori) CariDokter(ctx context.Context, kata string) ([]Dokter, err
 }
 
 func (r *Repositori) CariTindakan(ctx context.Context, noRawat, kata string) ([]Tindakan, error) {
-	lingkup, err := r.lingkup(ctx, r.simrsDB, noRawat)
-	if err != nil {
-		return nil, err
-	}
 	seperti := "%" + strings.TrimSpace(kata) + "%"
 	rows, err := r.simrsDB.QueryContext(ctx, `
 		SELECT j.kd_jenis_prw,COALESCE(j.nm_perawatan,''),j.kd_pj,j.kelas,COALESCE(j.total_byr,0),COUNT(t.id_template)
 		FROM jns_perawatan_lab j LEFT JOIN template_laboratorium t ON t.kd_jenis_prw=j.kd_jenis_prw
-		WHERE j.status='1' AND j.kategori='PK' AND j.kd_pj=? AND (j.kd_jenis_prw LIKE ? OR j.nm_perawatan LIKE ?)
+		WHERE j.status='1' AND (j.kd_jenis_prw LIKE ? OR j.nm_perawatan LIKE ?)
 		GROUP BY j.kd_jenis_prw,j.nm_perawatan,j.kd_pj,j.kelas,j.total_byr ORDER BY j.nm_perawatan LIMIT 50
-	`, lingkup.KodeCaraBayar, seperti, seperti)
+	`, seperti, seperti)
 	if err != nil {
 		return nil, fmt.Errorf("cari tindakan laboratorium: %w", err)
 	}
@@ -446,7 +442,7 @@ func (r *Repositori) simpanDetail(ctx context.Context, tx *sql.Tx, nomor, kode s
 
 func (r *Repositori) tindakan(ctx context.Context, q queryer, lingkup lingkupTarif, kode string) (Tindakan, error) {
 	var item Tindakan
-	err := q.QueryRowContext(ctx, `SELECT kd_jenis_prw,COALESCE(nm_perawatan,''),kd_pj,kelas,COALESCE(total_byr,0) FROM jns_perawatan_lab WHERE kd_jenis_prw=? AND status='1' AND kategori='PK' AND kd_pj=? LIMIT 1`, kode, lingkup.KodeCaraBayar).Scan(&item.Kode, &item.Nama, &item.KodeCaraBayar, &item.Kelas, &item.Total)
+	err := q.QueryRowContext(ctx, `SELECT kd_jenis_prw,COALESCE(nm_perawatan,''),kd_pj,kelas,COALESCE(total_byr,0) FROM jns_perawatan_lab WHERE kd_jenis_prw=? AND status='1' LIMIT 1`, kode).Scan(&item.Kode, &item.Nama, &item.KodeCaraBayar, &item.Kelas, &item.Total)
 	if errors.Is(err, sql.ErrNoRows) {
 		return item, fmt.Errorf("tindakan laboratorium %s tidak tersedia untuk pasien", kode)
 	}
