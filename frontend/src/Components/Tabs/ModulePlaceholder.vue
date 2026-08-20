@@ -14,7 +14,7 @@ const emit = defineEmits(['back'])
     <span :class="`tone-bg-${ribbonMenus.find((item) => item.label === currentTab)?.tone || 'slate'}`">
       <component :is="ribbonMenus.find((item) => item.label === currentTab)?.icon || LayoutDashboard" :size="30" />
     </span>
-    <p>Modul SIRAVA</p>
+    <p>Modul SIRAPI</p>
     <h1>{{ currentTab }}</h1>
     <div>Struktur halaman {{ currentTab }} akan dimigrasikan pada tahap berikutnya.</div>
     <button type="button" @click="emit('back')">Kembali ke Beranda</button>

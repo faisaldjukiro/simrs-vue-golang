@@ -10,7 +10,7 @@ createApp(App)
     theme: {
       preset: Aura,
       options: {
-        darkModeSelector: '.sirava-dark',
+        darkModeSelector: '.sirapi-dark',
       },
     },
   })

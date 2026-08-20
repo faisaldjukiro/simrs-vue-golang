@@ -225,11 +225,11 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
 .pain-scale-guide{display:grid;justify-items:center;gap:8px;margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}.pain-scale-guide img{display:block;width:min(468px,100%);height:auto}.pain-scale-guide figcaption{color:#475569;font-size:.74rem}.pain-scale-guide>div{display:grid;width:100%;grid-template-columns:repeat(11,minmax(28px,1fr));gap:4px}.pain-scale-guide button{min-height:30px;border:1px solid #cbd5e1;border-radius:7px;color:#334155;background:#f8fafc;font-size:.74rem;font-weight:650;cursor:pointer}.pain-scale-guide button:hover{border-color:#0d9488}.pain-scale-guide button.active{border-color:#0d9488;color:#fff;background:#0d9488;box-shadow:0 0 0 2px rgba(13,148,136,.14)}
 .initial-nursing-form.cppt-form fieldset{padding:20px}.initial-nursing-form .nursing-section{border-color:#d5dee8;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.04)}.initial-nursing-form .nursing-section h4{color:#172033}.initial-nursing-form .cppt-form-actions{margin-top:6px;padding-top:17px}
 :global(.theme-light .initial-nursing-form.cppt-form fieldset){background:#f6f8fb}
-:global(.theme-dark .initial-nursing-form.cppt-form fieldset),:global(.sirava-dark .initial-nursing-form.cppt-form fieldset){background:linear-gradient(135deg,#111c2c 0%,#0e1b29 100%)}
-:global(.theme-dark .initial-nursing-form .nursing-section),:global(.sirava-dark .initial-nursing-form .nursing-section){border-color:#304258;background:#142132;box-shadow:none}
-:global(.theme-dark .initial-nursing-form .nursing-section h4),:global(.sirava-dark .initial-nursing-form .nursing-section h4){color:#f8fafc}
+:global(.theme-dark .initial-nursing-form.cppt-form fieldset),:global(.sirapi-dark .initial-nursing-form.cppt-form fieldset){background:linear-gradient(135deg,#111c2c 0%,#0e1b29 100%)}
+:global(.theme-dark .initial-nursing-form .nursing-section),:global(.sirapi-dark .initial-nursing-form .nursing-section){border-color:#304258;background:#142132;box-shadow:none}
+:global(.theme-dark .initial-nursing-form .nursing-section h4),:global(.sirapi-dark .initial-nursing-form .nursing-section h4){color:#f8fafc}
 :global(.initial-nursing-dialog){--surface:#fff;--border:#dbe4ee;--text:#0f172a;color:var(--text);background:var(--surface)}
-:global(body.sirava-dark .initial-nursing-dialog){--surface:#0f172a;--border:rgba(148,163,184,.18);--text:#f8fafc;color:#f8fafc;background:#0f172a}
+:global(body.sirapi-dark .initial-nursing-dialog){--surface:#0f172a;--border:rgba(148,163,184,.18);--text:#f8fafc;color:#f8fafc;background:#0f172a}
 
 /* Lembar pengkajian disusun berurutan seperti form Khanza. */
 .nursing-sheet{overflow:hidden;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
@@ -259,10 +259,10 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
 :global(.theme-light .initial-nursing-form .nursing-sheet){background:#fff;border-color:#d8e1eb}
 :global(.theme-light .initial-nursing-form .assessment-meta){background:#f5f8fb}
 :global(.theme-light .initial-nursing-form .assessment-strip:nth-child(even)){background:#fbfcfd}
-:global(.theme-dark .initial-nursing-form .nursing-sheet),:global(.sirava-dark .initial-nursing-form .nursing-sheet){background:#142132;border-color:#304258}
-:global(.theme-dark .initial-nursing-form .assessment-strip),:global(.sirava-dark .initial-nursing-form .assessment-strip){border-color:#304258;background:#142132}
-:global(.theme-dark .initial-nursing-form .assessment-meta),:global(.sirava-dark .initial-nursing-form .assessment-meta){background:#111d2c}
-:global(.theme-dark .initial-nursing-form .assessment-strip>h4),:global(.sirava-dark .initial-nursing-form .assessment-strip>h4){color:#f8fafc}
+:global(.theme-dark .initial-nursing-form .nursing-sheet),:global(.sirapi-dark .initial-nursing-form .nursing-sheet){background:#142132;border-color:#304258}
+:global(.theme-dark .initial-nursing-form .assessment-strip),:global(.sirapi-dark .initial-nursing-form .assessment-strip){border-color:#304258;background:#142132}
+:global(.theme-dark .initial-nursing-form .assessment-meta),:global(.sirapi-dark .initial-nursing-form .assessment-meta){background:#111d2c}
+:global(.theme-dark .initial-nursing-form .assessment-strip>h4),:global(.sirapi-dark .initial-nursing-form .assessment-strip>h4){color:#f8fafc}
 
 @media(max-width:1200px){.assessment-meta .intro-grid{grid-template-columns:210px 210px 1fr}.physical-grid,.psycho-grid{grid-template-columns:repeat(3,minmax(140px,1fr))}.pain-assessment-layout{grid-template-columns:1fr}.pain-fields{grid-template-columns:repeat(3,minmax(140px,1fr))}}
 @media(max-width:850px){.assessment-meta .intro-grid,.history-grid,.pregnancy-fields,.physical-grid,.elimination-grid,.psycho-grid,.function-grid,.pain-fields,.risk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.assessment-meta .staff-field,.history-grid>.wide,.history-grid>.pregnancy-fields{grid-column:1/-1}}

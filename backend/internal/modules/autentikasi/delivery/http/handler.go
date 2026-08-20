@@ -114,7 +114,7 @@ func (h *Handler) WajibPermission(daftarKode ...string) gin.HandlerFunc {
 			return
 		}
 		if !memilikiAkses {
-			httpresponse.Error(c, http.StatusForbidden, "PERMISSION_DENIED", "Anda tidak memiliki akses ke sidebar ini")
+			httpresponse.Error(c, http.StatusForbidden, "PERMISSION_DENIED", "Anda tidak memiliki akses ke modul ini")
 			c.Abort()
 			return
 		}

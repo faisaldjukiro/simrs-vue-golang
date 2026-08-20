@@ -4,7 +4,7 @@ File ini adalah instruksi cepat untuk AI coding agent yang bekerja di folder `ba
 
 ## Konteks Project
 
-Ini backend baru SIRAVA (Sistem Informasi Rumah Sakit Terintegrasi) berbasis Go, Gin, dan MySQL. Project sedang dipakai untuk migrasi bertahap dari `simrs-lama`.
+Ini backend baru SIRAPI (Sistem Informasi Rumah Sakit Pelayanan Terintegrasi) berbasis Go, Gin, dan MySQL. Project sedang dipakai untuk migrasi bertahap dari `simrs-lama`.
 
 Jangan ubah `simrs-lama` kecuali user meminta secara eksplisit. Pakai folder itu hanya sebagai referensi.
 
@@ -87,9 +87,9 @@ Gunakan penamaan Bahasa Indonesia untuk module, struct, fungsi, dan variabel bar
 
 Sidebar ruang kerja pasien berasal dari tabel aplikasi lokal `sidebar_pasien`.
 Gunakan `kode_sidebar` sebagai identitas stabil untuk pemetaan halaman frontend;
-jangan memakai `nama_sidebar` untuk menentukan komponen. Akses sidebar dan
-endpoint pelayanannya mengikuti `permission_code` serta tabel
-`user_permissions`. User dengan permission `*` memiliki akses penuh.
+jangan memakai `nama_sidebar` untuk menentukan komponen. Sidebar pasien tidak
+memakai permission per item. Akses sidebar mengikuti akses modul besar pasien:
+IGD/UGD, Rawat Jalan, dan Rawat Inap.
 
 ## Route Developer
 

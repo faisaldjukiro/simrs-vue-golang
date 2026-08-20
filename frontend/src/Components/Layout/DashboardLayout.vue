@@ -73,7 +73,7 @@ function selectMenu(label) {
           <header>
             <div>
               <i><Search :size="20" /></i>
-              <span><small>Pencarian Modul</small><strong>Menu SIRAVA</strong></span>
+              <span><small>Pencarian Modul</small><strong>Menu SIRAPI</strong></span>
             </div>
             <button type="button" @click="menuOpenModel = false"><X :size="20" /></button>
           </header>

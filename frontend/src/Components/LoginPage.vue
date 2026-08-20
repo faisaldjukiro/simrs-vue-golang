@@ -51,7 +51,7 @@ function submit() {
           <header class="brand">
             <img src="/img/icon_rsas.png" alt="RSAS" />
             <div>
-              <p>SIRAVA</p>
+              <p>SIRAPI</p>
               <h1>RS Prof. Dr. H. Aloei Saboe</h1>
             </div>
           </header>
@@ -62,12 +62,12 @@ function submit() {
               Sistem pelayanan aktif
             </span>
             <h2>Ruang kerja digital untuk pelayanan yang lebih tenang.</h2>
-            <p>SIRAVA, Sistem Informasi Rumah Sakit Terintegrasi, menyatukan data registrasi, rawat jalan, IGD, penunjang, dan farmasi dalam satu portal yang rapi dan mudah dipantau.</p>
+            <p>SIRAPI, Sistem Informasi Rumah Sakit Pelayanan Terintegrasi, menyatukan data registrasi, rawat jalan, IGD, penunjang, dan farmasi dalam satu portal yang rapi dan mudah dipantau.</p>
           </div>
 
           <div class="stat-grid">
             <article><strong>24/7</strong><span>Monitoring</span></article>
-            <article><strong>SIRAVA</strong><span>Terintegrasi</span></article>
+            <article><strong>SIRAPI</strong><span>Terintegrasi</span></article>
             <article><strong>RSAS</strong><span>Gorontalo</span></article>
           </div>
         </div>
@@ -78,7 +78,7 @@ function submit() {
           <header class="mobile-brand brand">
             <img src="/img/icon_rsas.png" alt="RSAS" />
             <div>
-              <p>SIRAVA</p>
+              <p>SIRAPI</p>
               <h1>RS Prof. Dr. H. Aloei Saboe</h1>
             </div>
           </header>
@@ -124,7 +124,7 @@ function submit() {
               <i></i>
               <LoaderCircle v-if="loading" class="spin" :size="20" />
               <Sparkles v-else :size="20" />
-              <span>{{ loading ? 'Memeriksa akun...' : 'Masuk SIRAVA' }}</span>
+              <span>{{ loading ? 'Memeriksa akun...' : 'Masuk SIRAPI' }}</span>
             </button>
           </form>
 
@@ -133,7 +133,7 @@ function submit() {
             <p><strong>Akses aman.</strong> Aktivitas masuk mengikuti akun dan hak akses yang diberikan administrator.</p>
           </div>
 
-          <footer>SIRAVA &copy; {{ year }} RS Prof. Dr. H. Aloei Saboe</footer>
+          <footer>SIRAPI &copy; {{ year }} RS Prof. Dr. H. Aloei Saboe</footer>
         </div>
       </div>
     </section>

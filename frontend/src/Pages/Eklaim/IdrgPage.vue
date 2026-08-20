@@ -1729,7 +1729,7 @@ function payloadKlaim(aksi = '') {
 
       <div class="idrg-sidebar-note">
         <strong>IDRG / INA-CBG</strong>
-        <span>Alur dibuat mengikuti SIMRS lama, dipindahkan bertahap ke SIRAVA.</span>
+        <span>Alur dibuat mengikuti SIMRS lama, dipindahkan bertahap ke SIRAPI.</span>
       </div>
     </aside>
 

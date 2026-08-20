@@ -19,13 +19,13 @@ const emit = defineEmits(['select-tab', 'open-menu'])
         <img src="/img/benner.png" alt="RS Prof. Dr. H. Aloei Saboe" />
         <div class="hero-overlay"></div>
         <div class="hero-content">
-          <span class="simrs-label"><Heart :size="14" /> Sistem Informasi Rumah Sakit Terintegrasi</span>
+          <span class="simrs-label"><Heart :size="14" /> Sistem Informasi Rumah Sakit Pelayanan Terintegrasi</span>
           <div class="hero-title">
             <img src="/img/icon_rsas.png" alt="Logo RSAS" />
-            <h1>SIRAVA</h1>
+            <h1>SIRAPI</h1>
           </div>
           <p class="location"><MapPin :size="16" /> PROF. DR. H. ALOEI SABOE GORONTALO</p>
-          <p class="hero-description">SIRAVA adalah Sistem Informasi Rumah Sakit Terintegrasi untuk administrasi medis dan pelayanan digital. Membantu koordinasi antardepartemen secara cepat, responsif, dan aman.</p>
+          <p class="hero-description">SIRAPI adalah Sistem Informasi Rumah Sakit Pelayanan Terintegrasi untuk administrasi medis dan pelayanan digital. Membantu koordinasi antardepartemen secara cepat, responsif, dan aman.</p>
           <div class="connection-info" :class="{ connection_error: dashboardError }">
             <CheckCircle2 :size="20" />
             {{ dashboardLoading ? 'Memeriksa koneksi database SIMRS lama...' : dashboardError || 'Database SIMRS lama terhubung dan siap digunakan.' }}

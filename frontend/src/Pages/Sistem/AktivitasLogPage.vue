@@ -108,7 +108,7 @@ onMounted(() => muat())
   <section class="activity-module">
     <header class="activity-header">
       <div>
-        <span>Audit Trail SIRAVA</span>
+        <span>Audit Trail SIRAPI</span>
         <h1>Log Aktivitas</h1>
         <p>Riwayat login, akses data, perubahan, kegagalan, alamat IP, dan waktu proses.</p>
       </div>
@@ -285,17 +285,17 @@ onMounted(() => muat())
 :global(.theme-dark) .activity-module :deep(.activity-filter .ui-date-picker),:global(.theme-dark) .activity-module :deep(.activity-filter .ui-select),:global(.theme-dark) .activity-module .activity-search>div{border-color:#405269!important;background:#1c283a!important}
 :global(.theme-dark) .activity-module :deep(.activity-filter .p-select-overlay){border-color:#405269!important;background:#111c2c!important;box-shadow:0 22px 55px rgba(0,0,0,.42)!important}
 :global(.theme-dark) .activity-module :deep(.activity-filter .p-select-option:not(.p-disabled).p-focus),:global(.theme-dark) .activity-module :deep(.activity-filter .p-select-option:not(.p-disabled):hover){color:#5eead4!important;background:#26364b!important}
-:global(.sirava-dark .activity-dialog){border-color:rgba(148,163,184,.2)!important;color:#f8fafc!important;background:#0f172a!important}
+:global(.sirapi-dark .activity-dialog){border-color:rgba(148,163,184,.2)!important;color:#f8fafc!important;background:#0f172a!important}
 :global(.activity-select-overlay){z-index:10050!important;overflow:hidden!important;border:1px solid #cbd5e1!important;border-radius:11px!important;color:#0f172a!important;background:#fff!important;box-shadow:0 20px 48px rgba(15,23,42,.25)!important}
 :global(.activity-select-overlay .p-select-list){padding:5px!important;background:#fff!important}
 :global(.activity-select-overlay .p-select-option){border-radius:7px!important;color:#0f172a!important;background:#fff!important;font-size:11px!important}
 :global(.activity-select-overlay .p-select-option:not(.p-disabled).p-focus),:global(.activity-select-overlay .p-select-option:not(.p-disabled):hover){color:#0f766e!important;background:#e8f7f5!important}
 :global(.activity-select-overlay .p-select-option.p-select-option-selected){color:#fff!important;background:#0d9488!important}
-:global(body.sirava-dark .activity-select-overlay){border-color:#405269!important;color:#f8fafc!important;background:#111c2c!important;box-shadow:0 24px 58px rgba(0,0,0,.5)!important}
-:global(body.sirava-dark .activity-select-overlay .p-select-list){background:#111c2c!important}
-:global(body.sirava-dark .activity-select-overlay .p-select-option){color:#e2e8f0!important;background:#111c2c!important}
-:global(body.sirava-dark .activity-select-overlay .p-select-option:not(.p-disabled).p-focus),:global(body.sirava-dark .activity-select-overlay .p-select-option:not(.p-disabled):hover){color:#5eead4!important;background:#26364b!important}
-:global(body.sirava-dark .activity-select-overlay .p-select-option.p-select-option-selected){color:#fff!important;background:#0f766e!important}
+:global(body.sirapi-dark .activity-select-overlay){border-color:#405269!important;color:#f8fafc!important;background:#111c2c!important;box-shadow:0 24px 58px rgba(0,0,0,.5)!important}
+:global(body.sirapi-dark .activity-select-overlay .p-select-list){background:#111c2c!important}
+:global(body.sirapi-dark .activity-select-overlay .p-select-option){color:#e2e8f0!important;background:#111c2c!important}
+:global(body.sirapi-dark .activity-select-overlay .p-select-option:not(.p-disabled).p-focus),:global(body.sirapi-dark .activity-select-overlay .p-select-option:not(.p-disabled):hover){color:#5eead4!important;background:#26364b!important}
+:global(body.sirapi-dark .activity-select-overlay .p-select-option.p-select-option-selected){color:#fff!important;background:#0f766e!important}
 @media(max-width:1100px){.activity-filter{grid-template-columns:repeat(2,minmax(0,1fr))}.activity-filter :where(.activity-date,.activity-select,.activity-keyword,.activity-user,.activity-search),.activity-filter>button{grid-column:auto}.activity-keyword{grid-column:span 2!important}.activity-summary{grid-template-columns:1fr 1fr 1fr}}
 @media(max-width:720px){.activity-module{width:calc(100% - 20px);margin:10px;padding:15px}.activity-filter,.activity-summary,.activity-detail dl{grid-template-columns:1fr}.activity-filter :where(.activity-date,.activity-select,.activity-keyword,.activity-user,.activity-search),.activity-filter>button{grid-column:auto!important}.activity-header h1{font-size:24px}}
 </style>

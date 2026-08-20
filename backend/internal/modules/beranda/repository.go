@@ -201,21 +201,14 @@ func (r *Repositori) BacaBeranda(ctx context.Context, filter FilterBeranda, user
 	return hasil, nil
 }
 
-func (r *Repositori) bacaSidebarPasien(ctx context.Context, userID uint64) ([]SidebarPasien, error) {
+func (r *Repositori) bacaSidebarPasien(ctx context.Context, _ uint64) ([]SidebarPasien, error) {
 	rows, err := r.aplikasiDB.QueryContext(ctx, `
 		SELECT sidebar.kode_sidebar,sidebar.nama_sidebar,sidebar.ikon,sidebar.daftar_modul
 		FROM sidebar_pasien sidebar
 		WHERE sidebar.aktif = TRUE
 		  AND sidebar.kode_sidebar IS NOT NULL
-		  AND EXISTS (
-			SELECT 1
-			FROM user_permissions akses
-			INNER JOIN permissions izin ON izin.id=akses.permission_id
-			WHERE akses.user_id=?
-			  AND (izin.code='*' OR izin.code=sidebar.permission_code)
-		  )
 		ORDER BY sidebar.urutan,sidebar.nama_sidebar
-	`, userID)
+	`)
 	if err != nil {
 		return nil, fmt.Errorf("baca sidebar pasien aplikasi: %w", err)
 	}

@@ -24,13 +24,12 @@ func (h *Handler) Register(group *gin.RouterGroup) {
 }
 
 type sidebarRequest struct {
-	Kode           string   `json:"kode" binding:"required,max=80"`
-	Nama           string   `json:"nama" binding:"required,max=80"`
-	Ikon           string   `json:"ikon" binding:"required,max=40"`
-	DaftarModul    []string `json:"daftar_modul" binding:"required,min=1"`
-	PermissionCode string   `json:"permission_code" binding:"omitempty,max=100"`
-	Urutan         uint16   `json:"urutan"`
-	Aktif          *bool    `json:"aktif" binding:"required"`
+	Kode        string   `json:"kode" binding:"required,max=80"`
+	Nama        string   `json:"nama" binding:"required,max=80"`
+	Ikon        string   `json:"ikon" binding:"required,max=40"`
+	DaftarModul []string `json:"daftar_modul" binding:"required,min=1"`
+	Urutan      uint16   `json:"urutan"`
+	Aktif       *bool    `json:"aktif" binding:"required"`
 }
 
 func (h *Handler) daftar(c *gin.Context) {
@@ -88,7 +87,7 @@ func bacaInput(c *gin.Context) (kelola_menu.InputSidebar, bool) {
 	}
 	input := kelola_menu.InputSidebar{
 		Kode: strings.TrimSpace(request.Kode), Nama: strings.TrimSpace(request.Nama), Ikon: strings.TrimSpace(request.Ikon),
-		DaftarModul: request.DaftarModul, PermissionCode: strings.TrimSpace(request.PermissionCode), Urutan: request.Urutan, Aktif: *request.Aktif,
+		DaftarModul: request.DaftarModul, Urutan: request.Urutan, Aktif: *request.Aktif,
 	}
 	if !kelola_menu.ValidasiInput(input) {
 		httpresponse.Error(c, http.StatusUnprocessableEntity, "VALIDATION_ERROR", "Kode hanya boleh memakai huruf kecil, angka, dan garis bawah; pilih minimal satu modul")
@@ -116,10 +115,6 @@ func tanganiError(c *gin.Context, err error) bool {
 	}
 	if errors.Is(err, kelola_menu.ErrKodeSidebarDigunakan) {
 		httpresponse.Error(c, http.StatusConflict, "SIDEBAR_CODE_EXISTS", "Kode sidebar sudah digunakan")
-		return true
-	}
-	if errors.Is(err, kelola_menu.ErrPermissionTidakValid) {
-		httpresponse.Error(c, http.StatusUnprocessableEntity, "INVALID_PERMISSION", "Permission sidebar tidak valid")
 		return true
 	}
 	httpresponse.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Sidebar tidak dapat diproses")

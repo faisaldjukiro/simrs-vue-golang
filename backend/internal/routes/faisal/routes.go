@@ -9,9 +9,9 @@ import (
 	aktivitasloghttp "simrs-backend/internal/modules/aktivitas_log/delivery/http"
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
-	awalmedisumumhttp "simrs-backend/internal/modules/awal_medis_umum/delivery/http"
-	awalmedisranaphttp "simrs-backend/internal/modules/awal_medis_ranap/delivery/http"
 	awalMedisIgdHttp "simrs-backend/internal/modules/awal_medis_igd/delivery/http"
+	awalmedisranaphttp "simrs-backend/internal/modules/awal_medis_ranap/delivery/http"
+	awalmedisumumhttp "simrs-backend/internal/modules/awal_medis_umum/delivery/http"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
 	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
@@ -23,6 +23,7 @@ import (
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
+	resephttp "simrs-backend/internal/modules/resep/delivery/http"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
@@ -48,6 +49,7 @@ type Dependencies struct {
 	PermintaanRadiologi     *permintaanradiologihttp.Handler
 	PermintaanLaboratorium  *permintaanlaboratoriumhttp.Handler
 	ResumePasienRanap       *resumepasienranaphttp.Handler
+	Resep                   *resephttp.Handler
 	RiwayatPerawatan        *riwayatperawatanhttp.Handler
 	TriaseIGD               *triaseigdhttp.Handler
 }
@@ -72,26 +74,27 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	kelolaMenuGroup.Use(dependencies.Autentikasi.WajibPermission("kelola_menu"))
 	dependencies.KelolaMenu.Register(kelolaMenuGroup)
 	daftarRouteSidebar := []struct {
-		path       string
-		permission string
-		register   func(*gin.RouterGroup)
+		path     string
+		register func(*gin.RouterGroup)
 	}{
-		{"/cppt", "pasien.cppt", dependencies.CPPT.Register},
-		{"/diagnosa-pasien", "pasien.diagnosa", dependencies.DiagnosaPasien.Register},
-		{"/penanganan-dokter-petugas", "pasien.penanganan_dokter_petugas", dependencies.PenangananDokterPetugas.Register},
-		{"/permintaan-radiologi", "permintaan_radiologi", dependencies.PermintaanRadiologi.Register},
-		{"/permintaan-laboratorium", "permintaan_lab", dependencies.PermintaanLaboratorium.Register},
-		{"/resume-pasien-ranap", "pasien.resume_pasien", dependencies.ResumePasienRanap.Register},
-		{"/riwayat-perawatan", "pasien.riwayat_perawatan", dependencies.RiwayatPerawatan.Register},
-		{"/triase-igd", "pasien.triase_igd", dependencies.TriaseIGD.Register},
-		{"/awal-keperawatan-igd", "pasien.awal_keperawatan_igd", dependencies.AwalKeperawatanIGD.Register},
-		{"/awal-medis-umum", "pasien.awal_medis_umum", dependencies.AwalMedisUmum.Register},
-		{"/awal-medis-ranap", "pasien.awal_medis_ranap", dependencies.AwalMedisRanap.Register},
-		{"/awal-medis-igd", "pasien.awal_medis_igd", dependencies.AwalMedisIgd.Register},
+		{"/cppt", dependencies.CPPT.Register},
+		{"/diagnosa-pasien", dependencies.DiagnosaPasien.Register},
+		{"/penanganan-dokter-petugas", dependencies.PenangananDokterPetugas.Register},
+		{"/permintaan-radiologi", dependencies.PermintaanRadiologi.Register},
+		{"/permintaan-laboratorium", dependencies.PermintaanLaboratorium.Register},
+		{"/resume-pasien-ranap", dependencies.ResumePasienRanap.Register},
+		{"/riwayat-perawatan", dependencies.RiwayatPerawatan.Register},
+		{"/triase-igd", dependencies.TriaseIGD.Register},
+		{"/awal-keperawatan-igd", dependencies.AwalKeperawatanIGD.Register},
+		{"/awal-medis-umum", dependencies.AwalMedisUmum.Register},
+		{"/awal-medis-ranap", dependencies.AwalMedisRanap.Register},
+		{"/awal-medis-igd", dependencies.AwalMedisIgd.Register},
+		{"/resep", dependencies.Resep.Register},
 	}
+	aksesPelayananPasien := []string{"igd", "registrasi", "tindakan_ralan", "billing_ralan", "kamar_inap", "daftar_pasien_ranap"}
 	for _, routeSidebar := range daftarRouteSidebar {
 		group := protectedAPI.Group(routeSidebar.path)
-		group.Use(dependencies.Autentikasi.WajibPermission(routeSidebar.permission))
+		group.Use(dependencies.Autentikasi.WajibPermission(aksesPelayananPasien...))
 		routeSidebar.register(group)
 	}
 	protectedAPI.GET("/user-management", dependencies.ManajemenPengguna.Daftar)

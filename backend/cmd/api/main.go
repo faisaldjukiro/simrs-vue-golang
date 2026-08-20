@@ -1,4 +1,4 @@
-// Command api starts the SIRAVA HTTP API.
+// Command api starts the SIRAPI HTTP API.
 package main
 
 import (
@@ -21,12 +21,12 @@ import (
 	autentikasihttp "simrs-backend/internal/modules/autentikasi/delivery/http"
 	"simrs-backend/internal/modules/awal_keperawatan_igd"
 	awalkeperawatanigdhttp "simrs-backend/internal/modules/awal_keperawatan_igd/delivery/http"
+	"simrs-backend/internal/modules/awal_medis_igd"
+	awalMedisIgdHttp "simrs-backend/internal/modules/awal_medis_igd/delivery/http"
+	"simrs-backend/internal/modules/awal_medis_ranap"
+	awalmedisranaphttp "simrs-backend/internal/modules/awal_medis_ranap/delivery/http"
 	"simrs-backend/internal/modules/awal_medis_umum"
 	awalmedisumumhttp "simrs-backend/internal/modules/awal_medis_umum/delivery/http"
-	"simrs-backend/internal/modules/awal_medis_ranap"
-	"simrs-backend/internal/modules/awal_medis_igd"
-	awalmedisranaphttp "simrs-backend/internal/modules/awal_medis_ranap/delivery/http"
-	awalMedisIgdHttp "simrs-backend/internal/modules/awal_medis_igd/delivery/http"
 	"simrs-backend/internal/modules/beranda"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
 	"simrs-backend/internal/modules/bpjs"
@@ -49,6 +49,8 @@ import (
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	"simrs-backend/internal/modules/permintaan_radiologi"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
+	"simrs-backend/internal/modules/resep"
+	resephttp "simrs-backend/internal/modules/resep/delivery/http"
 	"simrs-backend/internal/modules/resume_pasien_ranap"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	"simrs-backend/internal/modules/riwayat_perawatan"
@@ -147,6 +149,8 @@ func main() {
 	awalMedisIgdHandler := awalMedisIgdHttp.NewHandler(awal_medis_igd.NewLayanan(awalMedisIgdRepositori))
 	resumePasienRanapRepositori := resume_pasien_ranap.NewRepositori(simrsDB)
 	resumePasienRanapHandler := resumepasienranaphttp.NewHandler(resume_pasien_ranap.NewLayanan(resumePasienRanapRepositori))
+	resepRepositori := resep.NewRepositori(simrsDB, simrsDB)
+	resepHandler := resephttp.NewHandler(resep.NewLayanan(resepRepositori))
 	aktivitasLogRepositori := aktivitas_log.NewRepositori(db, simrsDB)
 	aktivitasLogHandler := aktivitasloghttp.NewHandler(aktivitasLogRepositori)
 
@@ -173,6 +177,7 @@ func main() {
 		AwalMedisRanap:          awalMedisRanapHandler,
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,
+		Resep:                   resepHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 
@@ -187,7 +192,7 @@ func main() {
 
 	serverErrors := make(chan error, 1)
 	go func() {
-		log.Printf("SIRAVA API listening on http://localhost:%d", port)
+		log.Printf("SIRAPI API listening on http://localhost:%d", port)
 		serverErrors <- server.ListenAndServe()
 	}()
 

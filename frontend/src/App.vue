@@ -82,7 +82,7 @@ async function handleLogout() {
   } finally {
     clearSession()
     loading.value = false
-    notifikasi.info('Anda sudah logout dari SIRAVA.')
+    notifikasi.info('Anda sudah logout dari SIRAPI.')
   }
 }
 </script>

@@ -1,8 +1,8 @@
-# SIRAVA Frontend
+# SIRAPI Frontend
 
-SIRAVA adalah Sistem Informasi Rumah Sakit Terintegrasi.
+SIRAPI adalah Sistem Informasi Rumah Sakit Pelayanan Terintegrasi.
 
-Frontend Vue 3 untuk backend Go SIRAVA. Tampilan login dan dashboard mengikuti identitas visual `simrs-lama` dengan banner rumah sakit, status bar, ribbon menu, monitoring koneksi, logo RSAS, serta tema terang/gelap.
+Frontend Vue 3 untuk backend Go SIRAPI. Tampilan login dan dashboard mengikuti identitas visual `simrs-lama` dengan banner rumah sakit, status bar, ribbon menu, monitoring koneksi, logo RSAS, serta tema terang/gelap.
 
 Dashboard menampilkan ringkasan dan daftar pasien dari endpoint Go untuk registrasi hari ini, rawat jalan, IGD, serta rawat inap aktif. Daftar dapat dicari berdasarkan nama, nomor rekam medis, nomor rawat, poliklinik, dokter, atau kamar.
 
@@ -22,7 +22,7 @@ src/
 |   |-- Layout/
 |   |   |-- DashboardLayout.vue # penyusun layout dashboard
 |   |   |-- TopStatusBar.vue    # status tanggal, jam, user, tema
-|   |   |-- RibbonMenu.vue      # ribbon/menu utama SIRAVA
+|   |   |-- RibbonMenu.vue      # ribbon/menu utama SIRAPI
 |   |   |-- AppFooter.vue       # footer aplikasi
 |   |   `-- ShutdownScreen.vue  # layar sesi ditutup jika dibutuhkan
 |   |-- Ui/

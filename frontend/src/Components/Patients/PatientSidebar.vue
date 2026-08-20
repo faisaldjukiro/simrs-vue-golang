@@ -14,6 +14,8 @@ import DiagnosaPasienPage from '../../Pages/Pasien/DiagnosaPasienPage.vue'
 import AwalMedisUmumPage from '../../Pages/RawatJalan/AwalMedisUmumPage.vue'
 import AwalMedisRanapPage from '../../Pages/RawatInap/AwalMedisRanapPage.vue'
 import AwalMedisIgdPage from '../../Pages/IGD/AwalMedisIgdPage.vue'
+import InputResepPage from '../../Pages/Pasien/InputResepPage.vue'
+import CopyResepPage from '../../Pages/Pasien/CopyResepPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
@@ -29,7 +31,8 @@ const props = defineProps({
 const emit = defineEmits(['back'])
 const kodeSidebarAktif = ref('ringkasan')
 const pencarianSidebar = ref('')
-const sidebarCollapsed = ref(localStorage.getItem('sirava.patient_sidebar.collapsed') === '1')
+const sidebarCollapsed = ref(localStorage.getItem('sirapi.patient_sidebar.collapsed') === '1')
+const copyResepDraft = ref(null)
 
 const halamanSidebar = {
   cppt_soap: CpptPage,
@@ -43,6 +46,9 @@ const halamanSidebar = {
   diagnosa: DiagnosaPasienPage,
   awal_medis_igd: AwalMedisIgdPage,
   sidebar_0031: AwalMedisUmumPage,
+  input_resep: InputResepPage,
+  copy_resep: CopyResepPage,
+  sidebar_0007: CopyResepPage,
 }
 
 const daftarSidebarAktif = computed(() => {
@@ -93,6 +99,8 @@ const propertiHalamanAktif = computed(() => {
     properti.namaModul = props.moduleName
   }
   if (kodeSidebarAktif.value === 'diagnosa') properti.moduleName = props.moduleName
+  if (['input_resep', 'copy_resep', 'sidebar_0007'].includes(kodeSidebarAktif.value)) properti.moduleName = props.moduleName
+  if (kodeSidebarAktif.value === 'input_resep') properti.copiedResep = copyResepDraft.value
   return properti
 })
 
@@ -109,13 +117,19 @@ function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
 }
 
+function terimaCopyResep(payload) {
+  copyResepDraft.value = { ...payload, copied_at: Date.now() }
+  kodeSidebarAktif.value = 'input_resep'
+}
+
 watch(sidebarCollapsed, (collapsed) => {
-  localStorage.setItem('sirava.patient_sidebar.collapsed', collapsed ? '1' : '0')
+  localStorage.setItem('sirapi.patient_sidebar.collapsed', collapsed ? '1' : '0')
 })
 
 watch(() => props.patient.no_rawat, () => {
   kodeSidebarAktif.value = aksesSidebarTersedia.value ? 'ringkasan' : ''
   pencarianSidebar.value = ''
+  copyResepDraft.value = null
 })
 
 watch(aksesSidebarTersedia, (tersedia) => {
@@ -191,6 +205,7 @@ watch(aksesSidebarTersedia, (tersedia) => {
         :is="komponenSidebarAktif"
         v-else-if="komponenSidebarAktif"
         v-bind="propertiHalamanAktif"
+        @copy-resep="terimaCopyResep"
       />
 
       <section v-else class="patient-workspace-placeholder">

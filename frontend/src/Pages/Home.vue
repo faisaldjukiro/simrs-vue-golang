@@ -53,7 +53,7 @@ let urutanRequestDashboard = 0
 const hariIni = new Date().toLocaleDateString('en-CA')
 
 function terapkanClassDarkMode() {
-  document.body.classList.toggle('sirava-dark', isDark.value)
+  document.body.classList.toggle('sirapi-dark', isDark.value)
 }
 const filterKosong = (belumPulang = false) => ({
   date_from: hariIni,
@@ -345,7 +345,7 @@ function selectMenu(label) {
     return
   }
   if (label === 'Logout') {
-    notifikasi.info('Mengakhiri sesi SIRAVA...')
+    notifikasi.info('Mengakhiri sesi SIRAPI...')
     emit('logout')
     return
   }

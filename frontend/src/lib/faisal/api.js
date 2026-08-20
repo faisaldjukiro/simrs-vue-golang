@@ -407,6 +407,19 @@ export function awalMedisIgdData(token, noRawat) {
   return request(`/api/awal-medis-igd?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
+export function resepInfoPasien(token, noRawat) { return request(`/api/resep/info-pasien?${new URLSearchParams({ no_rawat: noRawat })}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepDaftar(token, noRawat) { return request(`/api/resep?${new URLSearchParams({ no_rawat: noRawat })}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepDaftarCopy(token, noRkmMedis) { return request(`/api/resep/copy?${new URLSearchParams({ no_rkm_medis: noRkmMedis })}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepDetail(token, noResep) { return request(`/api/resep/detail/${encodeURIComponent(noResep)}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepCariDokter(token, q) { return request(`/api/resep/cari-dokter?${new URLSearchParams({ q })}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepCariDepo(token, q) { return request(`/api/resep/cari-depo?${new URLSearchParams({ q })}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepCariObat(token, params) { return request(`/api/resep/cari-obat?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepMetodeRacik(token) { return request('/api/resep/metode-racik', { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepNomorAuto(token, tanggal) { return request(`/api/resep/nomor-auto?${new URLSearchParams({ tanggal })}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function resepDepoDefault(token, noRawat, status) { return request(`/api/resep/depo-default?${new URLSearchParams({ no_rawat: noRawat, status })}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function simpanResep(token, payload) { return request('/api/resep', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) }) }
+export function hapusResep(token, noResep) { return request(`/api/resep/${encodeURIComponent(noResep)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }) }
+
 export function cariDokterAwalMedisIgd(token, kataKunci) {
   const query = new URLSearchParams({ q: kataKunci }).toString()
   return request(`/api/awal-medis-igd/dokter?${query}`, { headers: { Authorization: `Bearer ${token}` } })

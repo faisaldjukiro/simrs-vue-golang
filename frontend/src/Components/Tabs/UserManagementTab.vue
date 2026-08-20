@@ -204,7 +204,7 @@ watch(kataKunciPegawai, (nilai) => {
       <div>
         <span>Manajemen Akses</span>
         <h1>User Management</h1>
-        <p>Kelola dan pantau user aplikasi SIRAVA.</p>
+        <p>Kelola dan pantau user aplikasi SIRAPI.</p>
       </div>
     </header>
 
@@ -313,7 +313,7 @@ watch(kataKunciPegawai, (nilai) => {
           </label>
 
           <p class="employee-hint">
-            User SIRAVA mengikuti akun SIMRS lama. Password login tetap memakai password dari tabel user SIMRS.
+            User SIRAPI mengikuti akun SIMRS lama. Password login tetap memakai password dari tabel user SIMRS.
           </p>
 
           <div v-if="pegawaiDipilih" class="selected-user-card">

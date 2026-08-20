@@ -1,9 +1,9 @@
-# SIRAVA
+# SIRAPI
 
-**Sistem Informasi Rumah Sakit Terintegrasi**
+**Sistem Informasi Rumah Sakit Pelayanan Terintegrasi**
 
-SIRAVA adalah project migrasi SIMRS Khanza secara bertahap ke backend Go dan
-frontend Vue. Database aplikasi SIRAVA dipisahkan dari database SIMRS Khanza
+SIRAPI adalah project migrasi SIMRS Khanza secara bertahap ke backend Go dan
+frontend Vue. Database aplikasi SIRAPI dipisahkan dari database SIMRS Khanza
 agar migration aplikasi baru tidak mengubah struktur database lama.
 
 ## Teknologi
@@ -53,7 +53,7 @@ Masuk ke MySQL:
 mysql -u root -p
 ```
 
-Buat database baru khusus SIRAVA:
+Buat database baru khusus SIRAPI:
 
 ```sql
 CREATE DATABASE `simrs-golang`
@@ -69,7 +69,7 @@ EXIT;
 
 Jangan memakai database `simrs` untuk langkah ini. Database `simrs-golang`
 adalah tempat migration, user, permission, token, konfigurasi sidebar, dan log
-aktivitas SIRAVA.
+aktivitas SIRAPI.
 
 ### 3. Siapkan backend
 
@@ -102,7 +102,7 @@ go mod download
 Buka `backend/.env`, lalu periksa bagian database berikut:
 
 ```env
-# Database aplikasi SIRAVA: boleh ditulis oleh migration dan aplikasi
+# Database aplikasi SIRAPI: boleh ditulis oleh migration dan aplikasi
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=simrs-golang
@@ -113,7 +113,7 @@ DB_PASSWORD=root
 MIGRATION_ALLOWED_HOST=127.0.0.1
 MIGRATION_ALLOWED_DATABASE=simrs-golang
 
-# Database SIMRS Khanza: hanya dibaca oleh SIRAVA
+# Database SIMRS Khanza: hanya dibaca oleh SIRAPI
 SIMRS_DB_HOST=127.0.0.1
 SIMRS_DB_PORT=3306
 SIMRS_DB_DATABASE=simrs
@@ -230,7 +230,7 @@ Password: password
 
 Akun ini hanya untuk development dan wajib diganti sebelum dipakai pada
 environment bersama atau production. User SIMRS yang sudah didaftarkan ke
-SIRAVA tetap login memakai password dari tabel `user` SIMRS Khanza.
+SIRAPI tetap login memakai password dari tabel `user` SIMRS Khanza.
 
 ## Menjalankan Project Setiap Hari
 
@@ -325,14 +325,14 @@ Setelah mengubah `.env` frontend, hentikan dan jalankan ulang `npm run dev`.
 ### Data SIMRS tidak tampil
 
 Periksa koneksi jaringan ke server SIMRS serta nilai `SIMRS_DB_*`. Koneksi ini
-berbeda dari database lokal SIRAVA dan sebaiknya hanya memiliki hak `SELECT`.
+berbeda dari database lokal SIRAPI dan sebaiknya hanya memiliki hak `SELECT`.
 
 ## Struktur Project
 
 ```text
 SIMRS-WEB/
 |-- backend/       # REST API Go, migration, seeder, dan integrasi
-|-- frontend/      # aplikasi Vue SIRAVA
+|-- frontend/      # aplikasi Vue SIRAPI
 |-- simrs-lama/    # referensi lokal, tidak masuk Git
 |-- AGENTS.md      # panduan kerja agent/developer
 |-- .gitignore

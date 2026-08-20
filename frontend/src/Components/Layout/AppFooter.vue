@@ -15,7 +15,7 @@ defineProps({
     </div>
     <div>
       <span>WAKTU INDONESIA TENGAH</span>
-      <b>SIRAVA</b>
+      <b>SIRAPI</b>
     </div>
   </footer>
 </template>

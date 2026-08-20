@@ -1,6 +1,6 @@
-# SIRAVA Agent Guide
+# SIRAPI Agent Guide
 
-Project ini berisi migrasi bertahap dari SIMRS lama ke SIRAVA (Sistem Informasi Rumah Sakit Terintegrasi).
+Project ini berisi migrasi bertahap dari SIMRS lama ke SIRAPI (Sistem Informasi Rumah Sakit Pelayanan Terintegrasi).
 
 Folder utama:
 
@@ -17,6 +17,17 @@ Untuk pekerjaan backend, baca instruksi detail di:
 ```text
 backend/AGENTS.md
 ```
+
+Untuk pekerjaan frontend, UI, layout, warna, form, tabel, dark mode, dan
+komponen tampilan, wajib baca:
+
+```text
+DESIGN.md
+```
+
+Jangan membuat style frontend baru yang bertentangan dengan `DESIGN.md`.
+Gunakan component bersama seperti `FormInput.vue`, `InputPencarian.vue`, dan
+`Select.vue` agar tampilan antar modul tetap konsisten.
 
 Aturan penting backend:
 

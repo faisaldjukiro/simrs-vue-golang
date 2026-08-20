@@ -16,14 +16,6 @@ INSERT INTO permissions (`group`, name, code, created_at, updated_at) VALUES
     ('Rawat Jalan', 'Tindakan Rawat Jalan', 'tindakan_ralan', NOW(), NOW()),
     ('Rawat Jalan', 'Billing Rawat Jalan', 'billing_ralan', NOW(), NOW()),
     ('Klaim', 'E-Klaim iDRG/INACBG', 'eklaim', NOW(), NOW()),
-    ('Sidebar Pasien', 'CPPT / SOAP', 'pasien.cppt', NOW(), NOW()),
-    ('Sidebar Pasien', 'Penanganan Dokter & Petugas', 'pasien.penanganan_dokter_petugas', NOW(), NOW()),
-    ('Sidebar Pasien', 'Diagnosa Pasien', 'pasien.diagnosa', NOW(), NOW()),
-    ('Sidebar Pasien', 'Riwayat Perawatan', 'pasien.riwayat_perawatan', NOW(), NOW()),
-    ('Sidebar Pasien', 'Triase IGD', 'pasien.triase_igd', NOW(), NOW()),
-    ('Sidebar Pasien', 'Awal Keperawatan IGD', 'pasien.awal_keperawatan_igd', NOW(), NOW()),
-    ('Sidebar Pasien', 'Awal Medis Umum', 'pasien.awal_medis_umum', NOW(), NOW()),
-    ('Sidebar Pasien', 'Resume Pasien', 'pasien.resume_pasien', NOW(), NOW()),
     ('Sistem', 'Kelola Menu Navigasi', 'kelola_menu', NOW(), NOW()),
     ('Sistem', 'Log Aktivitas', 'sistem.audit_log', NOW(), NOW()),
     ('Sistem', 'Akses Penuh', '*', NOW(), NOW())
@@ -83,7 +75,7 @@ VALUES
     ('Diagnosa', 'Stethoscope', JSON_ARRAY('Rawat Inap'), 4, TRUE, NOW(), NOW()),
     ('Riwayat Perawatan', 'History', JSON_ARRAY('Rawat Inap'), 5, TRUE, NOW(), NOW()),
     ('Input Resep', 'Pill', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 6, TRUE, NOW(), NOW()),
-    ('Copy Resep', 'Copy', JSON_ARRAY('Rawat Inap'), 7, TRUE, NOW(), NOW()),
+    ('Copy Resep', 'Copy', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 7, TRUE, NOW(), NOW()),
     ('Resep Luar', 'Receipt', JSON_ARRAY('Rawat Inap'), 8, TRUE, NOW(), NOW()),
     ('Verifikasi SBAR', 'ShieldCheck', JSON_ARRAY('Rawat Inap'), 9, TRUE, NOW(), NOW()),
     ('Rujuk Internal', 'ArrowRightToLine', JSON_ARRAY('Rawat Inap'), 10, TRUE, NOW(), NOW()),
@@ -141,28 +133,32 @@ VALUES
     ('Triase IGD', 'Stethoscope', JSON_ARRAY('IGD/UGD'), 64, TRUE, NOW(), NOW());
 
 UPDATE sidebar_pasien
-SET kode_sidebar = CONCAT('sidebar_', LPAD(id, 4, '0')),
-    permission_code = NULL;
+SET kode_sidebar = CONCAT('sidebar_', LPAD(id, 4, '0'));
 
-UPDATE sidebar_pasien SET kode_sidebar = 'cppt_soap', permission_code = 'pasien.cppt'
+UPDATE sidebar_pasien SET kode_sidebar = 'cppt_soap'
 WHERE nama_sidebar = 'Cppt/Soap';
-UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas', permission_code = 'pasien.penanganan_dokter_petugas'
+UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas'
 WHERE nama_sidebar = 'Penanganan Dokter & Petugas';
-UPDATE sidebar_pasien SET kode_sidebar = 'diagnosa', permission_code = 'pasien.diagnosa'
+UPDATE sidebar_pasien SET kode_sidebar = 'diagnosa'
 WHERE nama_sidebar = 'Diagnosa';
-UPDATE sidebar_pasien SET kode_sidebar = 'riwayat_perawatan', permission_code = 'pasien.riwayat_perawatan'
+UPDATE sidebar_pasien SET kode_sidebar = 'riwayat_perawatan'
 WHERE nama_sidebar = 'Riwayat Perawatan';
-UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_laboratorium', permission_code = 'permintaan_lab'
+UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_laboratorium'
 WHERE nama_sidebar IN ('Permintaan Lab', 'Permintaan Laboratorium');
-UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_radiologi', permission_code = 'permintaan_radiologi'
+UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_radiologi'
 WHERE nama_sidebar IN ('Permintaan Rad', 'Permintaan Radiologi');
-UPDATE sidebar_pasien SET kode_sidebar = 'triase_igd', permission_code = 'pasien.triase_igd'
+UPDATE sidebar_pasien SET kode_sidebar = 'triase_igd'
 WHERE nama_sidebar = 'Triase IGD';
-UPDATE sidebar_pasien SET kode_sidebar = 'awal_keperawatan_igd', permission_code = 'pasien.awal_keperawatan_igd'
+UPDATE sidebar_pasien SET kode_sidebar = 'awal_keperawatan_igd'
 WHERE nama_sidebar = 'Awal Keperawatan IGD';
-UPDATE sidebar_pasien SET kode_sidebar = 'sidebar_0031', permission_code = 'pasien.awal_medis_umum'
+UPDATE sidebar_pasien SET kode_sidebar = 'sidebar_0031'
 WHERE nama_sidebar = 'Awal Medis Umum';
-UPDATE sidebar_pasien SET kode_sidebar = 'resume_pasien', permission_code = 'pasien.resume_pasien'
+UPDATE sidebar_pasien SET kode_sidebar = 'resume_pasien'
 WHERE nama_sidebar IN ('Resume Pasien', 'Resume Pasien Ranap');
+UPDATE sidebar_pasien SET kode_sidebar = 'input_resep'
+WHERE nama_sidebar = 'Input Resep';
+
+UPDATE sidebar_pasien SET kode_sidebar = 'copy_resep', daftar_modul = JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap')
+WHERE nama_sidebar = 'Copy Resep';
 
 COMMIT;

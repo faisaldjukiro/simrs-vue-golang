@@ -22,7 +22,7 @@ const props = defineProps({ token: { type: String, required: true } })
 const emit = defineEmits(['saved'])
 const notifikasi = useNotifikasi()
 
-const data = ref({ sidebar: [], permission: [], pilihan_modul: [] })
+const data = ref({ sidebar: [], pilihan_modul: [] })
 const loading = ref(true)
 const error = ref('')
 const pencarian = ref('')
@@ -31,22 +31,18 @@ const modalHapus = ref(false)
 const mode = ref('tambah')
 const sidebarDipilih = ref(null)
 const menyimpan = ref(false)
-const form = reactive({ kode: '', nama: '', ikon: 'LayoutDashboard', daftar_modul: [], permission_code: '', urutan: 1, aktif: true })
+const form = reactive({ kode: '', nama: '', ikon: 'LayoutDashboard', daftar_modul: [], urutan: 1, aktif: true })
 
 const daftarSidebar = computed(() => {
   const kata = pencarian.value.trim().toLowerCase()
   if (!kata) return data.value.sidebar
-  return data.value.sidebar.filter((item) => [item.kode, item.nama, item.ikon, item.permission_code, ...(item.daftar_modul || [])].join(' ').toLowerCase().includes(kata))
+  return data.value.sidebar.filter((item) => [item.kode, item.nama, item.ikon, ...(item.daftar_modul || [])].join(' ').toLowerCase().includes(kata))
 })
-const pilihanPermission = computed(() => [
-  { kode: '', label: 'Khusus admin / belum ditetapkan' },
-  ...data.value.permission.map((item) => ({ ...item, label: `${item.nama} — ${item.kode}` })),
-])
 const judulModal = computed(() => mode.value === 'tambah' ? 'Tambah Sidebar Pasien' : 'Edit Sidebar Pasien')
 
 function resetForm() {
   Object.assign(form, {
-    kode: '', nama: '', ikon: 'LayoutDashboard', daftar_modul: [], permission_code: '',
+    kode: '', nama: '', ikon: 'LayoutDashboard', daftar_modul: [],
     urutan: Math.max(0, ...data.value.sidebar.map((item) => Number(item.urutan) || 0)) + 1,
     aktif: true,
   })
@@ -67,7 +63,6 @@ function bukaEdit(item) {
     nama: item.nama,
     ikon: item.ikon,
     daftar_modul: [...(item.daftar_modul || [])],
-    permission_code: item.permission_code || '',
     urutan: Number(item.urutan) || 0,
     aktif: Boolean(item.aktif),
   })
@@ -149,7 +144,7 @@ onMounted(muatData)
       <div>
         <span>Konfigurasi Aplikasi</span>
         <h1>Kelola Menu</h1>
-        <p>Atur sidebar yang tampil pada ruang kerja pasien.</p>
+        <p>Atur sidebar yang tampil pada ruang kerja pasien. Akses mengikuti modul besar: IGD/UGD, Rawat Jalan, dan Rawat Inap.</p>
       </div>
       <button type="button" @click="bukaTambah"><Plus :size="17" /> Tambah Sidebar</button>
     </header>
@@ -159,11 +154,11 @@ onMounted(muatData)
       <div class="menu-management-summary">
         <LayoutPanelLeft :size="22" />
         <span><strong>{{ data.sidebar.length }}</strong> sidebar terdaftar</span>
-        <small>Perubahan tersimpan di database lokal SIRAVA.</small>
+        <small>Perubahan tersimpan di database lokal SIRAPI.</small>
       </div>
 
       <div class="user-management-toolbar">
-        <label><SearchIcon :size="17" /><input v-model="pencarian" type="search" placeholder="Cari kode, nama, modul, atau permission..." /></label>
+        <label><SearchIcon :size="17" /><input v-model="pencarian" type="search" placeholder="Cari kode, nama, ikon, atau modul..." /></label>
       </div>
 
       <DataTable
@@ -184,9 +179,6 @@ onMounted(muatData)
         </Column>
         <Column header="Modul">
           <template #body="{ data: item }"><div class="sidebar-module-list"><span v-for="modul in item.daftar_modul" :key="modul">{{ modul }}</span></div></template>
-        </Column>
-        <Column header="Permission">
-          <template #body="{ data: item }"><strong>{{ item.permission_code || 'Khusus admin' }}</strong></template>
         </Column>
         <Column header="Status">
           <template #body="{ data: item }"><span class="patient-status" :class="{ inactive: !item.aktif }">{{ item.aktif ? 'Aktif' : 'Nonaktif' }}</span></template>
@@ -237,13 +229,7 @@ onMounted(muatData)
           </div>
         </section>
 
-        <label class="sidebar-permission-field">
-          <span>Permission Sidebar</span>
-          <Select v-model="form.permission_code" :options="pilihanPermission" option-label="label" option-value="kode" append-to="body" fluid />
-          <small>Jika belum ditetapkan, sidebar hanya terlihat oleh admin dengan akses penuh.</small>
-        </label>
-
-        <label class="user-active-check"><input v-model="form.aktif" type="checkbox" /><span>Sidebar aktif dan ditampilkan kepada user yang memiliki akses</span></label>
+        <label class="user-active-check"><input v-model="form.aktif" type="checkbox" /><span>Sidebar aktif dan ditampilkan sesuai modul yang dipilih</span></label>
 
         <footer class="user-form-actions">
           <button type="button" class="secondary" :disabled="menyimpan" @click="modalForm = false">Batal</button>

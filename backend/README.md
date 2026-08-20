@@ -1,8 +1,8 @@
-# SIRAVA Backend
+# SIRAPI Backend
 
-SIRAVA adalah Sistem Informasi Rumah Sakit Terintegrasi.
+SIRAPI adalah Sistem Informasi Rumah Sakit Pelayanan Terintegrasi.
 
-Backend baru SIRAVA dibuat dengan Go, Gin, dan MySQL. Project ini dipakai sebagai backend baru untuk migrasi bertahap dari `simrs-lama`.
+Backend baru SIRAPI dibuat dengan Go, Gin, dan MySQL. Project ini dipakai sebagai backend baru untuk migrasi bertahap dari `simrs-lama`.
 
 Yang paling penting: database aplikasi lokal dan database SIMRS lama dipisah. Migration hanya boleh masuk ke database lokal `DB_*`, sedangkan database SIMRS lama `SIMRS_DB_*` hanya dibaca untuk kebutuhan data.
 
@@ -224,16 +224,15 @@ kode_sidebar     kode stabil yang dipakai frontend untuk membuka halaman
 nama_sidebar     nama yang ditampilkan kepada user
 ikon             nama ikon sidebar
 daftar_modul     daftar modul tempat sidebar berlaku dalam format JSON
-permission_code  permission yang wajib dimiliki user
 urutan           urutan tampilan sidebar
 aktif            status tampil atau tidak
 ```
 
 Frontend memakai `kode_sidebar`, bukan `nama_sidebar`, sehingga nama tampilan
 bisa diubah tanpa merusak pemetaan halaman. Endpoint `GET /api/beranda`
-mengembalikan field `sidebar_pasien` yang sudah disaring berdasarkan permission
-user login. Endpoint pelayanan terkait juga menolak request user yang tidak
-memiliki permission tersebut. Permission `*` tetap berarti akses penuh.
+mengembalikan field `sidebar_pasien` aktif. Sidebar tidak punya permission
+sendiri-sendiri; aksesnya mengikuti menu besar pelayanan pasien seperti
+IGD/UGD, Rawat Jalan, dan Rawat Inap.
 
 User dengan permission `kelola_menu` atau `*` dapat mengatur sidebar melalui:
 
@@ -244,8 +243,8 @@ PUT    /api/kelola-menu/sidebar/:id
 DELETE /api/kelola-menu/sidebar/:id
 ```
 
-Perubahan nama, ikon, modul, permission, urutan, dan status aktif langsung
-dibaca kembali oleh Patient Sidebar. `kode_sidebar` hanya boleh diubah jika
+Perubahan nama, ikon, modul, urutan, dan status aktif langsung dibaca kembali
+oleh Patient Sidebar. `kode_sidebar` hanya boleh diubah jika
 pemetaan halaman frontend ikut menggunakan kode baru tersebut.
 
 ## Menjalankan API
@@ -417,7 +416,7 @@ data tanggal lain tetap dapat ditarik.
 Respons BPJS `201` dengan pesan `Data Tidak Ada` juga diperlakukan sebagai
 tanggal tanpa data, bukan sebagai kegagalan aplikasi.
 
-Tambah user mengikuti pola `simrs-lama`: pilih pegawai dari tabel `pegawai` pada database SIMRS lama, lalu berikan permission di database lokal SIRAVA. Password tidak dibuat di SIRAVA; saat login user tetap memakai password dari tabel `user` SIMRS lama.
+Tambah user mengikuti pola `simrs-lama`: pilih pegawai dari tabel `pegawai` pada database SIMRS lama, lalu berikan permission di database lokal SIRAPI. Password tidak dibuat di SIRAPI; saat login user tetap memakai password dari tabel `user` SIMRS lama.
 
 Body tambah user:
 
@@ -508,7 +507,7 @@ $env:GOCACHE='C:\project\SIMRS-WEB\backend\tmp\go-cache'
 go test ./...
 ```
 
-## Catatan Penting untuk Migrasi dari SIMRS Lama ke SIRAVA
+## Catatan Penting untuk Migrasi dari SIMRS Lama ke SIRAPI
 
 - Jangan mengubah folder `simrs-lama` kecuali memang diminta.
 - Gunakan `simrs-lama` sebagai referensi tampilan, flow, dan nama tabel.
