@@ -253,7 +253,7 @@ function isMenuDisabled(label) {
 async function loadDashboard(filterPerModul = patientFilters.value) {
   if (!isAuthenticated.value) {
     dashboardLoading.value = false
-    dashboardError.value = 'Silakan login untuk membaca data pasien dari database SIMRS lama.'
+    dashboardError.value = 'Silakan login untuk membaca data pasien dari database SIMRS KHANZA.'
     return
   }
 

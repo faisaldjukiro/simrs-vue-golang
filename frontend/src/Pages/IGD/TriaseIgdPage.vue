@@ -34,6 +34,9 @@ const scales = computed(() => activeType.value === 'primer' ? [1, 2] : [3, 4, 5]
 const planOptions = computed(() => toOptions(activeType.value === 'primer'
   ? ['Ruang Resusitasi', 'Ruang Kritis', 'Zona Kuning', 'Zona Hijau', 'Zona Hitam']
   : ['Zona Kuning', 'Zona Hijau']))
+const planNote = computed(() => activeType.value === 'primer'
+  ? 'Ruang Resusitasi dan Ruang Kritis mengikuti pilihan Triase Primer SIMRS Khanza.'
+  : 'Triase Sekunder di SIMRS Khanza hanya menerima Zona Kuning atau Zona Hijau.')
 const caseOptions = computed(() => data.macam_kasus.map((item) => ({ label: item.nama, value: item.kode })))
 const selectedCriteria = computed(() => data.kriteria_skala.filter((item) => item.skala === form.skala && form.kode_kriteria.includes(item.kode)))
 const criteriaGroups = computed(() => data.pemeriksaan.map((pemeriksaan) => ({
@@ -206,10 +209,15 @@ watch(() => props.patient.no_rawat, loadData, { immediate: true })
 
                 <section class="triage-khanza-box triage-khanza-decision">
                   <FormInput v-model="form.catatan" label="Catatan" maxlength="100" required/>
-                  <div class="triage-khanza-plan">
+                  <div :class="['triage-khanza-plan', activeType === 'primer' ? 'plan-primer' : 'plan-sekunder']">
                     <strong>Plan / Keputusan</strong>
+                    <small>{{ planNote }}</small>
                     <div>
-                      <label v-for="option in planOptions" :key="option.value" :class="{ selected: form.plan === option.value }">
+                      <label
+                        v-for="option in planOptions"
+                        :key="option.value"
+                        :class="[{ selected: form.plan === option.value }, `plan-${option.value.toLowerCase().replaceAll(' ', '-')}`]"
+                      >
                         <input v-model="form.plan" type="radio" :value="option.value"/>
                         <span>{{ option.label }}</span>
                       </label>

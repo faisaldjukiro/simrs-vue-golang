@@ -51,6 +51,8 @@ import (
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
 	"simrs-backend/internal/modules/resep"
 	resephttp "simrs-backend/internal/modules/resep/delivery/http"
+	"simrs-backend/internal/modules/resume_pasien"
+	resumepasienhttp "simrs-backend/internal/modules/resume_pasien/delivery/http"
 	"simrs-backend/internal/modules/resume_pasien_ranap"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	"simrs-backend/internal/modules/riwayat_perawatan"
@@ -149,6 +151,8 @@ func main() {
 	awalMedisIgdHandler := awalMedisIgdHttp.NewHandler(awal_medis_igd.NewLayanan(awalMedisIgdRepositori))
 	resumePasienRanapRepositori := resume_pasien_ranap.NewRepositori(simrsDB)
 	resumePasienRanapHandler := resumepasienranaphttp.NewHandler(resume_pasien_ranap.NewLayanan(resumePasienRanapRepositori))
+	resumePasienRepositori := resume_pasien.NewRepositori(simrsDB)
+	resumePasienHandler := resumepasienhttp.NewHandler(resume_pasien.NewLayanan(resumePasienRepositori))
 	resepRepositori := resep.NewRepositori(simrsDB, simrsDB)
 	resepHandler := resephttp.NewHandler(resep.NewLayanan(resepRepositori))
 	aktivitasLogRepositori := aktivitas_log.NewRepositori(db, simrsDB)
@@ -176,6 +180,7 @@ func main() {
 		AwalMedisUmum:           awalMedisUmumHandler,
 		AwalMedisRanap:          awalMedisRanapHandler,
 		AwalMedisIgd:            awalMedisIgdHandler,
+		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,
 		Resep:                   resepHandler,
 	})

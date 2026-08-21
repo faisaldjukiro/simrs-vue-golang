@@ -24,6 +24,7 @@ import (
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
 	resephttp "simrs-backend/internal/modules/resep/delivery/http"
+	resumepasienhttp "simrs-backend/internal/modules/resume_pasien/delivery/http"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
@@ -48,6 +49,7 @@ type Dependencies struct {
 	PenangananDokterPetugas *penanganandokterpetugashttp.Handler
 	PermintaanRadiologi     *permintaanradiologihttp.Handler
 	PermintaanLaboratorium  *permintaanlaboratoriumhttp.Handler
+	ResumePasien            *resumepasienhttp.Handler
 	ResumePasienRanap       *resumepasienranaphttp.Handler
 	Resep                   *resephttp.Handler
 	RiwayatPerawatan        *riwayatperawatanhttp.Handler
@@ -82,6 +84,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		{"/penanganan-dokter-petugas", dependencies.PenangananDokterPetugas.Register},
 		{"/permintaan-radiologi", dependencies.PermintaanRadiologi.Register},
 		{"/permintaan-laboratorium", dependencies.PermintaanLaboratorium.Register},
+		{"/resume-pasien", dependencies.ResumePasien.Register},
 		{"/resume-pasien-ranap", dependencies.ResumePasienRanap.Register},
 		{"/riwayat-perawatan", dependencies.RiwayatPerawatan.Register},
 		{"/triase-igd", dependencies.TriaseIGD.Register},

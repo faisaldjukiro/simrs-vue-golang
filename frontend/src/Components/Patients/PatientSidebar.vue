@@ -10,6 +10,7 @@ import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
 import TriaseIgdPage from '../../Pages/IGD/TriaseIgdPage.vue'
 import AwalKeperawatanIgdPage from '../../Pages/IGD/AwalKeperawatanIgdPage.vue'
 import ResumePasienRanapPage from '../../Pages/RawatInap/ResumePasienRanapPage.vue'
+import ResumePasienRalanPage from '../../Pages/RawatJalan/ResumePasienRalanPage.vue'
 import DiagnosaPasienPage from '../../Pages/Pasien/DiagnosaPasienPage.vue'
 import AwalMedisUmumPage from '../../Pages/RawatJalan/AwalMedisUmumPage.vue'
 import AwalMedisRanapPage from '../../Pages/RawatInap/AwalMedisRanapPage.vue'
@@ -42,7 +43,6 @@ const halamanSidebar = {
   riwayat_perawatan: RiwayatPerawatanPage,
   triase_igd: TriaseIgdPage,
   awal_keperawatan_igd: AwalKeperawatanIgdPage,
-  resume_pasien: ResumePasienRanapPage,
   diagnosa: DiagnosaPasienPage,
   awal_medis_igd: AwalMedisIgdPage,
   sidebar_0031: AwalMedisUmumPage,
@@ -89,6 +89,9 @@ const sidebarAktif = computed(() => daftarSidebarAktif.value.find((item) => item
 const komponenSidebarAktif = computed(() => {
   if (kodeSidebarAktif.value === 'sidebar_0031') {
     return props.moduleName === 'Rawat Inap' ? AwalMedisRanapPage : AwalMedisUmumPage
+  }
+  if (kodeSidebarAktif.value === 'resume_pasien') {
+    return props.moduleName === 'Rawat Inap' ? ResumePasienRanapPage : ResumePasienRalanPage
   }
   return halamanSidebar[kodeSidebarAktif.value] || null
 })
