@@ -345,6 +345,11 @@ export function cariCodingResumePasienRanap(token, params) {
   return request(`/api/resume-pasien-ranap/cari-coding?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
+export function referensiResumePasienRanap(token, params) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/resume-pasien-ranap/referensi?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
 export function simpanResumePasienRanap(token, payload) {
   return request('/api/resume-pasien-ranap', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
 }
@@ -371,6 +376,11 @@ export function validasiCodingResumePasien(token, params) {
 export function cariCodingResumePasien(token, params) {
   const query = new URLSearchParams(params).toString()
   return request(`/api/resume-pasien/cari-coding?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function referensiResumePasien(token, params) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/resume-pasien/referensi?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
 export function simpanResumePasien(token, payload) {

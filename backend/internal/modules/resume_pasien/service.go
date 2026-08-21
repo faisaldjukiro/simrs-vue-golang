@@ -45,6 +45,19 @@ func (l *Layanan) CariCoding(ctx context.Context, jenis, kataKunci string, utama
 	return l.repo.CariCoding(ctx, jenis, kataKunci, utama)
 }
 
+func (l *Layanan) Referensi(ctx context.Context, noRawat, jenis, kataKunci string) ([]ReferensiResume, error) {
+	noRawat = strings.TrimSpace(noRawat)
+	jenis = strings.ToLower(strings.TrimSpace(jenis))
+	kataKunci = strings.TrimSpace(kataKunci)
+	if noRawat == "" {
+		return nil, fmt.Errorf("%w: nomor rawat wajib diisi", ErrInputTidakValid)
+	}
+	if !ada(jenis, "keluhan", "pemeriksaan", "radiologi", "laboratorium", "obat") {
+		return nil, fmt.Errorf("%w: jenis referensi resume tidak valid", ErrInputTidakValid)
+	}
+	return l.repo.Referensi(ctx, noRawat, jenis, kataKunci)
+}
+
 func (l *Layanan) Simpan(ctx context.Context, input Input) error {
 	bersihkan(&input)
 	if err := validasi(input); err != nil {

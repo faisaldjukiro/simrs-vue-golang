@@ -16,11 +16,26 @@ func NewHandler(layanan *modul.Layanan) *Handler { return &Handler{layanan: laya
 
 func (h *Handler) Register(group *gin.RouterGroup) {
 	group.GET("", h.Data)
+	group.GET("/referensi", h.Referensi)
 	group.GET("/validasi-coding", h.ValidasiCoding)
 	group.GET("/cari-coding", h.CariCoding)
 	group.POST("", h.Simpan)
 	group.PUT("", h.Ubah)
 	group.DELETE("", h.Hapus)
+}
+
+func (h *Handler) Referensi(c *gin.Context) {
+	data, err := h.layanan.Referensi(
+		c.Request.Context(),
+		c.Query("no_rawat"),
+		c.Query("jenis"),
+		c.Query("q"),
+	)
+	if err != nil {
+		h.error(c, err)
+		return
+	}
+	httpresponse.Success(c, http.StatusOK, data)
 }
 
 func (h *Handler) CariCoding(c *gin.Context) {

@@ -23,6 +23,13 @@ type Dokter struct {
 	Spesialis string `json:"spesialis"`
 }
 
+type ReferensiResume struct {
+	Tanggal string `json:"tanggal"`
+	Jam     string `json:"jam"`
+	Isi     string `json:"isi"`
+	Sumber  string `json:"sumber"`
+}
+
 type Input struct {
 	NoRawat               string `json:"no_rawat"`
 	KodeDokter            string `json:"kode_dokter"`
@@ -331,6 +338,184 @@ func (r *Repositori) Hapus(ctx context.Context, noRawat string) error {
 		}
 		return nil
 	})
+}
+
+func (r *Repositori) Referensi(ctx context.Context, noRawat, jenis, kataKunci string) ([]ReferensiResume, error) {
+	pola := "%" + strings.TrimSpace(kataKunci) + "%"
+	switch jenis {
+	case "keluhan":
+		return r.referensiKeluhan(ctx, noRawat, pola)
+	case "pemeriksaan":
+		return r.referensiPemeriksaan(ctx, noRawat, pola)
+	case "radiologi":
+		return r.referensiRadiologi(ctx, noRawat, pola)
+	case "laboratorium":
+		return r.referensiLaboratorium(ctx, noRawat, pola)
+	case "tindakan":
+		return r.referensiTindakan(ctx, noRawat, pola)
+	case "obat":
+		return r.referensiObat(ctx, noRawat, pola)
+	case "diet":
+		return r.referensiDiet(ctx, noRawat, pola)
+	case "lab_pending":
+		return r.referensiLabPending(ctx, noRawat, pola)
+	case "obat_pulang":
+		return r.referensiObatPulang(ctx, noRawat, pola)
+	default:
+		return nil, fmt.Errorf("%w: jenis referensi resume tidak valid", ErrInputTidakValid)
+	}
+}
+
+func (r *Repositori) referensiKeluhan(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	ralan, err := r.bacaReferensi(ctx, `
+		SELECT tgl_perawatan, jam_rawat, keluhan, 'Pemeriksaan Ralan'
+		FROM pemeriksaan_ralan
+		WHERE no_rawat=? AND (tgl_perawatan LIKE ? OR keluhan LIKE ?) AND keluhan<>''
+		ORDER BY tgl_perawatan, jam_rawat
+	`, noRawat, pola, pola)
+	if err != nil {
+		return nil, err
+	}
+	ranap, err := r.bacaReferensi(ctx, `
+		SELECT tgl_perawatan, jam_rawat, keluhan, 'Pemeriksaan Ranap'
+		FROM pemeriksaan_ranap
+		WHERE no_rawat=? AND (tgl_perawatan LIKE ? OR keluhan LIKE ?) AND keluhan<>''
+		ORDER BY tgl_perawatan, jam_rawat
+	`, noRawat, pola, pola)
+	if err != nil {
+		return nil, err
+	}
+	return append(ralan, ranap...), nil
+}
+
+func (r *Repositori) referensiPemeriksaan(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	ralan, err := r.bacaReferensi(ctx, `
+		SELECT tgl_perawatan, jam_rawat, pemeriksaan, 'Pemeriksaan Ralan'
+		FROM pemeriksaan_ralan
+		WHERE no_rawat=? AND (tgl_perawatan LIKE ? OR pemeriksaan LIKE ?) AND pemeriksaan<>''
+		ORDER BY tgl_perawatan, jam_rawat
+	`, noRawat, pola, pola)
+	if err != nil {
+		return nil, err
+	}
+	ranap, err := r.bacaReferensi(ctx, `
+		SELECT tgl_perawatan, jam_rawat, pemeriksaan, 'Pemeriksaan Ranap'
+		FROM pemeriksaan_ranap
+		WHERE no_rawat=? AND (tgl_perawatan LIKE ? OR pemeriksaan LIKE ?) AND pemeriksaan<>''
+		ORDER BY tgl_perawatan, jam_rawat
+	`, noRawat, pola, pola)
+	if err != nil {
+		return nil, err
+	}
+	return append(ralan, ranap...), nil
+}
+
+func (r *Repositori) referensiRadiologi(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	return r.bacaReferensi(ctx, `
+		SELECT tgl_periksa, jam, hasil, 'Radiologi'
+		FROM hasil_radiologi
+		WHERE no_rawat=? AND (tgl_periksa LIKE ? OR hasil LIKE ?) AND hasil<>''
+		ORDER BY tgl_periksa, jam
+	`, noRawat, pola, pola)
+}
+
+func (r *Repositori) referensiLaboratorium(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	return r.bacaReferensi(ctx, `
+		SELECT detail_periksa_lab.tgl_periksa, detail_periksa_lab.jam,
+			CONCAT(COALESCE(template_laboratorium.Pemeriksaan, ''), ' : ', COALESCE(detail_periksa_lab.nilai, '')), 'Laboratorium'
+		FROM detail_periksa_lab
+		INNER JOIN template_laboratorium ON detail_periksa_lab.id_template=template_laboratorium.id_template
+		WHERE detail_periksa_lab.no_rawat=?
+			AND (detail_periksa_lab.tgl_periksa LIKE ? OR template_laboratorium.Pemeriksaan LIKE ?)
+		ORDER BY detail_periksa_lab.tgl_periksa, detail_periksa_lab.jam
+	`, noRawat, pola, pola)
+}
+
+func (r *Repositori) referensiTindakan(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	ranap, err := r.bacaReferensi(ctx, `
+		SELECT rawat_inap_dr.tgl_perawatan, rawat_inap_dr.jam_rawat, jns_perawatan_inap.nm_perawatan, 'Tindakan Ranap'
+		FROM rawat_inap_dr
+		INNER JOIN jns_perawatan_inap ON rawat_inap_dr.kd_jenis_prw=jns_perawatan_inap.kd_jenis_prw
+		WHERE rawat_inap_dr.no_rawat=? AND (rawat_inap_dr.tgl_perawatan LIKE ? OR jns_perawatan_inap.nm_perawatan LIKE ?)
+		ORDER BY rawat_inap_dr.tgl_perawatan, rawat_inap_dr.jam_rawat
+	`, noRawat, pola, pola)
+	if err != nil {
+		return nil, err
+	}
+	operasi, err := r.bacaReferensi(ctx, `
+		SELECT DATE_FORMAT(operasi.tgl_operasi,'%Y-%m-%d'), DATE_FORMAT(operasi.tgl_operasi,'%H:%i:%s'),
+			paket_operasi.nm_perawatan, 'Operasi'
+		FROM operasi
+		INNER JOIN paket_operasi ON operasi.kode_paket=paket_operasi.kode_paket
+		WHERE operasi.no_rawat=? AND (operasi.tgl_operasi LIKE ? OR paket_operasi.nm_perawatan LIKE ?)
+		ORDER BY operasi.tgl_operasi
+	`, noRawat, pola, pola)
+	if err != nil {
+		return nil, err
+	}
+	return append(ranap, operasi...), nil
+}
+
+func (r *Repositori) referensiObat(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	return r.bacaReferensi(ctx, `
+		SELECT detail_pemberian_obat.tgl_perawatan, detail_pemberian_obat.jam,
+			CONCAT(COALESCE(databarang.nama_brng, ''), ' : ', COALESCE(detail_pemberian_obat.jml, ''), ' ', COALESCE(databarang.kode_sat, '')), 'Obat Selama RS'
+		FROM detail_pemberian_obat
+		INNER JOIN databarang ON detail_pemberian_obat.kode_brng=databarang.kode_brng
+		WHERE detail_pemberian_obat.no_rawat=?
+			AND (detail_pemberian_obat.tgl_perawatan LIKE ? OR databarang.nama_brng LIKE ?)
+		ORDER BY detail_pemberian_obat.tgl_perawatan, detail_pemberian_obat.jam
+	`, noRawat, pola, pola)
+}
+
+func (r *Repositori) referensiDiet(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	return r.bacaReferensi(ctx, `
+		SELECT detail_beri_diet.tanggal, detail_beri_diet.waktu, diet.nama_diet, 'Diet'
+		FROM detail_beri_diet
+		INNER JOIN diet ON detail_beri_diet.kd_diet=diet.kd_diet
+		WHERE detail_beri_diet.no_rawat=? AND (detail_beri_diet.tanggal LIKE ? OR diet.nama_diet LIKE ?)
+		ORDER BY detail_beri_diet.tanggal, detail_beri_diet.waktu
+	`, noRawat, pola, pola)
+}
+
+func (r *Repositori) referensiLabPending(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	return r.bacaReferensi(ctx, `
+		SELECT permintaan_lab.tgl_permintaan, permintaan_lab.jam_permintaan, template_laboratorium.Pemeriksaan, 'Laboratorium Pending'
+		FROM permintaan_lab
+		INNER JOIN permintaan_detail_permintaan_lab ON permintaan_detail_permintaan_lab.noorder=permintaan_lab.noorder
+		INNER JOIN template_laboratorium ON permintaan_detail_permintaan_lab.id_template=template_laboratorium.id_template
+		WHERE permintaan_lab.tgl_hasil='0000-00-00' AND permintaan_lab.no_rawat=?
+			AND (permintaan_lab.tgl_permintaan LIKE ? OR template_laboratorium.Pemeriksaan LIKE ?)
+		ORDER BY permintaan_lab.tgl_permintaan, permintaan_lab.jam_permintaan
+	`, noRawat, pola, pola)
+}
+
+func (r *Repositori) referensiObatPulang(ctx context.Context, noRawat, pola string) ([]ReferensiResume, error) {
+	return r.bacaReferensi(ctx, `
+		SELECT resep_pulang.tanggal, resep_pulang.jam,
+			CONCAT(COALESCE(resep_pulang.jml_barang, ''), ' ', COALESCE(databarang.nama_brng, ''), ' ', COALESCE(resep_pulang.dosis, '')), 'Obat Pulang'
+		FROM resep_pulang
+		INNER JOIN databarang ON databarang.kode_brng=resep_pulang.kode_brng
+		WHERE resep_pulang.no_rawat=? AND (resep_pulang.tanggal LIKE ? OR databarang.nama_brng LIKE ?)
+		ORDER BY resep_pulang.tanggal, resep_pulang.jam
+	`, noRawat, pola, pola)
+}
+
+func (r *Repositori) bacaReferensi(ctx context.Context, query string, args ...any) ([]ReferensiResume, error) {
+	rows, err := r.simrsDB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("baca referensi resume pasien rawat inap: %w", err)
+	}
+	defer rows.Close()
+	daftar := make([]ReferensiResume, 0, 20)
+	for rows.Next() {
+		var item ReferensiResume
+		if err := rows.Scan(&item.Tanggal, &item.Jam, &item.Isi, &item.Sumber); err != nil {
+			return nil, err
+		}
+		daftar = append(daftar, item)
+	}
+	return daftar, rows.Err()
 }
 
 type queryer interface {

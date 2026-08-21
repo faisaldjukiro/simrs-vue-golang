@@ -1,5 +1,5 @@
 <script setup>
-import { FileCheck2, LoaderCircle, Save, Trash2, X } from '@lucide/vue'
+import { FileCheck2, LoaderCircle, Paperclip, Save, Search, Trash2, X } from '@lucide/vue'
 import { computed, reactive, ref, watch } from 'vue'
 import CariDokter from '../../Components/Ui/CariDokter.vue'
 import FormInput from '../../Components/Ui/FormInput.vue'
@@ -7,6 +7,7 @@ import InputPencarian from '../../Components/Ui/InputPencarian.vue'
 import {
   cariCodingResumePasienRanap,
   hapusResumePasienRanap,
+  referensiResumePasienRanap,
   resumePasienRanapData,
   simpanResumePasienRanap,
   ubahResumePasienRanap,
@@ -30,6 +31,15 @@ const doctor = ref({})
 const pilihan = reactive({ cara_keluar: [], keadaan: [], dilanjutkan: [] })
 const form = reactive(formKosong())
 const statusCoding = reactive({})
+const referensiTerbuka = ref(null)
+const referensiLoading = ref(false)
+const referensiSearch = ref('')
+const referensiItems = ref([])
+const referensiDipilih = ref([])
+
+const referensiSemuaTerpilih = computed(() => (
+  referensiItems.value.length > 0 && referensiItems.value.every((item) => referensiAktif(item))
+))
 
 const pilihanSelect = computed(() => ({
   cara_keluar: pilihan.cara_keluar.map((value) => ({ label: value, value })),
@@ -38,14 +48,33 @@ const pilihanSelect = computed(() => ({
 }))
 
 const catatanPerawatan = [
-  { key: 'keluhan_utama', label: 'Keluhan Utama / Riwayat Penyakit', required: true },
-  { key: 'pemeriksaan_fisik', label: 'Pemeriksaan Fisik' },
+  { key: 'keluhan_utama', label: 'Keluhan Utama / Riwayat Penyakit', required: true, references: [{ jenis: 'keluhan', label: 'Keluhan' }] },
+  { key: 'pemeriksaan_fisik', label: 'Pemeriksaan Fisik', references: [{ jenis: 'pemeriksaan', label: 'Pemeriksaan' }] },
   { key: 'jalannya_penyakit', label: 'Jalannya Penyakit Selama Perawatan', required: true },
-  { key: 'pemeriksaan_penunjang', label: 'Pemeriksaan Penunjang Radiologi Terpenting' },
-  { key: 'hasil_laborat', label: 'Pemeriksaan Penunjang Laboratorium Terpenting' },
-  { key: 'tindakan_dan_operasi', label: 'Tindakan / Operasi Selama Perawatan' },
-  { key: 'obat_di_rs', label: 'Obat-obatan Selama Perawatan' },
+  { key: 'pemeriksaan_penunjang', label: 'Pemeriksaan Penunjang Radiologi Terpenting', references: [{ jenis: 'radiologi', label: 'Radiologi' }] },
+  { key: 'hasil_laborat', label: 'Pemeriksaan Penunjang Laboratorium Terpenting', references: [{ jenis: 'laboratorium', label: 'Laboratorium' }] },
+  { key: 'tindakan_dan_operasi', label: 'Tindakan / Operasi Selama Perawatan', references: [{ jenis: 'tindakan', label: 'Tindakan' }] },
+  { key: 'obat_di_rs', label: 'Obat-obatan Selama Perawatan', references: [{ jenis: 'obat', label: 'Obat RS' }] },
 ]
+
+const catatanPulang = [
+  { key: 'diet', label: 'Diet', references: [{ jenis: 'diet', label: 'Diet' }] },
+  { key: 'lab_belum', label: 'Hasil Laboratorium Belum Selesai', references: [{ jenis: 'lab_pending', label: 'Lab Pending' }] },
+  { key: 'edukasi', label: 'Instruksi / Anjuran dan Edukasi' },
+  { key: 'obat_pulang', label: 'Obat Pulang', references: [{ jenis: 'obat_pulang', label: 'Obat Pulang' }] },
+]
+
+const referensiMeta = {
+  keluhan: { judul: 'Ambil Keluhan Pasien', target: 'keluhan_utama', separator: ', ' },
+  pemeriksaan: { judul: 'Ambil Pemeriksaan Fisik', target: 'pemeriksaan_fisik', separator: ', ' },
+  radiologi: { judul: 'Ambil Hasil Radiologi', target: 'pemeriksaan_penunjang', separator: ', ' },
+  laboratorium: { judul: 'Ambil Hasil Laboratorium', target: 'hasil_laborat', separator: ', ' },
+  tindakan: { judul: 'Ambil Tindakan / Operasi', target: 'tindakan_dan_operasi', separator: ', ' },
+  obat: { judul: 'Ambil Obat Selama RS', target: 'obat_di_rs', separator: ', ' },
+  diet: { judul: 'Ambil Diet Pasien', target: 'diet', separator: ', ' },
+  lab_pending: { judul: 'Ambil Lab Pending', target: 'lab_belum', separator: ', ' },
+  obat_pulang: { judul: 'Ambil Obat Pulang', target: 'obat_pulang', separator: '\n' },
+}
 
 const diagnosa = [
   { kode: 'kd_diagnosa_utama', nama: 'diagnosa_utama', label: 'Diagnosa Utama', required: true },
@@ -207,6 +236,67 @@ async function periksaSemuaCoding() {
   return hasil.every(Boolean)
 }
 
+async function bukaReferensi(jenis) {
+  if (billingLocked.value) return
+  referensiTerbuka.value = { jenis, ...referensiMeta[jenis] }
+  referensiSearch.value = ''
+  referensiDipilih.value = []
+  await muatReferensi()
+}
+
+async function muatReferensi() {
+  if (!referensiTerbuka.value?.jenis) return
+  referensiLoading.value = true
+  try {
+    referensiItems.value = await referensiResumePasienRanap(props.token, {
+      no_rawat: props.patient.no_rawat,
+      jenis: referensiTerbuka.value.jenis,
+      q: referensiSearch.value,
+    })
+    referensiDipilih.value = []
+  } catch (error) {
+    referensiItems.value = []
+    referensiDipilih.value = []
+    notifikasi.gagal(error.message || 'Referensi resume pasien rawat inap tidak dapat dibaca.')
+  } finally {
+    referensiLoading.value = false
+  }
+}
+
+function referensiKey(item) {
+  return `${item?.sumber || ''}|${item?.tanggal || ''}|${item?.jam || ''}|${item?.isi || ''}`
+}
+
+function referensiAktif(item) {
+  const key = referensiKey(item)
+  return referensiDipilih.value.some((dipilih) => referensiKey(dipilih) === key)
+}
+
+function toggleReferensi(item) {
+  const key = referensiKey(item)
+  if (referensiAktif(item)) {
+    referensiDipilih.value = referensiDipilih.value.filter((dipilih) => referensiKey(dipilih) !== key)
+    return
+  }
+  referensiDipilih.value = [...referensiDipilih.value, item]
+}
+
+function pilihSemuaReferensi() {
+  if (!referensiItems.value.length) return
+  referensiDipilih.value = referensiSemuaTerpilih.value ? [] : [...referensiItems.value]
+}
+
+function tambahReferensiTerpilih() {
+  const target = referensiTerbuka.value?.target
+  const separator = referensiTerbuka.value?.separator || ', '
+  const isi = referensiDipilih.value.map((item) => String(item?.isi || '').trim()).filter(Boolean).join(separator)
+  if (!target || !isi) return
+  const sebelumnya = String(form[target] || '').trim()
+  form[target] = sebelumnya ? `${sebelumnya}${separator}${isi}` : isi
+  referensiTerbuka.value = null
+  referensiDipilih.value = []
+}
+
 async function muat() {
   if (!props.patient.no_rawat) return
   loading.value = true
@@ -304,11 +394,28 @@ watch(() => props.patient.no_rawat, muat, { immediate: true })
               <FormInput v-model="form.alasan" label="Alasan Dirawat" maxlength="70" />
             </div>
             <div class="resume-grid notes">
-              <FormInput
-                v-for="field in catatanPerawatan" :key="field.key"
-                v-model="form[field.key]" :label="field.label" jenis="textarea" :rows="3"
-                :required="field.required" maxlength="2000"
-              />
+              <div v-for="field in catatanPerawatan" :key="field.key" class="resume-reference-field">
+                <div v-if="field.references?.length" class="resume-reference-actions">
+                  <button
+                    v-for="reference in field.references"
+                    :key="reference.jenis"
+                    type="button"
+                    class="resume-reference-button"
+                    :disabled="saving || deleting || billingLocked"
+                    @click="bukaReferensi(reference.jenis)"
+                  >
+                    <Paperclip :size="13" /> {{ reference.label }}
+                  </button>
+                </div>
+                <FormInput
+                  v-model="form[field.key]"
+                  :label="field.label"
+                  jenis="textarea"
+                  :rows="3"
+                  :required="field.required"
+                  maxlength="2000"
+                />
+              </div>
             </div>
           </section>
 
@@ -364,10 +471,27 @@ watch(() => props.patient.no_rawat, muat, { immediate: true })
               <FormInput v-model="form.alergi" label="Alergi Obat" maxlength="100" />
             </div>
             <div class="resume-grid notes discharge-notes">
-              <FormInput v-model="form.diet" label="Diet" jenis="textarea" :rows="3" maxlength="2000" />
-              <FormInput v-model="form.lab_belum" label="Hasil Laboratorium Belum Selesai" jenis="textarea" :rows="3" maxlength="2000" />
-              <FormInput v-model="form.edukasi" label="Instruksi / Anjuran dan Edukasi" jenis="textarea" :rows="3" maxlength="2000" />
-              <FormInput v-model="form.obat_pulang" label="Obat Pulang" jenis="textarea" :rows="3" maxlength="2000" />
+              <div v-for="field in catatanPulang" :key="field.key" class="resume-reference-field">
+                <div v-if="field.references?.length" class="resume-reference-actions">
+                  <button
+                    v-for="reference in field.references"
+                    :key="reference.jenis"
+                    type="button"
+                    class="resume-reference-button"
+                    :disabled="saving || deleting || billingLocked"
+                    @click="bukaReferensi(reference.jenis)"
+                  >
+                    <Paperclip :size="13" /> {{ reference.label }}
+                  </button>
+                </div>
+                <FormInput
+                  v-model="form[field.key]"
+                  :label="field.label"
+                  jenis="textarea"
+                  :rows="3"
+                  maxlength="2000"
+                />
+              </div>
             </div>
           </section>
 
@@ -378,6 +502,80 @@ watch(() => props.patient.no_rawat, muat, { immediate: true })
         </fieldset>
       </form>
     </article>
+
+    <div v-if="referensiTerbuka" class="resume-dialog-backdrop" @click.self="referensiTerbuka = null">
+      <section class="resume-dialog resume-reference-dialog">
+        <header>
+          <div>
+            <span>REFERENSI RESUME RANAP</span>
+            <h3>{{ referensiTerbuka.judul }}</h3>
+            <p>Data diambil dari pelayanan SIMRS Khanza pada nomor rawat ini.</p>
+          </div>
+          <button type="button" class="resume-button secondary" @click="referensiTerbuka = null">
+            <X :size="15" />
+          </button>
+        </header>
+
+        <div class="resume-reference-search">
+          <Search :size="17" />
+          <input
+            v-model="referensiSearch"
+            type="search"
+            placeholder="Cari tanggal atau isi referensi..."
+            @keyup.enter="muatReferensi"
+          >
+          <button type="button" class="resume-button primary" @click="muatReferensi">Cari</button>
+        </div>
+
+        <div class="resume-reference-toolbar">
+          <span>{{ referensiDipilih.length }} dari {{ referensiItems.length }} referensi dipilih</span>
+          <div>
+            <button
+              type="button"
+              class="resume-button secondary"
+              :disabled="!referensiItems.length"
+              @click="pilihSemuaReferensi"
+            >
+              {{ referensiSemuaTerpilih ? 'Batal Pilih Semua' : 'Pilih Semua' }}
+            </button>
+            <button
+              type="button"
+              class="resume-button primary"
+              :disabled="!referensiDipilih.length"
+              @click="tambahReferensiTerpilih"
+            >
+              Tambahkan Terpilih
+            </button>
+          </div>
+        </div>
+
+        <div class="resume-reference-list">
+          <div v-if="referensiLoading" class="resume-reference-state">
+            <LoaderCircle class="spin" :size="22" />
+            Menarik referensi...
+          </div>
+          <template v-else>
+            <button
+              v-for="item in referensiItems"
+              :key="referensiKey(item)"
+              type="button"
+              class="resume-reference-row"
+              :class="{ active: referensiAktif(item) }"
+              @click="toggleReferensi(item)"
+            >
+              <span class="resume-reference-check">✓</span>
+              <span>
+                <strong>{{ item.isi }}</strong>
+                <small>{{ item.tanggal }} {{ item.jam }} · {{ item.sumber }}</small>
+              </span>
+            </button>
+          </template>
+          <div v-if="!referensiLoading && !referensiItems.length" class="resume-reference-state">
+            Referensi belum ditemukan untuk nomor rawat ini.
+          </div>
+        </div>
+      </section>
+    </div>
 
     <div v-if="hapusTerbuka" class="resume-dialog-backdrop" @click.self="hapusTerbuka = false">
       <section class="resume-dialog">
@@ -395,17 +593,25 @@ watch(() => props.patient.no_rawat, muat, { immediate: true })
 .resume-header span{color:#0d9488;font-size:9px;font-weight:800;letter-spacing:.12em}.resume-header h3{margin:5px 0 0;font-size:18px}.resume-header p{margin:5px 0 0;color:var(--muted);font-size:11px}
 .resume-status{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:10px;color:#64748b;background:var(--surface-soft);font-size:11px;font-weight:700}.resume-status.available{color:#0f766e;background:rgba(20,184,166,.12)}
 .resume-form{padding:15px;background:var(--surface-soft)}.resume-form fieldset{display:grid;gap:14px;margin:0;padding:0;border:0}.resume-section{padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--surface)}.resume-section h4{margin:0 0 13px;padding-bottom:10px;border-bottom:1px solid var(--line);color:var(--text);font-size:14px}
-.resume-grid{display:grid;column-gap:14px;row-gap:17px}.resume-grid.identity{grid-template-columns:1.2fr 1fr 1fr}.resume-grid.notes{grid-template-columns:1fr 1fr;margin-top:17px}.resume-grid.discharge{grid-template-columns:repeat(4,minmax(0,1fr))}.discharge-notes{margin-top:18px}.resume-code-row{position:relative;margin-top:15px}.resume-code-row:first-of-type{margin-top:0}.resume-coding-picker{position:relative}.resume-coding-picker .staff-search-results{z-index:120}.resume-coding-picker>.form-input-message{display:block;margin-top:5px}.resume-coding-picker.coding-valid .staff-search-selected{border-color:#14b8a6;box-shadow:0 0 0 2px rgba(20,184,166,.08)}.resume-coding-picker.coding-valid>.form-input-message{color:#0f766e}.resume-coding-picker.invalid .staff-search-box,.resume-coding-picker.invalid .staff-search-selected{border-color:#dc2626}
+.resume-grid{display:grid;column-gap:14px;row-gap:17px}.resume-grid.identity{grid-template-columns:1.2fr 1fr 1fr}.resume-grid.notes{grid-template-columns:1fr 1fr;margin-top:17px}.resume-grid.discharge{grid-template-columns:repeat(4,minmax(0,1fr))}.discharge-notes{margin-top:18px}.resume-reference-field{position:relative;display:flex;min-width:0;min-height:148px;flex-direction:column;justify-content:space-between;gap:8px;padding:16px 12px 12px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--surface),var(--surface-soft));box-shadow:0 1px 0 rgba(15,23,42,.03)}.resume-reference-field .form-input-field{height:100%;gap:8px}.resume-reference-field .form-input-label{padding-right:110px;font-size:11px;letter-spacing:.045em}.resume-reference-field .form-input-textarea{min-height:72px;flex:1;resize:vertical}.resume-reference-actions{position:absolute;top:10px;right:12px;z-index:2;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px;margin:0}.resume-reference-button{display:inline-flex;height:30px;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:0 10px;color:#0d9488;background:var(--surface);font-size:10px;font-weight:800;letter-spacing:.01em;cursor:pointer}.resume-reference-button:hover{border-color:rgba(13,148,136,.42);background:rgba(13,148,136,.08)}.resume-reference-button:disabled{cursor:not-allowed;opacity:.55}.resume-code-row{position:relative;margin-top:15px}.resume-code-row:first-of-type{margin-top:0}.resume-coding-picker{position:relative}.resume-coding-picker .staff-search-results{z-index:120}.resume-coding-picker>.form-input-message{display:block;margin-top:5px}.resume-coding-picker.coding-valid .staff-search-selected{border-color:#14b8a6;box-shadow:0 0 0 2px rgba(20,184,166,.08)}.resume-coding-picker.coding-valid>.form-input-message{color:#0f766e}.resume-coding-picker.invalid .staff-search-box,.resume-coding-picker.invalid .staff-search-selected{border-color:#dc2626}
 .resume-form .form-input-field,.resume-form .staff-search{gap:9px}.resume-form .form-input-label{line-height:1.35}.resume-form .staff-search-selected,.resume-form .staff-search-box{margin-top:1px}
 .resume-billing-lock{margin-bottom:14px;padding:11px 13px;border:1px solid rgba(245,158,11,.3);border-radius:10px;color:#92400e;background:rgba(245,158,11,.1);font-size:11px;font-weight:700;line-height:1.55}
 .resume-actions{display:flex;justify-content:flex-end;gap:9px;padding-top:2px}.resume-button{display:inline-flex;height:40px;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);border-radius:10px;padding:0 14px;color:var(--text);background:var(--surface);font-size:11px;font-weight:800;cursor:pointer}.resume-button.primary{border-color:#0d9488;color:white;background:#0d9488}.resume-button.danger{border-color:rgba(220,38,38,.22);color:#dc2626;background:rgba(220,38,38,.08)}
-.resume-state{display:grid;min-height:280px;place-items:center;align-content:center;gap:10px;color:var(--muted)}.resume-dialog-backdrop{position:fixed;z-index:1000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(2,6,23,.58)}.resume-dialog{width:min(430px,100%);padding:20px;border:1px solid var(--line);border-radius:16px;color:var(--text);background:var(--surface)}.resume-dialog h3{margin:0}.resume-dialog p{color:var(--muted);font-size:12px;line-height:1.6}.resume-dialog>div{display:flex;justify-content:flex-end;gap:8px}
+.resume-state{display:grid;min-height:280px;place-items:center;align-content:center;gap:10px;color:var(--muted)}.resume-dialog-backdrop{position:fixed;z-index:1000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(2,6,23,.58)}.resume-dialog{width:min(430px,100%);padding:20px;border:1px solid var(--line);border-radius:16px;color:var(--text);background:var(--surface)}.resume-dialog h3{margin:0}.resume-dialog p{color:var(--muted);font-size:12px;line-height:1.6}.resume-dialog>div{display:flex;justify-content:flex-end;gap:8px}.resume-reference-dialog{width:min(760px,100%);max-height:min(760px,92vh);display:grid;gap:14px;overflow:hidden}.resume-reference-dialog>header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.resume-reference-dialog>header span{color:#0d9488;font-size:9px;font-weight:900;letter-spacing:.14em}.resume-reference-dialog>header h3{margin:5px 0 0}.resume-reference-dialog>header p{margin:6px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.resume-reference-dialog.resume-dialog>.resume-reference-search{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;justify-content:stretch!important;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface-soft)}.resume-reference-search input{width:100%;border:0;outline:0;color:var(--text);background:transparent;font-size:13px}.resume-reference-search input::placeholder{color:var(--muted)}.resume-reference-dialog.resume-dialog>.resume-reference-toolbar{display:flex!important;align-items:center;justify-content:space-between!important;gap:10px}.resume-reference-toolbar>span{color:var(--muted);font-size:11px;font-weight:800}.resume-reference-toolbar>div{display:flex;justify-content:flex-end;gap:8px}.resume-reference-toolbar .resume-button:disabled{cursor:not-allowed;opacity:.55}.resume-reference-dialog.resume-dialog>.resume-reference-list{display:grid!important;justify-content:stretch!important;gap:8px;max-height:440px;min-height:140px;overflow:auto;padding-right:4px}.resume-reference-row{display:grid;width:100%;grid-template-columns:26px minmax(0,1fr);align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:11px 13px;text-align:left;color:var(--text);background:var(--surface-soft);cursor:pointer}.resume-reference-row:hover{border-color:rgba(13,148,136,.45);background:rgba(13,148,136,.08)}.resume-reference-row.active{border-color:#0d9488;background:rgba(13,148,136,.14);box-shadow:inset 3px 0 0 #0d9488}.resume-reference-check{display:grid;width:22px;height:22px;place-items:center;border:1px solid var(--line);border-radius:7px;color:transparent;background:var(--surface);font-size:13px;font-weight:900}.resume-reference-row.active .resume-reference-check{border-color:#0d9488;color:#fff;background:#0d9488}.resume-reference-row span{display:grid;gap:5px}.resume-reference-row strong{font-size:12px;line-height:1.45;white-space:pre-wrap}.resume-reference-row small{color:var(--muted);font-size:10px;font-weight:700}.resume-reference-state{display:grid;width:100%;min-height:120px;place-items:center;align-content:center;justify-self:stretch;gap:8px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:12px;text-align:center}
 .theme-dark .resume-card,.sirapi-dark .resume-card{border-color:#304258;background:#0c1625}.theme-dark .resume-form,.sirapi-dark .resume-form{background:#0c1625}.theme-dark .resume-section,.sirapi-dark .resume-section{border-color:#304258;background:#142132}.theme-dark .resume-section h4,.sirapi-dark .resume-section h4{border-color:#304258}
+.theme-light .resume-reference-field{border-color:#cbd8e6;background:linear-gradient(180deg,#ffffff,#f8fbfd)}
+.theme-dark .resume-reference-field,.sirapi-dark .resume-reference-field{border-color:#304258;background:linear-gradient(180deg,#142132,#101b2b);box-shadow:none}
 .theme-dark .resume-form .form-input-element,.theme-dark .resume-form .form-input-select.ui-select,.theme-dark .resume-form .staff-search-selected,.theme-dark .resume-form .staff-search-box,.sirapi-dark .resume-form .form-input-element,.sirapi-dark .resume-form .form-input-select.ui-select,.sirapi-dark .resume-form .staff-search-selected,.sirapi-dark .resume-form .staff-search-box{border-color:#3b4d64;color:#f8fafc;background:#1c293b;color-scheme:dark}
 .theme-dark .resume-form .form-input-label,.sirapi-dark .resume-form .form-input-label{color:#9fb2ca}.theme-dark .resume-form .form-input-element::placeholder,.sirapi-dark .resume-form .form-input-element::placeholder{color:#71849d}
 .theme-dark .resume-status.available,.sirapi-dark .resume-status.available{color:#5eead4;background:rgba(20,184,166,.14)}
 .theme-dark .resume-coding-picker.coding-valid>.form-input-message,.sirapi-dark .resume-coding-picker.coding-valid>.form-input-message{color:#5eead4}
 .theme-dark .resume-billing-lock,.sirapi-dark .resume-billing-lock{color:#fcd34d;background:rgba(120,53,15,.24)}
+.theme-dark .resume-reference-button,.sirapi-dark .resume-reference-button{border-color:#3b4d64;background:#152235;color:#5eead4}
+.theme-dark .resume-reference-dialog,.sirapi-dark .resume-reference-dialog{border-color:#304258;background:#0f1b2c}
+.theme-dark .resume-reference-dialog .resume-reference-search,.theme-dark .resume-reference-row,.sirapi-dark .resume-reference-dialog .resume-reference-search,.sirapi-dark .resume-reference-row{border-color:#304258;background:#142132}
+.theme-dark .resume-reference-row:hover,.sirapi-dark .resume-reference-row:hover{background:rgba(20,184,166,.1)}
+.theme-dark .resume-reference-row.active,.sirapi-dark .resume-reference-row.active{border-color:#14b8a6;background:rgba(20,184,166,.16)}
+.theme-dark .resume-reference-check,.sirapi-dark .resume-reference-check{border-color:#3b4d64;background:#0f1b2c}
 @media(max-width:1200px){.resume-grid.identity,.resume-grid.discharge{grid-template-columns:1fr 1fr}}
-@media(max-width:760px){.resume-header{align-items:flex-start;flex-direction:column}.resume-grid.identity,.resume-grid.notes,.resume-grid.discharge,.resume-code-row{grid-template-columns:1fr}}
+@media(max-width:760px){.resume-header{align-items:flex-start;flex-direction:column}.resume-grid.identity,.resume-grid.notes,.resume-grid.discharge,.resume-code-row{grid-template-columns:1fr}.resume-reference-actions{position:static;margin-bottom:4px}.resume-reference-field .form-input-label{padding-right:0}.resume-reference-dialog .resume-reference-search{grid-template-columns:auto minmax(0,1fr)}.resume-reference-dialog .resume-reference-search .resume-button{grid-column:1/-1;width:100%}.resume-reference-dialog.resume-dialog>.resume-reference-toolbar{align-items:stretch;flex-direction:column}.resume-reference-toolbar>div{display:grid;grid-template-columns:1fr 1fr}.resume-reference-toolbar .resume-button{width:100%}}
 </style>
