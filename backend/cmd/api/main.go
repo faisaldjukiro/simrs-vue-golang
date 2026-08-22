@@ -29,6 +29,8 @@ import (
 	awalmedisumumhttp "simrs-backend/internal/modules/awal_medis_umum/delivery/http"
 	"simrs-backend/internal/modules/beranda"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
+	"simrs-backend/internal/modules/berkas_digital"
+	berkasdigitalhttp "simrs-backend/internal/modules/berkas_digital/delivery/http"
 	"simrs-backend/internal/modules/bpjs"
 	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
 	dataklaim "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim"
@@ -137,6 +139,12 @@ func main() {
 	permintaanRadiologiHandler := permintaanradiologihttp.NewHandler(permintaan_radiologi.NewLayanan(permintaanRadiologiRepositori))
 	permintaanLaboratoriumRepositori := permintaan_laboratorium.NewRepositori(simrsDB)
 	permintaanLaboratoriumHandler := permintaanlaboratoriumhttp.NewHandler(permintaan_laboratorium.NewLayanan(permintaanLaboratoriumRepositori))
+	berkasDigitalRepositori := berkas_digital.NewRepositori(simrsDB, config.SIMRSWebBaseURL())
+	berkasDigitalHandler := berkasdigitalhttp.NewHandler(
+		berkas_digital.NewLayanan(berkasDigitalRepositori),
+		config.BerkasDigitalUploadURL(),
+		config.BerkasDigitalLokasiPrefix(),
+	)
 	riwayatPerawatanRepositori := riwayat_perawatan.NewRepositori(simrsDB, config.SIMRSWebBaseURL())
 	riwayatPerawatanHandler := riwayatperawatanhttp.NewHandler(riwayat_perawatan.NewLayanan(riwayatPerawatanRepositori))
 	triaseIGDRepositori := triase_igd.NewRepositori(simrsDB)
@@ -174,6 +182,7 @@ func main() {
 		PenangananDokterPetugas: penangananHandler,
 		PermintaanRadiologi:     permintaanRadiologiHandler,
 		PermintaanLaboratorium:  permintaanLaboratoriumHandler,
+		BerkasDigital:           berkasDigitalHandler,
 		RiwayatPerawatan:        riwayatPerawatanHandler,
 		TriaseIGD:               triaseIGDHandler,
 		AwalKeperawatanIGD:      awalKeperawatanIGDHandler,

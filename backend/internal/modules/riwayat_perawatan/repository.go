@@ -340,12 +340,23 @@ func (r *Repositori) urlBerkas(folder, lokasi string) string {
 	if lokasi == "" || lokasi == "-" || r.webBaseURL == "" {
 		return ""
 	}
+	if folder == "berkasrawat" {
+		lokasi = normalisasiLokasiBerkasDigital(lokasi)
+	}
 	base, err := url.Parse(r.webBaseURL)
 	if err != nil {
 		return ""
 	}
 	base.Path = path.Join(base.Path, folder, strings.TrimLeft(lokasi, "/"))
 	return base.String()
+}
+
+func normalisasiLokasiBerkasDigital(lokasi string) string {
+	lokasi = strings.TrimLeft(strings.TrimSpace(lokasi), "/")
+	if strings.HasPrefix(lokasi, "upload/") {
+		return "pages/" + lokasi
+	}
+	return lokasi
 }
 
 func queryKunjungan(noRM string, filter Filter) (string, []any) {

@@ -143,6 +143,8 @@ UPDATE sidebar_pasien SET kode_sidebar = 'diagnosa'
 WHERE nama_sidebar = 'Diagnosa';
 UPDATE sidebar_pasien SET kode_sidebar = 'riwayat_perawatan'
 WHERE nama_sidebar = 'Riwayat Perawatan';
+UPDATE sidebar_pasien SET kode_sidebar = 'berkas_digital', daftar_modul = JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap')
+WHERE nama_sidebar = 'Berkas Digital';
 UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_laboratorium'
 WHERE nama_sidebar IN ('Permintaan Lab', 'Permintaan Laboratorium');
 UPDATE sidebar_pasien SET kode_sidebar = 'permintaan_radiologi'

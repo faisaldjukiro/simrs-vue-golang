@@ -40,6 +40,7 @@ type Obat struct {
 	Harga          float64 `json:"harga"`
 	HargaBeli      float64 `json:"h_beli"`
 	Stok           float64 `json:"stok"`
+	Kapasitas      float64 `json:"kapasitas"`
 	LetakBarang    string  `json:"letak_barang"`
 	NamaIndustri   string  `json:"nama_industri"`
 	KategoriFornas string  `json:"kategori_fornas"`
@@ -58,15 +59,20 @@ type ItemResep struct {
 	KategoriFornas string  `json:"kategori_fornas"`
 }
 type RacikanDetail struct {
-	KodeBarang string  `json:"kode_brng"`
-	NamaBarang string  `json:"nama_brng"`
-	KodeSatuan string  `json:"kode_sat"`
-	Jumlah     float64 `json:"jml"`
-	Harga      float64 `json:"harga"`
-	Stok       float64 `json:"stok"`
-	P1         float64 `json:"p1"`
-	P2         float64 `json:"p2"`
-	Kandungan  string  `json:"kandungan"`
+	KodeBarang   string  `json:"kode_brng"`
+	NamaBarang   string  `json:"nama_brng"`
+	KodeSatuan   string  `json:"kode_sat"`
+	Jumlah       float64 `json:"jml"`
+	Harga        float64 `json:"harga"`
+	HargaBeli    float64 `json:"h_beli"`
+	Jenis        string  `json:"jenis"`
+	Stok         float64 `json:"stok"`
+	Kapasitas    float64 `json:"kapasitas"`
+	P1           float64 `json:"p1"`
+	P2           float64 `json:"p2"`
+	Kandungan    string  `json:"kandungan"`
+	NamaIndustri string  `json:"nama_industri"`
+	LetakBarang  string  `json:"letak_barang"`
 }
 type RacikanHeader struct {
 	NoRacik     string          `json:"no_racik"`
@@ -188,7 +194,7 @@ func (r *Repositori) CariDepoGudang(ctx context.Context, q string) ([]DepoGudang
 func (r *Repositori) CariObat(ctx context.Context, q, kdBangsal, kelas string) ([]Obat, error) {
 	col := normalisasiKolumHarga(kelas)
 	like := "%" + q + "%"
-	query := fmt.Sprintf(`SELECT db.kode_brng,db.nama_brng,COALESCE(db.kode_sat,''),COALESCE(j.nama,''),COALESCE(db.%s,0),COALESCE(db.h_beli,0),COALESCE(SUM(gb.stok),0),COALESCE(db.letak_barang,''),COALESCE(i.nama_industri,''),COALESCE(ofn.kategori,'') FROM databarang db LEFT JOIN jenis j ON j.kdjns=db.kdjns LEFT JOIN industrifarmasi i ON i.kode_industri=db.kode_industri LEFT JOIN gudangbarang gb ON gb.kode_brng=db.kode_brng AND gb.kd_bangsal=? LEFT JOIN obat_fornas_non_fornas ofn ON ofn.kode_brng=db.kode_brng WHERE db.status='1' AND (db.kode_brng LIKE ? OR db.nama_brng LIKE ? OR j.nama LIKE ?) GROUP BY db.kode_brng ORDER BY db.nama_brng LIMIT 100`, col)
+	query := fmt.Sprintf(`SELECT db.kode_brng,db.nama_brng,COALESCE(db.kode_sat,''),COALESCE(j.nama,''),COALESCE(db.%s,0),COALESCE(db.h_beli,0),COALESCE(SUM(gb.stok),0),COALESCE(db.kapasitas,0),COALESCE(db.letak_barang,''),COALESCE(i.nama_industri,''),COALESCE(ofn.kategori,'') FROM databarang db LEFT JOIN jenis j ON j.kdjns=db.kdjns LEFT JOIN industrifarmasi i ON i.kode_industri=db.kode_industri LEFT JOIN gudangbarang gb ON gb.kode_brng=db.kode_brng AND gb.kd_bangsal=? LEFT JOIN obat_fornas_non_fornas ofn ON ofn.kode_brng=db.kode_brng WHERE db.status='1' AND (db.kode_brng LIKE ? OR db.nama_brng LIKE ? OR j.nama LIKE ?) GROUP BY db.kode_brng ORDER BY db.nama_brng LIMIT 100`, col)
 	rows, e := r.simrsDB.QueryContext(ctx, query, kdBangsal, like, like, like)
 	if e != nil {
 		return nil, e
@@ -197,7 +203,7 @@ func (r *Repositori) CariObat(ctx context.Context, q, kdBangsal, kelas string) (
 	out := []Obat{}
 	for rows.Next() {
 		var o Obat
-		if e = rows.Scan(&o.KodeBarang, &o.NamaBarang, &o.KodeSatuan, &o.Jenis, &o.Harga, &o.HargaBeli, &o.Stok, &o.LetakBarang, &o.NamaIndustri, &o.KategoriFornas); e != nil {
+		if e = rows.Scan(&o.KodeBarang, &o.NamaBarang, &o.KodeSatuan, &o.Jenis, &o.Harga, &o.HargaBeli, &o.Stok, &o.Kapasitas, &o.LetakBarang, &o.NamaIndustri, &o.KategoriFornas); e != nil {
 			return nil, e
 		}
 		out = append(out, o)
@@ -205,7 +211,13 @@ func (r *Repositori) CariObat(ctx context.Context, q, kdBangsal, kelas string) (
 	return out, rows.Err()
 }
 func (r *Repositori) DaftarMetodeRacik(ctx context.Context) ([]MetodeRacik, error) {
-	rows, e := r.simrsDB.QueryContext(ctx, `SELECT kd_racik,nm_racik,kapasitas FROM metode_racik ORDER BY nm_racik`)
+	rows, e := r.simrsDB.QueryContext(ctx, `SELECT kd_racik,nm_racik,COALESCE(kapasitas,0) FROM metode_racik ORDER BY nm_racik`)
+	if e != nil {
+		pesan := strings.ToLower(e.Error())
+		if strings.Contains(pesan, "unknown column") && strings.Contains(pesan, "kapasitas") {
+			rows, e = r.simrsDB.QueryContext(ctx, `SELECT kd_racik,nm_racik,0 FROM metode_racik ORDER BY nm_racik`)
+		}
+	}
 	if e != nil {
 		return nil, e
 	}
@@ -295,14 +307,14 @@ func (r *Repositori) DetailResep(ctx context.Context, no string) (ResepLengkap, 
 			racikRows.Close()
 			return h, re
 		}
-		detailRows, de := r.simrsDB.QueryContext(ctx, `SELECT d.kode_brng,COALESCE(b.nama_brng,''),COALESCE(b.kode_sat,''),d.jml,COALESCE(b.ralan,0),COALESCE(g.stok,0),COALESCE(d.p1,1),COALESCE(d.p2,1),COALESCE(d.kandungan,'') FROM resep_dokter_racikan_detail d LEFT JOIN databarang b ON b.kode_brng=d.kode_brng LEFT JOIN (SELECT kode_brng,SUM(stok) stok FROM gudangbarang GROUP BY kode_brng) g ON g.kode_brng=d.kode_brng WHERE d.no_resep=? AND d.no_racik=?`, no, rc.NoRacik)
+		detailRows, de := r.simrsDB.QueryContext(ctx, `SELECT d.kode_brng,COALESCE(b.nama_brng,''),COALESCE(b.kode_sat,''),d.jml,COALESCE(b.ralan,0),COALESCE(b.h_beli,0),COALESCE(j.nama,''),COALESCE(g.stok,0),COALESCE(b.kapasitas,0),COALESCE(d.p1,1),COALESCE(d.p2,1),COALESCE(d.kandungan,''),COALESCE(i.nama_industri,''),COALESCE(b.letak_barang,'') FROM resep_dokter_racikan_detail d LEFT JOIN databarang b ON b.kode_brng=d.kode_brng LEFT JOIN jenis j ON j.kdjns=b.kdjns LEFT JOIN industrifarmasi i ON i.kode_industri=b.kode_industri LEFT JOIN (SELECT kode_brng,SUM(stok) stok FROM gudangbarang GROUP BY kode_brng) g ON g.kode_brng=d.kode_brng WHERE d.no_resep=? AND d.no_racik=?`, no, rc.NoRacik)
 		if de != nil {
 			racikRows.Close()
 			return h, de
 		}
 		for detailRows.Next() {
 			var d RacikanDetail
-			if de = detailRows.Scan(&d.KodeBarang, &d.NamaBarang, &d.KodeSatuan, &d.Jumlah, &d.Harga, &d.Stok, &d.P1, &d.P2, &d.Kandungan); de != nil {
+			if de = detailRows.Scan(&d.KodeBarang, &d.NamaBarang, &d.KodeSatuan, &d.Jumlah, &d.Harga, &d.HargaBeli, &d.Jenis, &d.Stok, &d.Kapasitas, &d.P1, &d.P2, &d.Kandungan, &d.NamaIndustri, &d.LetakBarang); de != nil {
 				detailRows.Close()
 				racikRows.Close()
 				return h, de

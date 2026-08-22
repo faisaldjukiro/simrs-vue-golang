@@ -271,6 +271,27 @@ export function riwayatPerawatanData(token, params = {}) {
   return request(`/api/riwayat-perawatan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
+export function berkasDigitalData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/berkas-digital?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function uploadBerkasDigital(token, formData) {
+  return request('/api/berkas-digital', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  })
+}
+
+export function hapusBerkasDigital(token, payload) {
+  return request('/api/berkas-digital', {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
 export function triaseIgdData(token, noRawat) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/triase-igd?${query}`, { headers: { Authorization: `Bearer ${token}` } })

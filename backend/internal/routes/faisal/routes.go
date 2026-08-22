@@ -13,6 +13,7 @@ import (
 	awalmedisranaphttp "simrs-backend/internal/modules/awal_medis_ranap/delivery/http"
 	awalmedisumumhttp "simrs-backend/internal/modules/awal_medis_umum/delivery/http"
 	berandahttp "simrs-backend/internal/modules/beranda/delivery/http"
+	berkasdigitalhttp "simrs-backend/internal/modules/berkas_digital/delivery/http"
 	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
@@ -41,6 +42,7 @@ type Dependencies struct {
 	Beranda                 *berandahttp.Handler
 	BPJS                    *bpjshttp.Handler
 	BPJSDataKlaim           *dataklaimhttp.Handler
+	BerkasDigital           *berkasdigitalhttp.Handler
 	IDRG                    *idrghttp.Handler
 	KelolaMenu              *kelolamenuhttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
@@ -84,6 +86,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		{"/penanganan-dokter-petugas", dependencies.PenangananDokterPetugas.Register},
 		{"/permintaan-radiologi", dependencies.PermintaanRadiologi.Register},
 		{"/permintaan-laboratorium", dependencies.PermintaanLaboratorium.Register},
+		{"/berkas-digital", dependencies.BerkasDigital.Register},
 		{"/resume-pasien", dependencies.ResumePasien.Register},
 		{"/resume-pasien-ranap", dependencies.ResumePasienRanap.Register},
 		{"/riwayat-perawatan", dependencies.RiwayatPerawatan.Register},

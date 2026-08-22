@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, ClipboardPlus, FlaskConical, Plus, Save, Trash2
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import FormInput from '../../Components/Ui/FormInput.vue'
 import InputPencarian from '../../Components/Ui/InputPencarian.vue'
+import Select from '../../Components/Ui/Select.vue'
 import {
   hapusResep, resepCariDepo, resepCariDokter, resepCariObat, resepDaftar, resepDepoDefault, resepDetail,
   resepInfoPasien, resepMetodeRacik, resepNomorAuto, simpanResep,
@@ -56,12 +57,39 @@ function labelStatusResep(value){
 }
 function statusRawat(){return props.moduleName === 'Rawat Inap' ? 'ranap' : 'ralan'}
 function angka(v, fallback = 0){const n=Number(v);return Number.isFinite(n)?n:fallback}
+function angkaRacik(v, fallback = 0){
+  const text = String(v ?? '').replace(',', '.').replace(/[^\d.%.-]/g, '')
+  if(text.includes('%')) return text
+  const n = Number(text)
+  return Number.isFinite(n) ? n : fallback
+}
+function angkaTampil(v, digit = 3){
+  const n = Number(v)
+  if(!Number.isFinite(n)) return ''
+  return Number(n.toFixed(digit)).toString()
+}
 function normalisasiItemResep(x){
   return {
     ...x,
     jml: angka(x.jml ?? x.jumlah ?? x.jumlah_obat, 1),
     harga: angka(x.harga, 0),
     aturan_pakai: x.aturan_pakai || '',
+  }
+}
+function normalisasiDetailRacik(x){
+  return {
+    ...x,
+    jml: angka(x.jml ?? x.jumlah, 0),
+    harga: angka(x.harga, 0),
+    h_beli: angka(x.h_beli, 0),
+    stok: angka(x.stok, 0),
+    kapasitas: angka(x.kapasitas, 0),
+    p1: angka(x.p1, 1),
+    p2: angka(x.p2, 1),
+    kandungan: x.kandungan || '',
+    jenis: x.jenis || '',
+    nama_industri: x.nama_industri || '',
+    letak_barang: x.letak_barang || '',
   }
 }
 function normalisasiRacikanCopy(x){
@@ -71,15 +99,27 @@ function normalisasiRacikanCopy(x){
     jml_dr: angka(x.jml_dr, 1),
     aturan_pakai: x.aturan_pakai || '',
     keterangan: x.keterangan || '',
-    detail: (x.detail || []).map(d => ({
-      ...d,
-      jml: angka(d.jml ?? d.jumlah, 1),
-      p1: angka(d.p1, 1),
-      p2: angka(d.p2, 1),
-      kandungan: d.kandungan || '',
-    })),
+    detail: (x.detail || []).map(normalisasiDetailRacik),
   }
 }
+function normalisasiMetodeRacik(data){
+  return (Array.isArray(data) ? data : [])
+    .map(item => {
+      const kd = item?.kd_racik ?? item?.kode ?? ''
+      const nm = item?.nm_racik ?? item?.nama ?? kd
+      return {
+        ...item,
+        kd_racik: String(kd || ''),
+        nm_racik: String(nm || ''),
+        kapasitas: angka(item?.kapasitas, 0),
+      }
+    })
+    .filter(item => item.kd_racik && item.nm_racik)
+}
+function namaMetodeRacik(kdRacik){
+  return methods.value.find(item => item.kd_racik === kdRacik)?.nm_racik || kdRacik || ''
+}
+const noRacikDraft = computed(() => String(racikan.value.length + 1))
 
 const totalObat = computed(() => items.value.reduce((s,i)=>s+Number(i.jml||0)*Number(i.harga||0),0))
 const totalRacikan = computed(() => racikan.value.reduce((sum,r)=>sum+(r.detail||[]).reduce((s,i)=>s+Number(i.jml||0)*Number(i.harga||0),0),0))
@@ -114,7 +154,13 @@ async function load(){
     doctor.value={kd_dokter:props.patient?.kd_dokter||'',nm_dokter:props.patient?.nama_dokter||'',spesialis:props.patient?.spesialis||''}
     form.kd_dokter=doctor.value.kd_dokter
     const [met,depo,num]=await Promise.allSettled([resepMetodeRacik(props.token),resepDepoDefault(props.token,props.patient.no_rawat,statusRawat()),resepNomorAuto(props.token,form.tgl_peresepan)])
-    methods.value=met.status==='fulfilled'&&Array.isArray(met.value)?met.value:[]
+    if(met.status === 'fulfilled'){
+      methods.value = normalisasiMetodeRacik(met.value)
+      if(!methods.value.length) notifikasi.peringatan('Metode racik belum ditemukan di tabel metode_racik SIMRS Khanza.')
+    }else{
+      methods.value = []
+      notifikasi.peringatan(`Metode racik tidak dapat dimuat: ${met.reason?.message || 'cek koneksi SIMRS Khanza'}`)
+    }
     if(depo.status==='fulfilled'){
       form.kd_bangsal=depo.value?.kd_bangsal||''
       form.nm_bangsal=depo.value?.nm_bangsal||''
@@ -210,10 +256,55 @@ function removeMedicine(i){
   if(item?.kode_brng) delete pilihanObat[item.kode_brng]
   items.value.splice(i,1)
 }
-function addRacikMedicine(){if(!racikMedicine.value?.kode_brng)return;racikDraft.detail.push({...racikMedicine.value,jml:1,p1:1,p2:1});racikMedicine.value={}}
+function hitungJumlahRacik(detail){
+  if(!detail) return
+  const kapasitas = angka(detail.kapasitas, 0)
+  const kandunganText = String(detail.kandungan ?? '').trim()
+  if(!kapasitas || !kandunganText){
+    detail.jml = 0
+    return
+  }
+  if(kandunganText.includes('%')){
+    const persen = angka(kandunganText.replace('%', ''), 0)
+    const totalKandunganLain = racikDraft.detail.reduce((sum, item) => {
+      if(item === detail || String(item.kandungan ?? '').includes('%')) return sum
+      return sum + (angka(item.kapasitas, 0) * angka(item.jml, 0))
+    }, 0)
+    detail.jml = kapasitas ? Number(((totalKandunganLain * (persen / 100)) / kapasitas).toFixed(1)) : 0
+    return
+  }
+  detail.jml = Number(((angka(racikDraft.jml_dr, 1) * angka(kandunganText, 0)) / kapasitas).toFixed(1))
+}
+function hitungKandunganDariP(detail){
+  if(!detail) return
+  const kapasitas = angka(detail.kapasitas, 0)
+  const p1 = angka(detail.p1, 0)
+  const p2 = angka(detail.p2, 0)
+  if(!kapasitas || !p1 || !p2){
+    detail.kandungan = ''
+    detail.jml = 0
+    return
+  }
+  detail.kandungan = angkaTampil(kapasitas * (p1 / p2), 3)
+  hitungJumlahRacik(detail)
+}
+function hitungSemuaDetailRacik(){
+  racikDraft.detail.forEach(hitungJumlahRacik)
+}
+function addRacikMedicine(){
+  if(!racikMedicine.value?.kode_brng)return
+  if(angka(racikMedicine.value.harga, 0) <= 0){
+    notifikasi.peringatan('Maaf, harga obat masih 0 sehingga tidak bisa dipilih.')
+    return
+  }
+  const detail = normalisasiDetailRacik({...racikMedicine.value,jml:0,p1:1,p2:1,kandungan:''})
+  hitungKandunganDariP(detail)
+  racikDraft.detail.push(detail)
+  racikMedicine.value={}
+}
 function addRacik(){
   if(!racikDraft.nama_racik||!racikDraft.kd_racik||!racikDraft.detail.length){notifikasi.gagal('Nama, metode, dan obat racikan wajib diisi');return}
-  racikan.value.push({...racikDraft,detail:[...racikDraft.detail]})
+  racikan.value.push({...racikDraft,no_racik:noRacikDraft.value,nm_racik:namaMetodeRacik(racikDraft.kd_racik),detail:racikDraft.detail.map(item => ({...item}))})
   Object.assign(racikDraft,{nama_racik:'',kd_racik:'',jml_dr:1,aturan_pakai:'',keterangan:'',detail:[]})
 }
 async function editRecipe(row){
@@ -227,7 +318,7 @@ async function editRecipe(row){
   items.value=(d.obat||[]).map(normalisasiItemResep)
   Object.keys(pilihanObat).forEach(k=>delete pilihanObat[k])
   items.value.forEach(item=>{if(item.kode_brng) pilihanObat[item.kode_brng] = {...item}})
-  racikan.value=(d.racikan||[]).map(r=>({...r,jml_dr:angka(r.jml_dr,1),detail:(r.detail||[]).map(normalisasiItemResep)}))
+  racikan.value=(d.racikan||[]).map(r=>({...r,jml_dr:angka(r.jml_dr,1),detail:(r.detail||[]).map(normalisasiDetailRacik)}))
   editing.value=true
   formVisible.value=true
   tab.value='resep'
@@ -267,6 +358,7 @@ watch(keywordObat,()=>{
   timerCariObat = window.setTimeout(cariBanyakObat, 300)
 })
 watch(()=>props.copiedResep, (copy)=>terapkanCopyResep(copy))
+watch(()=>racikDraft.jml_dr, hitungSemuaDetailRacik)
 onMounted(load)
 </script>
 
@@ -365,27 +457,92 @@ onMounted(load)
         </section>
 
         <section v-show="tab === 'racikan'" class="recipe-tab-panel">
-          <div class="recipe-grid racik-form">
-            <FormInput v-model="racikDraft.nama_racik" label="Nama Racikan" :disabled="locked"/>
-            <FormInput v-model="racikDraft.jml_dr" label="Jumlah" type="number" :disabled="locked"/>
-            <FormInput v-model="racikDraft.aturan_pakai" label="Aturan Pakai" :disabled="locked"/>
-            <FormInput v-model="racikDraft.kd_racik" label="Metode Racik" jenis="select" :options="methods" option-label="nm_racik" option-value="kd_racik" :disabled="locked"/>
+          <div class="racik-khanza-table racik-header-table">
+            <div class="racik-header-row racik-header-head">
+              <span>No</span>
+              <span>Nama Racikan</span>
+              <span>Metode Racik</span>
+              <span>Jml.Racik</span>
+              <span>Aturan Pakai</span>
+              <span>Keterangan</span>
+            </div>
+            <div class="racik-header-row">
+              <span>{{ noRacikDraft }}</span>
+              <input v-model="racikDraft.nama_racik" class="form-input-element racik-cell-input" :disabled="locked" placeholder="Nama racikan"/>
+              <Select
+                v-model="racikDraft.kd_racik"
+                class="racik-cell-select"
+                :options="methods"
+                option-label="nm_racik"
+                option-value="kd_racik"
+                placeholder="Pilih metode"
+                append-to="body"
+                overlay-class="recipe-select-overlay"
+                filter
+                :disabled="locked"
+              />
+              <input v-model.number="racikDraft.jml_dr" class="form-input-element racik-cell-input" type="number" min="1" :disabled="locked" @input="hitungSemuaDetailRacik"/>
+              <input v-model="racikDraft.aturan_pakai" class="form-input-element racik-cell-input" :disabled="locked" placeholder="mis: 3×1"/>
+              <input v-model="racikDraft.keterangan" class="form-input-element racik-cell-input" :disabled="locked" placeholder="Keterangan"/>
+            </div>
           </div>
+
           <div class="recipe-search compact">
             <InputPencarian v-model="racikMedicine" label="Obat Racikan" code-field="kode_brng" name-field="nama_brng" right-field="harga" :right-formatter="rupiah" :search="cariObat" placeholder="Cari obat untuk racikan..." :disabled="locked"/>
             <button type="button" class="recipe-action-button" :disabled="locked||!racikMedicine.kode_brng" @click="addRacikMedicine"><Plus :size="15"/> Tambah</button>
           </div>
-          <div v-if="racikDraft.detail.length" class="selected-tags">
-            <span v-for="(d,i) in racikDraft.detail" :key="i">{{ d.nama_brng }} <button type="button" @click="racikDraft.detail.splice(i,1)"><X :size="12"/></button></span>
+
+          <div v-if="racikDraft.detail.length" class="racik-khanza-table racik-detail-table">
+            <div class="racik-detail-row racik-header-head">
+              <span>No</span>
+              <span>Kode Barang</span>
+              <span>Nama Barang</span>
+              <span>Satuan</span>
+              <span>Harga(Rp)</span>
+              <span>Jenis Obat</span>
+              <span>Stok</span>
+              <span>Kps</span>
+              <span>P1</span>
+              <span>/</span>
+              <span>P2</span>
+              <span>Kandungan</span>
+              <span>Jml</span>
+              <span>I.F.</span>
+              <span>Komposisi</span>
+              <span>#</span>
+            </div>
+            <div v-for="(d,i) in racikDraft.detail" :key="`${d.kode_brng}-${i}`" class="racik-detail-row">
+              <span>{{ noRacikDraft }}</span>
+              <code>{{ d.kode_brng }}</code>
+              <strong>{{ d.nama_brng }}</strong>
+              <span>{{ d.kode_sat || '-' }}</span>
+              <span class="money">{{ rupiah(d.harga) }}</span>
+              <span>{{ d.jenis || '-' }}</span>
+              <span :class="{danger:Number(d.stok||0)<=0}">{{ d.stok ?? 0 }}</span>
+              <span>{{ d.kapasitas || 0 }}</span>
+              <input v-model.number="d.p1" class="form-input-element recipe-inline-input mini" type="number" step="0.001" :disabled="locked" @input="hitungKandunganDariP(d)"/>
+              <span>/</span>
+              <input v-model.number="d.p2" class="form-input-element recipe-inline-input mini" type="number" step="0.001" :disabled="locked" @input="hitungKandunganDariP(d)"/>
+              <input v-model="d.kandungan" class="form-input-element recipe-inline-input" :disabled="locked" placeholder="Kandungan" @input="hitungJumlahRacik(d)"/>
+              <input v-model.number="d.jml" class="form-input-element recipe-inline-input mini" type="number" step="0.1" :disabled="locked"/>
+              <span>{{ d.nama_industri || 'lain-lain' }}</span>
+              <span>{{ d.letak_barang || '-' }}</span>
+              <button type="button" class="icon-button danger" :disabled="locked" @click="racikDraft.detail.splice(i,1)"><Trash2 :size="15"/></button>
+            </div>
           </div>
+          <div v-else class="recipe-empty-box"><FlaskConical :size="26" /><span>Cari obat racikan, lalu tambahkan ke tabel detail.</span></div>
+
           <div class="recipe-racik-actions">
-            <FormInput v-model="racikDraft.keterangan" label="Keterangan" :disabled="locked"/>
+            <small>{{ methods.length ? `${methods.length} metode racik tersedia` : 'Metode racik belum termuat dari SIMRS Khanza' }}</small>
             <button type="button" class="recipe-action-button" :disabled="locked" @click="addRacik"><Plus :size="15"/> Tambah Racikan</button>
           </div>
-          <div v-if="racikan.length" class="recipe-items">
-            <div v-for="(r,i) in racikan" :key="i" class="racik-saved"><b>{{ r.nama_racik }}</b><small>{{ r.nm_racik || r.kd_racik }} - {{ r.detail?.length || 0 }} obat - {{ r.aturan_pakai || '-' }}</small></div>
+          <div v-if="racikan.length" class="racik-saved-list">
+            <div v-for="(r,i) in racikan" :key="i" class="racik-saved">
+              <b>{{ r.no_racik || i + 1 }}. {{ r.nama_racik }}</b>
+              <small>{{ r.nm_racik || r.kd_racik }} - {{ r.detail?.length || 0 }} obat - {{ r.aturan_pakai || '-' }}</small>
+              <button type="button" class="icon-button danger" :disabled="locked" @click="racikan.splice(i,1)"><Trash2 :size="15"/></button>
+            </div>
           </div>
-          <div v-else class="recipe-empty-box"><FlaskConical :size="26" /><span>Belum ada racikan.</span></div>
         </section>
 
         <footer class="recipe-actions">
@@ -451,9 +608,20 @@ onMounted(load)
 .recipe-tabs{display:flex;gap:24px;margin-top:18px;border-bottom:1px solid var(--line)}.recipe-tabs button{display:inline-flex;align-items:center;gap:8px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);padding:12px 0;font-weight:700;cursor:pointer}.recipe-tabs button.active{border-color:#0d9488;color:#0d9488}.recipe-tabs b{min-width:22px;border-radius:999px;background:rgba(13,148,136,.14);color:#0d9488;font-size:.72rem;padding:2px 7px;text-align:center}
 .recipe-tab-panel{padding-top:14px}.recipe-search{display:grid;grid-template-columns:minmax(0,1fr);align-items:end;gap:8px}.recipe-search>.reference-search{min-width:0}.recipe-items{margin-top:14px;border:1px solid var(--line);border-radius:8px;overflow:auto;background:var(--surface)}.recipe-row{display:grid;grid-template-columns:32px 64px 92px minmax(230px,1.8fr) 68px 100px 100px 130px 100px 72px 78px 38px;gap:10px;align-items:center;min-width:1120px;padding:8px 10px;border-top:1px solid var(--line);color:var(--text)}.recipe-row:first-child{border-top:0}.recipe-row-head{position:sticky;top:0;z-index:1;font-size:.68rem;text-transform:uppercase;color:var(--muted);background:var(--surface-soft);font-weight:800}.recipe-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.recipe-row small,.racik-saved small,.history-row small{color:var(--muted);font-size:.78rem}.recipe-row input{min-width:0}.recipe-row input[type="checkbox"]{width:16px;height:16px;justify-self:center;accent-color:#0d9488}.recipe-row code{overflow:hidden;color:#2563eb;text-overflow:ellipsis;white-space:nowrap}.recipe-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.recipe-row .money{font-family:ui-monospace,monospace;text-align:right}.recipe-row .danger{color:#e11d48}.recipe-badge{display:inline-flex;border-radius:999px;padding:3px 7px;color:#0f766e;background:rgba(20,184,166,.14);font-style:normal;font-size:.68rem;font-weight:700}
 .recipe-action-button b{display:grid;min-width:20px;height:20px;place-items:center;border-radius:999px;background:rgba(255,255,255,.18);font-size:.72rem}.recipe-pick-list{display:grid;max-height:260px;overflow:auto;margin-top:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.recipe-pick-list button{display:grid;grid-template-columns:28px minmax(0,1fr) 90px 110px;align-items:center;gap:10px;border:0;border-bottom:1px solid var(--line);padding:10px 12px;color:var(--text);background:transparent;text-align:left;cursor:pointer}.recipe-pick-list button:last-child{border-bottom:0}.recipe-pick-list button:hover,.recipe-pick-list button.selected{background:rgba(13,148,136,.1)}.recipe-pick-list span:not(.recipe-check){display:grid;min-width:0;gap:3px}.recipe-pick-list b,.recipe-pick-list small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.recipe-pick-list small{color:var(--muted);font-size:.75rem}.recipe-pick-list strong{color:#0d9488;white-space:nowrap}.recipe-pick-list .stock{color:var(--text);font-size:.78rem;text-align:right}.recipe-pick-list .stock.danger{color:#e11d48}.recipe-check{display:grid;width:22px;height:22px;place-items:center;border:1px solid var(--line);border-radius:7px;color:#fff;background:var(--surface-soft);font-weight:800}.recipe-pick-list button.selected .recipe-check{border-color:#0d9488;background:#0d9488}
-.recipe-empty-box{display:grid;place-items:center;gap:10px;min-height:120px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;margin-top:14px;background:var(--surface);text-align:center}.racik-form{grid-template-columns:repeat(4,minmax(0,1fr))}.compact{margin-top:12px}.selected-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.selected-tags span{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}.selected-tags button{border:0;background:transparent;color:inherit;cursor:pointer}.recipe-racik-actions{display:grid;grid-template-columns:1fr auto;align-items:end;gap:10px;margin-top:12px}.racik-saved{display:flex;flex-direction:column;padding:10px;border-bottom:1px solid var(--line)}
+.recipe-empty-box{display:grid;place-items:center;gap:10px;min-height:120px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;margin-top:14px;background:var(--surface);text-align:center}.racik-form{grid-template-columns:repeat(4,minmax(0,1fr))}.compact{margin-top:12px}.recipe-search.compact{grid-template-columns:minmax(0,1fr) auto;align-items:end}.recipe-search.compact .recipe-action-button{width:auto;min-width:138px;justify-self:end}.selected-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.selected-tags span{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}.selected-tags button{border:0;background:transparent;color:inherit;cursor:pointer}.recipe-racik-actions{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;margin-top:14px}.recipe-racik-actions small{color:var(--muted)}.recipe-racik-actions .recipe-action-button{min-width:164px}.racik-saved{display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.racik-saved small{grid-column:1}.racik-saved .icon-button{grid-column:2;grid-row:1 / span 2}.racik-saved-list{display:grid;gap:8px;margin-top:12px}
+.racik-khanza-table{margin-top:14px;border:1px solid var(--line);border-radius:10px;overflow:auto;background:var(--surface);box-shadow:0 10px 24px rgba(15,23,42,.04)}.racik-header-table{margin-top:4px}.racik-header-row,.racik-detail-row{display:grid;align-items:center;gap:0;min-width:980px;border-top:1px solid var(--line);color:var(--text)}.racik-header-row:first-child,.racik-detail-row:first-child{border-top:0}.racik-header-row{grid-template-columns:48px minmax(260px,1.3fr) minmax(220px,.9fr) 98px minmax(200px,1fr) minmax(220px,1fr)}.racik-detail-row{grid-template-columns:36px 96px minmax(260px,1.6fr) 58px 96px 120px 60px 52px 44px 22px 44px 92px 60px 150px minmax(150px,1fr) 42px;min-width:1420px}.racik-header-row>*,.racik-detail-row>*{min-width:0;padding:8px 10px;border-left:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.racik-header-row>*:first-child,.racik-detail-row>*:first-child{border-left:0}.racik-header-row:not(.racik-header-head)>*,.racik-detail-row:not(.racik-header-head)>*{min-height:46px;display:flex;align-items:center}.racik-header-head{background:color-mix(in srgb,#0d9488 13%,var(--surface-soft));color:var(--muted);font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.racik-header-row:not(.racik-header-head),.racik-detail-row:not(.racik-header-head){background:var(--surface)}.racik-detail-row:nth-child(odd):not(.racik-header-head){background:color-mix(in srgb,#0d9488 4%,var(--surface))}.racik-cell-input,.racik-detail-row .recipe-inline-input{width:100%;height:34px!important;min-height:34px!important;padding:6px 9px!important;border-radius:7px!important}.racik-cell-select{width:100%;height:34px!important;min-height:34px!important}.racik-header-row :deep(.racik-cell-select.ui-select){width:100%;height:34px;min-height:34px;border-radius:7px;background:var(--surface-soft);border:1px solid var(--line);color:var(--text)}.racik-header-row :deep(.racik-cell-select .p-select-label){display:flex;align-items:center;padding:0 10px;color:var(--text);font-weight:700}.racik-header-row :deep(.racik-cell-select .p-select-dropdown){width:34px;color:var(--muted)}.racik-detail-row strong,.racik-detail-row code{font-weight:600}.racik-detail-row code{color:#0d9488}.racik-detail-row .money{font-family:ui-monospace,monospace;text-align:right}.racik-detail-row .mini{text-align:center}.racik-detail-row .danger{color:#e11d48}
 .recipe-actions{display:flex;align-items:center;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}.recipe-actions small{color:var(--muted)}.recipe-section-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border-bottom:1px solid var(--line)}.recipe-section-header h3{margin:3px 0 0;font-size:1.05rem}.recipe-section-header p{margin:4px 0 0;color:var(--muted);font-size:.82rem}.recipe-history{display:grid;margin:16px 18px 18px;border:1px solid var(--line);border-radius:12px;overflow:auto;background:var(--surface)}.history-head,.history-row{display:grid;grid-template-columns:minmax(150px,1fr) minmax(250px,1.5fr) 120px 115px 120px 118px;align-items:center;gap:14px;min-width:960px}.history-head{padding:12px 14px;background:color-mix(in srgb,#0d9488 14%,var(--surface-soft));color:var(--muted);font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.history-row{padding:14px;border-top:1px solid var(--line);background:var(--surface)}.history-row:nth-child(odd){background:color-mix(in srgb,#0d9488 4%,var(--surface))}.history-row>div{display:flex;min-width:0;flex-direction:column;gap:4px}.history-row b,.history-row strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-prescription b{color:#0d9488}.history-total{text-align:right}.history-actions{display:flex!important;align-items:center;justify-content:flex-end;flex-direction:row!important;gap:8px}.recipe-status-pill{display:inline-flex;width:max-content;max-width:100%;align-items:center;justify-content:center;border-radius:999px;padding:5px 10px;color:#0f766e;background:rgba(20,184,166,.14);font-size:.72rem;font-weight:800;white-space:nowrap}.empty-state{text-align:center;color:var(--muted);padding:30px}
 .recipe-form :deep(.staff-search-results){z-index:120}
+:global(.theme-dark) .recipe-items,:global(.theme-dark) .recipe-history,:global(.theme-dark) .recipe-pick-list,:global(.theme-dark) .recipe-empty-box,:global(.theme-dark) .racik-khanza-table,:global(.theme-dark) .racik-saved,:global(.sirapi-dark) .recipe-items,:global(.sirapi-dark) .recipe-history,:global(.sirapi-dark) .recipe-pick-list,:global(.sirapi-dark) .recipe-empty-box,:global(.sirapi-dark) .racik-khanza-table,:global(.sirapi-dark) .racik-saved{border-color:#355064;background:#07111d;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+:global(.theme-dark) .recipe-row-head,:global(.theme-dark) .history-head,:global(.theme-dark) .racik-header-head,:global(.sirapi-dark) .recipe-row-head,:global(.sirapi-dark) .history-head,:global(.sirapi-dark) .racik-header-head{border-color:rgba(255,255,255,.11);color:#f8fafc;background:#0d555a}
+:global(.theme-dark) .recipe-row,:global(.theme-dark) .history-row,:global(.theme-dark) .recipe-pick-list button,:global(.theme-dark) .racik-header-row,:global(.theme-dark) .racik-detail-row,:global(.sirapi-dark) .recipe-row,:global(.sirapi-dark) .history-row,:global(.sirapi-dark) .recipe-pick-list button,:global(.sirapi-dark) .racik-header-row,:global(.sirapi-dark) .racik-detail-row{border-color:#2b4153;color:#f8fafc;background:#111c2c}
+:global(.theme-dark) .recipe-row:nth-child(even),:global(.theme-dark) .history-row:nth-child(odd),:global(.theme-dark) .racik-detail-row:nth-child(odd):not(.racik-header-head),:global(.sirapi-dark) .recipe-row:nth-child(even),:global(.sirapi-dark) .history-row:nth-child(odd),:global(.sirapi-dark) .racik-detail-row:nth-child(odd):not(.racik-header-head){background:#102d38}
+:global(.theme-dark) .recipe-row:hover,:global(.theme-dark) .history-row:hover,:global(.theme-dark) .recipe-pick-list button:hover,:global(.theme-dark) .recipe-pick-list button.selected,:global(.theme-dark) .racik-detail-row:hover,:global(.sirapi-dark) .recipe-row:hover,:global(.sirapi-dark) .history-row:hover,:global(.sirapi-dark) .recipe-pick-list button:hover,:global(.sirapi-dark) .recipe-pick-list button.selected,:global(.sirapi-dark) .racik-detail-row:hover{background:#16404a}
+:global(.theme-dark) .recipe-row small,:global(.theme-dark) .racik-saved small,:global(.theme-dark) .history-row small,:global(.theme-dark) .recipe-pick-list small,:global(.sirapi-dark) .recipe-row small,:global(.sirapi-dark) .racik-saved small,:global(.sirapi-dark) .history-row small,:global(.sirapi-dark) .recipe-pick-list small{color:#a9bfd3}
+:global(.theme-dark) .recipe-row code,:global(.theme-dark) .history-prescription b,:global(.theme-dark) .recipe-pick-list strong,:global(.sirapi-dark) .recipe-row code,:global(.sirapi-dark) .history-prescription b,:global(.sirapi-dark) .recipe-pick-list strong{color:#5eead4}
+:global(.theme-dark) .recipe-status-pill,:global(.sirapi-dark) .recipe-status-pill{color:#5eead4;background:rgba(20,184,166,.16)}
+:global(.theme-dark) .recipe-check,:global(.sirapi-dark) .recipe-check{border-color:#405269;background:#1c283a}
+:global(.recipe-select-overlay){z-index:99999!important}
 @media(max-width:1000px){.recipe-grid,.racik-form{grid-template-columns:1fr 1fr}.recipe-row{min-width:760px}.recipe-items{overflow-x:auto}.recipe-search{grid-template-columns:1fr auto}}
 @media(max-width:650px){.recipe-grid,.racik-form,.recipe-search,.recipe-racik-actions{grid-template-columns:1fr}.recipe-total-strip{grid-template-columns:1fr}.recipe-total-strip div{border-right:0;border-bottom:1px solid var(--line)}.recipe-total-strip div:last-child{align-items:flex-start;border-bottom:0}.recipe-actions{align-items:flex-start;flex-direction:column}.history-row{grid-template-columns:1fr auto}}
 </style>

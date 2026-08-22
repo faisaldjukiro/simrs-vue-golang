@@ -7,6 +7,7 @@ import CariPetugas from '../../Components/Ui/CariPetugas.vue'
 import CariTindakanRanap from '../../Components/Ui/CariTindakanRanap.vue'
 import DataTable from '../../Components/Ui/DataTable.vue'
 import FormInput from '../../Components/Ui/FormInput.vue'
+import TableSearch from '../../Components/Ui/TableSearch.vue'
 import {
   hapusPenangananDokterPetugas, penangananDokterPetugasData,
   simpanBanyakPenangananDokterPetugas, ubahPenangananDokterPetugas,
@@ -29,6 +30,7 @@ const billingLocked = ref(false)
 const formVisible = ref(true)
 const editingKey = ref(null)
 const deleteTarget = ref(null)
+const kataKunciTindakan = ref('')
 const doctor = ref({})
 const officer = ref({})
 const treatments = ref([])
@@ -38,6 +40,11 @@ const tableRecords = computed(() => records.value.map((item) => ({
   ...item,
   _key: [item.no_rawat, item.kode_tindakan, item.kode_dokter, item.kode_petugas, item.tanggal, item.jam].join('|'),
 })))
+const tableRecordsTampil = computed(() => {
+  const keyword = kataKunciTindakan.value.trim().toLowerCase()
+  if (!keyword) return tableRecords.value
+  return tableRecords.value.filter((item) => teksTindakan(item).includes(keyword))
+})
 
 function today() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }
 function now() { return new Date().toTimeString().slice(0, 8) }
@@ -45,6 +52,20 @@ function emptyForm() { return { no_rawat: props.patient?.no_rawat || '', tanggal
 function keyFor(item) { return { jenis_rawat: item.jenis_rawat || props.jenisRawat, no_rawat: item.no_rawat, kode_tindakan: item.kode_tindakan, kode_dokter: item.kode_dokter, kode_petugas: item.kode_petugas, tanggal: item.tanggal, jam: item.jam } }
 function rupiah(value) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0)) }
 function formatDate(value) { if (!value) return '-'; const [y, m, d] = value.split('-'); return `${d}/${m}/${y}` }
+function teksTindakan(item) {
+  return [
+    item.tanggal,
+    item.jam,
+    item.kode_tindakan,
+    item.nama_tindakan,
+    item.kode_dokter,
+    item.nama_dokter,
+    item.kode_petugas,
+    item.nama_petugas,
+    item.kelas,
+    item.total,
+  ].join(' ').toLowerCase()
+}
 
 function resetForm(defaults = true) {
   Object.assign(form, emptyForm())
@@ -100,7 +121,7 @@ async function confirmDelete() {
   finally { deleting.value = false }
 }
 
-watch([() => props.patient.no_rawat, () => props.jenisRawat], () => { resetForm(false); loadRecords() }, { immediate: true })
+watch([() => props.patient.no_rawat, () => props.jenisRawat], () => { kataKunciTindakan.value = ''; resetForm(false); loadRecords() }, { immediate: true })
 </script>
 
 <template>
@@ -129,17 +150,33 @@ watch([() => props.patient.no_rawat, () => props.jenisRawat], () => { resetForm(
     </article>
 
     <article class="cppt-history-card handling-history-card">
-      <header class="cppt-section-header"><div><span>Riwayat Tindakan</span><h3>Penanganan Dokter & Petugas</h3><p>{{ records.length }} tindakan ditemukan</p></div></header>
+      <header class="cppt-section-header">
+        <div>
+          <span>Riwayat Tindakan</span>
+          <h3>Penanganan Dokter & Petugas</h3>
+          <p>
+            <template v-if="kataKunciTindakan">{{ tableRecordsTampil.length }} dari {{ records.length }} tindakan ditampilkan</template>
+            <template v-else>{{ records.length }} tindakan ditemukan</template>
+          </p>
+        </div>
+        <TableSearch
+          v-if="records.length > 0"
+          v-model="kataKunciTindakan"
+          placeholder="Cari tindakan, dokter, atau petugas..."
+          :total="records.length"
+          :filtered="tableRecordsTampil.length"
+        />
+      </header>
       <div v-if="loading" class="cppt-state"><LoaderCircle class="spin" :size="25" /><strong>Menarik data penanganan...</strong></div>
       <div v-else-if="error" class="cppt-state error"><strong>{{ error }}</strong><button type="button" @click="loadRecords">Coba Lagi</button></div>
       <div v-else-if="records.length === 0" class="cppt-state"><strong>Belum ada penanganan dokter dan petugas.</strong></div>
-      <DataTable v-else :rows="tableRecords" data-key="_key">
+      <DataTable v-else class="handling-table" :rows="tableRecordsTampil" data-key="_key" empty-message="Penanganan tidak ditemukan.">
         <Column header="TANGGAL / JAM" style="min-width:130px"><template #body="{ data }"><div class="cppt-table-main"><strong>{{ formatDate(data.tanggal) }}</strong><span>{{ data.jam }}</span></div></template></Column>
         <Column header="TINDAKAN / TAGIHAN" style="min-width:260px"><template #body="{ data }"><div class="cppt-table-main"><strong>{{ data.nama_tindakan }}</strong><span>{{ data.kode_tindakan }}</span></div></template></Column>
         <Column header="DOKTER" style="min-width:220px"><template #body="{ data }"><div class="cppt-table-main"><strong>{{ data.nama_dokter }}</strong><span>{{ data.kode_dokter }}</span></div></template></Column>
         <Column header="PETUGAS" style="min-width:220px"><template #body="{ data }"><div class="cppt-table-main"><strong>{{ data.nama_petugas }}</strong><span>{{ data.kode_petugas }}</span></div></template></Column>
         <Column header="TOTAL" style="min-width:140px"><template #body="{ data }"><strong>{{ rupiah(data.total) }}</strong></template></Column>
-        <Column header="AKSI" frozen align-frozen="right" style="min-width:135px"><template #body="{ data }"><div v-if="!billingLocked" class="cppt-table-actions"><button type="button" @click="editRecord(data)"><Pencil :size="14" /> Edit</button><button type="button" class="danger" @click="deleteTarget = data"><Trash2 :size="14" /> Hapus</button></div><span v-else>Terkunci</span></template></Column>
+        <Column header="AKSI" style="min-width:135px"><template #body="{ data }"><div v-if="!billingLocked" class="cppt-table-actions"><button type="button" @click="editRecord(data)"><Pencil :size="14" /> Edit</button><button type="button" class="danger" @click="deleteTarget = data"><Trash2 :size="14" /> Hapus</button></div><span v-else>Terkunci</span></template></Column>
       </DataTable>
     </article>
 

@@ -6,6 +6,7 @@ import CariDokter from '../../Components/Ui/CariDokter.vue'
 import CariTindakanLaboratorium from '../../Components/Ui/CariTindakanLaboratorium.vue'
 import DataTable from '../../Components/Ui/DataTable.vue'
 import FormInput from '../../Components/Ui/FormInput.vue'
+import TableSearch from '../../Components/Ui/TableSearch.vue'
 import {
   detailTindakanLaboratorium,
   hapusPermintaanLaboratorium,
@@ -34,8 +35,14 @@ const billingLocked = ref(false)
 const scope = ref({})
 const deleteTarget = ref(null)
 const editingNumber = ref('')
+const kataKunciPermintaan = ref('')
 const form = reactive(emptyForm())
 const tableRows = computed(() => requests.value.map((item) => ({ ...item, _key: item.nomor })))
+const tableRowsTampil = computed(() => {
+  const keyword = kataKunciPermintaan.value.trim().toLowerCase()
+  if (!keyword) return tableRows.value
+  return tableRows.value.filter((item) => teksPermintaan(item).includes(keyword))
+})
 
 function today() {
   const date = new Date()
@@ -58,6 +65,28 @@ function formatDate(value) {
   if (!value) return '-'
   const [year, month, day] = value.split('-')
   return `${day}/${month}/${year}`
+}
+function teksPermintaan(item) {
+  const pemeriksaan = (item.pemeriksaan || []).flatMap((pemeriksaan) => [
+    pemeriksaan.kode,
+    pemeriksaan.nama,
+    pemeriksaan.kelas,
+    pemeriksaan.total,
+    ...(pemeriksaan.detail || []).flatMap((detail) => [detail.id, detail.nama]),
+  ])
+  return [
+    item.nomor,
+    item.tanggal,
+    item.jam,
+    item.kode_dokter,
+    item.nama_dokter,
+    item.informasi_tambahan,
+    item.diagnosis_klinis,
+    item.status_pemeriksaan,
+    item.status_bayar,
+    item.total,
+    ...pemeriksaan,
+  ].join(' ').toLowerCase()
 }
 function waktuStatus(item) {
   if (item.status_pemeriksaan === 'Selesai') return `${formatDate(item.tanggal_hasil)} · ${item.jam_hasil || '-'}`
@@ -179,6 +208,7 @@ async function confirmDelete() {
 }
 
 watch(() => props.patient.no_rawat, () => {
+  kataKunciPermintaan.value = ''
   resetForm()
   loadData()
 }, { immediate: true })
@@ -233,11 +263,27 @@ watch(() => props.patient.no_rawat, () => {
     </article>
 
     <article class="cppt-history-card radiology-history-card">
-      <header class="cppt-section-header"><div><span>Riwayat Pasien</span><h3>Permintaan Laboratorium</h3><p>{{ requests.length }} permintaan ditemukan</p></div></header>
+      <header class="cppt-section-header">
+        <div>
+          <span>Riwayat Pasien</span>
+          <h3>Permintaan Laboratorium</h3>
+          <p>
+            <template v-if="kataKunciPermintaan">{{ tableRowsTampil.length }} dari {{ requests.length }} permintaan ditampilkan</template>
+            <template v-else>{{ requests.length }} permintaan ditemukan</template>
+          </p>
+        </div>
+        <TableSearch
+          v-if="requests.length > 0"
+          v-model="kataKunciPermintaan"
+          placeholder="Cari permintaan, dokter, atau pemeriksaan..."
+          :total="requests.length"
+          :filtered="tableRowsTampil.length"
+        />
+      </header>
       <div v-if="loading" class="cppt-state"><LoaderCircle class="spin" :size="25" /><strong>Menarik permintaan laboratorium...</strong></div>
       <div v-else-if="error" class="cppt-state error"><strong>{{ error }}</strong><button type="button" @click="loadData">Coba Lagi</button></div>
       <div v-else-if="requests.length === 0" class="cppt-state"><strong>Belum ada permintaan laboratorium.</strong></div>
-      <DataTable v-else :rows="tableRows" data-key="_key">
+      <DataTable v-else :rows="tableRowsTampil" data-key="_key" empty-message="Permintaan laboratorium tidak ditemukan.">
         <Column header="NO. PERMINTAAN" style="min-width:175px"><template #body="{ data }"><div class="cppt-table-main"><strong>{{ data.nomor }}</strong><span>{{ formatDate(data.tanggal) }} · {{ data.jam }}</span></div></template></Column>
         <Column header="DOKTER PERUJUK" style="min-width:230px"><template #body="{ data }"><div class="cppt-table-main"><strong>{{ data.nama_dokter }}</strong><span>{{ data.kode_dokter }}</span></div></template></Column>
         <Column header="INFORMASI / DIAGNOSIS" style="min-width:300px"><template #body="{ data }"><div class="radiology-clinical"><p><b>Informasi:</b> {{ data.informasi_tambahan }}</p><p><b>Diagnosis:</b> {{ data.diagnosis_klinis }}</p></div></template></Column>

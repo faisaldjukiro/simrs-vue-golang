@@ -5,6 +5,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue'
 import DataTable from '../../Components/Ui/DataTable.vue'
 import CariPetugas from '../../Components/Ui/CariPetugas.vue'
 import FormInput from '../../Components/Ui/FormInput.vue'
+import TableSearch from '../../Components/Ui/TableSearch.vue'
 import { cpptData, hapusCppt, simpanCppt, ubahCppt } from '../../lib/faisal/api'
 import { useNotifikasi } from '../../lib/shared/useNotifikasi'
 
@@ -30,6 +31,7 @@ const awarenessOptions = ref(toSelectOptions(defaultAwareness))
 const editingKey = ref(null)
 const deleteTarget = ref(null)
 const formVisible = ref(false)
+const kataKunciCatatan = ref('')
 const judulCatatan = computed(() => props.jenisRawat === 'ralan' ? 'Pemeriksaan & SOAP' : 'CPPT & SOAP')
 
 const form = reactive(emptyForm())
@@ -37,6 +39,11 @@ const tableRecords = computed(() => records.value.map((item) => ({
   ...item,
   _key: keyFor(item),
 })))
+const tableRecordsTampil = computed(() => {
+  const keyword = kataKunciCatatan.value.trim().toLowerCase()
+  if (!keyword) return tableRecords.value
+  return tableRecords.value.filter((item) => teksCatatan(item).includes(keyword))
+})
 
 function toSelectOptions(options = []) {
   return options.map((option) => {
@@ -96,6 +103,33 @@ function resetForm() {
 
 function keyFor(item) {
   return `${item.no_rawat}|${item.tgl_perawatan}|${item.jam_rawat}`
+}
+
+function teksCatatan(item) {
+  return [
+    item.tgl_perawatan,
+    item.jam_rawat,
+    item.nama_petugas,
+    item.jabatan,
+    item.nip,
+    item.kesadaran,
+    item.suhu_tubuh,
+    item.tensi,
+    item.nadi,
+    item.respirasi,
+    item.spo2,
+    item.gcs,
+    item.tinggi,
+    item.berat,
+    item.alergi,
+    item.lingkar_perut,
+    item.subjek,
+    item.objek,
+    item.asesmen,
+    item.plan,
+    item.instruksi,
+    item.evaluasi,
+  ].join(' ').toLowerCase()
 }
 
 function recordKey(item) {
@@ -263,6 +297,7 @@ function formatDate(value) {
 
 watch([() => props.patient.no_rawat, () => props.jenisRawat], () => {
   formVisible.value = false
+  kataKunciCatatan.value = ''
   loadRecords()
 }, { immediate: true })
 </script>
@@ -348,15 +383,25 @@ watch([() => props.patient.no_rawat, () => props.jenisRawat], () => {
         <div>
           <span>Riwayat Pasien</span>
           <h3>Catatan {{ judulCatatan }}</h3>
-          <p>{{ records.length }} catatan ditemukan</p>
+          <p>
+            <template v-if="kataKunciCatatan">{{ tableRecordsTampil.length }} dari {{ records.length }} catatan ditampilkan</template>
+            <template v-else>{{ records.length }} catatan ditemukan</template>
+          </p>
         </div>
+        <TableSearch
+          v-if="records.length > 0"
+          v-model="kataKunciCatatan"
+          :placeholder="`Cari catatan ${judulCatatan}...`"
+          :total="records.length"
+          :filtered="tableRecordsTampil.length"
+        />
       </header>
 
       <div v-if="loading" class="cppt-state"><LoaderCircle class="spin" :size="25" /><strong>Menarik catatan CPPT/SOAP...</strong></div>
       <div v-else-if="error" class="cppt-state error"><strong>{{ error }}</strong><button type="button" @click="loadRecords">Coba Lagi</button></div>
       <div v-else-if="records.length === 0" class="cppt-state"><strong>Belum ada catatan CPPT/SOAP untuk pasien ini.</strong></div>
 
-      <DataTable v-else :rows="tableRecords" data-key="_key" empty-message="Belum ada catatan CPPT/SOAP.">
+      <DataTable v-else :rows="tableRecordsTampil" data-key="_key" empty-message="Catatan CPPT/SOAP tidak ditemukan.">
         <PrimeColumn header="TANGGAL / JAM" style="min-width:140px">
           <template #body="{ data }"><div class="cppt-table-main"><strong>{{ formatDate(data.tgl_perawatan) }}</strong><span>{{ data.jam_rawat }}</span></div></template>
         </PrimeColumn>

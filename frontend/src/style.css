@@ -920,7 +920,14 @@ input.form-input-element{height:42px;padding:0 11px}
 .laboratory-detail-summary{overflow:hidden;max-width:310px;text-overflow:ellipsis;white-space:nowrap}
 .theme-dark .laboratory-detail-select-all,.sirapi-dark .laboratory-detail-select-all{color:#5eead4}
 @media(max-width:800px){.laboratory-detail-options{grid-template-columns:1fr}}
-.handling-history-card .p-datatable-table{min-width:1400px!important}
+.handling-history-card .handling-table.data-table-wrap{overflow-x:auto}
+.handling-history-card .handling-table.data-table-wrap .p-datatable-table{width:100%!important;min-width:980px!important;table-layout:fixed!important}
+.handling-history-card .handling-table.data-table-wrap .p-datatable-thead>tr>th:nth-child(1),.handling-history-card .handling-table.data-table-wrap .p-datatable-tbody>tr>td:nth-child(1){width:11%!important;text-align:left!important}
+.handling-history-card .handling-table.data-table-wrap .p-datatable-thead>tr>th:nth-child(2),.handling-history-card .handling-table.data-table-wrap .p-datatable-tbody>tr>td:nth-child(2){width:25%!important;text-align:left!important}
+.handling-history-card .handling-table.data-table-wrap .p-datatable-thead>tr>th:nth-child(3),.handling-history-card .handling-table.data-table-wrap .p-datatable-tbody>tr>td:nth-child(3){width:22%!important;text-align:left!important}
+.handling-history-card .handling-table.data-table-wrap .p-datatable-thead>tr>th:nth-child(4),.handling-history-card .handling-table.data-table-wrap .p-datatable-tbody>tr>td:nth-child(4){width:22%!important;text-align:left!important}
+.handling-history-card .handling-table.data-table-wrap .p-datatable-thead>tr>th:nth-child(5),.handling-history-card .handling-table.data-table-wrap .p-datatable-tbody>tr>td:nth-child(5){width:11%!important;text-align:left!important}
+.handling-history-card .handling-table.data-table-wrap .p-datatable-thead>tr>th:nth-child(6),.handling-history-card .handling-table.data-table-wrap .p-datatable-tbody>tr>td:nth-child(6){width:9%!important;text-align:left!important}
 .reference-search .staff-search-results{top:calc(100% + 2px)}
 .theme-dark .handling-lock,.sirapi-dark .handling-lock{border-color:rgba(245,158,11,.3);color:#fcd34d;background:rgba(120,53,15,.25)}
 @media(max-width:1250px){.handling-main-grid{grid-template-columns:145px 125px minmax(240px,1fr)}.handling-main-grid .reference-search:nth-child(4){grid-column:1/-1}}
@@ -1526,4 +1533,137 @@ body.theme-dark .sidebar-permission-field .p-select-label {
 body.sirapi-dark .sidebar-icon-field .p-select-dropdown,
 body.sirapi-dark .sidebar-permission-field .p-select-dropdown {
   color: #cbd5e1!important;
+}
+
+/* Resep & Copy Resep: samakan tabel dark mode dengan nuansa tabel CPPT */
+body.sirapi-dark .recipe-history-card,
+.dashboard-app.theme-dark .recipe-history-card,
+body.sirapi-dark .copy-recipe-card,
+.dashboard-app.theme-dark .copy-recipe-card {
+  border-color: #31465a !important;
+  background: #081421 !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.2) !important;
+}
+
+body.sirapi-dark .recipe-history-card .recipe-section-header,
+.dashboard-app.theme-dark .recipe-history-card .recipe-section-header,
+body.sirapi-dark .copy-recipe-header,
+body.sirapi-dark .copy-recipe-preview-head,
+.dashboard-app.theme-dark .copy-recipe-header,
+.dashboard-app.theme-dark .copy-recipe-preview-head {
+  border-color: #304258 !important;
+  background: #182234 !important;
+}
+
+body.sirapi-dark .recipe-items,
+body.sirapi-dark .recipe-history,
+body.sirapi-dark .recipe-pick-list,
+body.sirapi-dark .recipe-empty-box,
+body.sirapi-dark .copy-recipe-list,
+body.sirapi-dark .copy-recipe-preview,
+body.sirapi-dark .copy-recipe-table,
+.dashboard-app.theme-dark .recipe-items,
+.dashboard-app.theme-dark .recipe-history,
+.dashboard-app.theme-dark .recipe-pick-list,
+.dashboard-app.theme-dark .recipe-empty-box,
+.dashboard-app.theme-dark .copy-recipe-list,
+.dashboard-app.theme-dark .copy-recipe-preview,
+.dashboard-app.theme-dark .copy-recipe-table {
+  border-color: #355064 !important;
+  background: #07111d !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,.28) !important;
+}
+
+body.sirapi-dark .recipe-row-head,
+body.sirapi-dark .history-head,
+body.sirapi-dark .copy-recipe-table-head,
+.dashboard-app.theme-dark .recipe-row-head,
+.dashboard-app.theme-dark .history-head,
+.dashboard-app.theme-dark .copy-recipe-table-head {
+  border-color: rgba(255,255,255,.11) !important;
+  color: #f8fafc !important;
+  background: #0d555a !important;
+}
+
+body.sirapi-dark .recipe-row,
+body.sirapi-dark .history-row,
+body.sirapi-dark .recipe-pick-list button,
+body.sirapi-dark .copy-recipe-item,
+body.sirapi-dark .copy-recipe-table-row,
+.dashboard-app.theme-dark .recipe-row,
+.dashboard-app.theme-dark .history-row,
+.dashboard-app.theme-dark .recipe-pick-list button,
+.dashboard-app.theme-dark .copy-recipe-item,
+.dashboard-app.theme-dark .copy-recipe-table-row {
+  border-color: #2b4153 !important;
+  color: #f8fafc !important;
+  background: #111c2c !important;
+}
+
+body.sirapi-dark .recipe-row:nth-child(even),
+body.sirapi-dark .history-row:nth-child(odd),
+body.sirapi-dark .copy-recipe-item:nth-child(even),
+body.sirapi-dark .copy-recipe-table-row:nth-child(odd),
+.dashboard-app.theme-dark .recipe-row:nth-child(even),
+.dashboard-app.theme-dark .history-row:nth-child(odd),
+.dashboard-app.theme-dark .copy-recipe-item:nth-child(even),
+.dashboard-app.theme-dark .copy-recipe-table-row:nth-child(odd) {
+  background: #102d38 !important;
+}
+
+body.sirapi-dark .recipe-row:hover,
+body.sirapi-dark .history-row:hover,
+body.sirapi-dark .recipe-pick-list button:hover,
+body.sirapi-dark .recipe-pick-list button.selected,
+body.sirapi-dark .copy-recipe-item:hover,
+body.sirapi-dark .copy-recipe-item.active,
+body.sirapi-dark .copy-recipe-table-row:hover,
+.dashboard-app.theme-dark .recipe-row:hover,
+.dashboard-app.theme-dark .history-row:hover,
+.dashboard-app.theme-dark .recipe-pick-list button:hover,
+.dashboard-app.theme-dark .recipe-pick-list button.selected,
+.dashboard-app.theme-dark .copy-recipe-item:hover,
+.dashboard-app.theme-dark .copy-recipe-item.active,
+.dashboard-app.theme-dark .copy-recipe-table-row:hover {
+  background: #16404a !important;
+}
+
+body.sirapi-dark .recipe-row small,
+body.sirapi-dark .racik-saved small,
+body.sirapi-dark .history-row small,
+body.sirapi-dark .recipe-pick-list small,
+body.sirapi-dark .copy-recipe-item small,
+body.sirapi-dark .copy-recipe-item i,
+body.sirapi-dark .copy-recipe-table-row small,
+body.sirapi-dark .copy-recipe-table-row span,
+.dashboard-app.theme-dark .recipe-row small,
+.dashboard-app.theme-dark .racik-saved small,
+.dashboard-app.theme-dark .history-row small,
+.dashboard-app.theme-dark .recipe-pick-list small,
+.dashboard-app.theme-dark .copy-recipe-item small,
+.dashboard-app.theme-dark .copy-recipe-item i,
+.dashboard-app.theme-dark .copy-recipe-table-row small,
+.dashboard-app.theme-dark .copy-recipe-table-row span {
+  color: #a9bfd3 !important;
+}
+
+body.sirapi-dark .recipe-row code,
+body.sirapi-dark .history-prescription b,
+body.sirapi-dark .recipe-pick-list strong,
+body.sirapi-dark .copy-recipe-item b,
+body.sirapi-dark .copy-recipe-table-row code,
+.dashboard-app.theme-dark .recipe-row code,
+.dashboard-app.theme-dark .history-prescription b,
+.dashboard-app.theme-dark .recipe-pick-list strong,
+.dashboard-app.theme-dark .copy-recipe-item b,
+.dashboard-app.theme-dark .copy-recipe-table-row code {
+  color: #5eead4 !important;
+}
+
+body.sirapi-dark .recipe-status-pill,
+body.sirapi-dark .copy-recipe-item em,
+.dashboard-app.theme-dark .recipe-status-pill,
+.dashboard-app.theme-dark .copy-recipe-item em {
+  color: #5eead4 !important;
+  background: rgba(20,184,166,.16) !important;
 }

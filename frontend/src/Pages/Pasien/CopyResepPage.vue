@@ -285,6 +285,15 @@ onMounted(load)
 .copy-recipe-table-row.racik{background:rgba(139,92,246,.10)}
 .copy-recipe-table-row.child{padding-left:28px}
 .copy-recipe-footer{display:flex;align-items:center;gap:8px;margin:0 16px 16px;padding:11px 13px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);background:var(--surface-soft);font-size:.86rem}
+:global(.theme-dark) .copy-recipe-list,:global(.theme-dark) .copy-recipe-preview,:global(.theme-dark) .copy-recipe-table,:global(.sirapi-dark) .copy-recipe-list,:global(.sirapi-dark) .copy-recipe-preview,:global(.sirapi-dark) .copy-recipe-table{border-color:#355064;background:#07111d;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+:global(.theme-dark) .copy-recipe-table-head,:global(.sirapi-dark) .copy-recipe-table-head{border-color:rgba(255,255,255,.11);color:#f8fafc;background:#0d555a}
+:global(.theme-dark) .copy-recipe-item,:global(.theme-dark) .copy-recipe-table-row,:global(.sirapi-dark) .copy-recipe-item,:global(.sirapi-dark) .copy-recipe-table-row{border-color:#2b4153;color:#f8fafc;background:#111c2c}
+:global(.theme-dark) .copy-recipe-item:nth-child(even),:global(.theme-dark) .copy-recipe-table-row:nth-child(odd),:global(.sirapi-dark) .copy-recipe-item:nth-child(even),:global(.sirapi-dark) .copy-recipe-table-row:nth-child(odd){background:#102d38}
+:global(.theme-dark) .copy-recipe-item:hover,:global(.theme-dark) .copy-recipe-item.active,:global(.theme-dark) .copy-recipe-table-row:hover,:global(.sirapi-dark) .copy-recipe-item:hover,:global(.sirapi-dark) .copy-recipe-item.active,:global(.sirapi-dark) .copy-recipe-table-row:hover{background:#16404a}
+:global(.theme-dark) .copy-recipe-item small,:global(.theme-dark) .copy-recipe-item i,:global(.theme-dark) .copy-recipe-table-row small,:global(.theme-dark) .copy-recipe-table-row span,:global(.sirapi-dark) .copy-recipe-item small,:global(.sirapi-dark) .copy-recipe-item i,:global(.sirapi-dark) .copy-recipe-table-row small,:global(.sirapi-dark) .copy-recipe-table-row span{color:#a9bfd3}
+:global(.theme-dark) .copy-recipe-item b,:global(.theme-dark) .copy-recipe-table-row code,:global(.sirapi-dark) .copy-recipe-item b,:global(.sirapi-dark) .copy-recipe-table-row code{color:#5eead4}
+:global(.theme-dark) .copy-recipe-item em,:global(.sirapi-dark) .copy-recipe-item em{color:#5eead4;background:rgba(20,184,166,.16)}
+:global(.theme-dark) .copy-recipe-table-row.racik,:global(.sirapi-dark) .copy-recipe-table-row.racik{background:rgba(45,33,70,.55)}
 .spin{animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:1100px){.copy-recipe-layout{grid-template-columns:1fr}.copy-recipe-list,.copy-recipe-preview{min-height:auto}}

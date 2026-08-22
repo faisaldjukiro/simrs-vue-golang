@@ -38,3 +38,18 @@ func SIMRSWebBaseURL() string {
 	host := valueOrDefault("SIMRS_DB_HOST", "127.0.0.1")
 	return "http://" + host + "/webapps"
 }
+
+func BerkasDigitalUploadURL() string {
+	if alamat := strings.TrimSpace(os.Getenv("BERKAS_DIGITAL_UPLOAD_URL")); alamat != "" {
+		return alamat
+	}
+	return SIMRSWebBaseURL() + "/berkasrawat/uploadsep.php"
+}
+
+func BerkasDigitalLokasiPrefix() string {
+	prefix := strings.Trim(strings.TrimSpace(os.Getenv("BERKAS_DIGITAL_LOKASI_PREFIX")), "/")
+	if prefix == "" {
+		return "pages/upload"
+	}
+	return prefix
+}
