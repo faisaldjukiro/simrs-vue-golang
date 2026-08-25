@@ -14,6 +14,7 @@ const props = defineProps({
   rightFormatter: { type: Function, default: null },
   required: Boolean,
   disabled: Boolean,
+  error: { type: String, default: '' },
 })
 
 const query = ref('')
@@ -80,7 +81,7 @@ onBeforeUnmount(() => window.clearTimeout(timer))
 </script>
 
 <template>
-  <div class="staff-search reference-search" :class="{ disabled }">
+  <div class="staff-search reference-search" :class="{ disabled, invalid: error }">
     <span class="form-input-label">{{ label }} <i v-if="required">*</i></span>
     <div v-if="model?.[codeField]" class="staff-search-selected">
       <Check :size="15" />
@@ -104,5 +105,6 @@ onBeforeUnmount(() => window.clearTimeout(timer))
       </button>
       <p v-if="!loading && results.length === 0">Data tidak ditemukan.</p>
     </div>
+    <small v-if="error" class="form-input-message error">{{ error }}</small>
   </div>
 </template>

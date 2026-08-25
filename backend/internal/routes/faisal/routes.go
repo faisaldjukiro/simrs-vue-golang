@@ -18,6 +18,7 @@ import (
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
+	ewsranaphttp "simrs-backend/internal/modules/ews_ranap/delivery/http"
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
@@ -48,6 +49,7 @@ type Dependencies struct {
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
 	CPPT                    *cppthttp.Handler
 	DiagnosaPasien          *diagnosapasienhttp.Handler
+	EWSRanap                *ewsranaphttp.Handler
 	PenangananDokterPetugas *penanganandokterpetugashttp.Handler
 	PermintaanRadiologi     *permintaanradiologihttp.Handler
 	PermintaanLaboratorium  *permintaanlaboratoriumhttp.Handler
@@ -83,6 +85,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	}{
 		{"/cppt", dependencies.CPPT.Register},
 		{"/diagnosa-pasien", dependencies.DiagnosaPasien.Register},
+		{"/ews-ranap", dependencies.EWSRanap.Register},
 		{"/penanganan-dokter-petugas", dependencies.PenangananDokterPetugas.Register},
 		{"/permintaan-radiologi", dependencies.PermintaanRadiologi.Register},
 		{"/permintaan-laboratorium", dependencies.PermintaanLaboratorium.Register},

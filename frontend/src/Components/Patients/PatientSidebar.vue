@@ -10,6 +10,7 @@ import RiwayatPerawatanPage from '../../Pages/Pasien/RiwayatPerawatanPage.vue'
 import TriaseIgdPage from '../../Pages/IGD/TriaseIgdPage.vue'
 import AwalKeperawatanIgdPage from '../../Pages/IGD/AwalKeperawatanIgdPage.vue'
 import ResumePasienRanapPage from '../../Pages/RawatInap/ResumePasienRanapPage.vue'
+import EwsRanapPage from '../../Pages/RawatInap/EwsRanapPage.vue'
 import ResumePasienRalanPage from '../../Pages/RawatJalan/ResumePasienRalanPage.vue'
 import DiagnosaPasienPage from '../../Pages/Pasien/DiagnosaPasienPage.vue'
 import AwalMedisUmumPage from '../../Pages/RawatJalan/AwalMedisUmumPage.vue'
@@ -44,6 +45,7 @@ const halamanSidebar = {
   riwayat_perawatan: RiwayatPerawatanPage,
   triase_igd: TriaseIgdPage,
   awal_keperawatan_igd: AwalKeperawatanIgdPage,
+  ews_ranap: EwsRanapPage,
   diagnosa: DiagnosaPasienPage,
   awal_medis_igd: AwalMedisIgdPage,
   sidebar_0031: AwalMedisUmumPage,
