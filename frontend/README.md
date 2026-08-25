@@ -78,7 +78,14 @@ npm install
 npm run dev
 ```
 
-Buka `http://localhost:5173`.
+Port frontend dapat diatur melalui file `.env`:
+
+```env
+VITE_FRONTEND_PORT=5173
+```
+
+Setelah nilainya diubah, jalankan ulang `npm run dev`. Contohnya, jika
+`VITE_FRONTEND_PORT=3000`, buka `http://localhost:3000`.
 
 Akun development dari seeder:
 
