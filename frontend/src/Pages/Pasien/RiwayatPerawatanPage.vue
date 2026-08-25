@@ -4,7 +4,7 @@ import DatePicker from 'primevue/datepicker'
 import { computed, reactive, ref, watch } from 'vue'
 import { riwayatPerawatanData } from '../../lib/faisal/api'
 import { useNotifikasi } from '../../lib/shared/useNotifikasi'
-import TandaTanganVerifikasi from '../../components/TandaTanganVerifikasi.vue'
+import TandaTanganVerifikasi from '../../Components/TandaTanganVerifikasi.vue'
 
 const props = defineProps({
   token: { type: String, required: true },
