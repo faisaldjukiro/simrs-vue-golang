@@ -30,6 +30,7 @@ import (
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
+	whatsappgatewayhttp "simrs-backend/internal/modules/whatsapp_gateway/delivery/http"
 	"simrs-backend/internal/shared/httpresponse"
 )
 
@@ -58,6 +59,7 @@ type Dependencies struct {
 	Resep                   *resephttp.Handler
 	RiwayatPerawatan        *riwayatperawatanhttp.Handler
 	TriaseIGD               *triaseigdhttp.Handler
+	WhatsAppGateway         *whatsappgatewayhttp.Handler
 }
 
 // Register attaches Faisal's routes to the shared API router. Developer names
@@ -73,9 +75,14 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	protectedAPI.Use(dependencies.Autentikasi.Middleware())
 	dependencies.AktivitasLog.Register(protectedAPI.Group("/aktivitas-log"))
 	protectedAPI.GET("/beranda", dependencies.Beranda.Beranda)
+	protectedAPI.GET("/beranda/koneksi-eklaim", dependencies.Beranda.KoneksiEKlaim)
+	protectedAPI.GET("/beranda/koneksi-bpjs", dependencies.Beranda.KoneksiBPJS)
 	dependencies.BPJS.Register(protectedAPI.Group("/bpjs"))
 	dependencies.BPJSDataKlaim.Register(protectedAPI.Group("/bpjs/monitoring/klaim"))
 	dependencies.IDRG.Register(protectedAPI.Group("/idrg"))
+	whatsAppGatewayGroup := protectedAPI.Group("/whatsapp-gateway")
+	whatsAppGatewayGroup.Use(dependencies.Autentikasi.WajibPermission("whatsapp_gateway"))
+	dependencies.WhatsAppGateway.Register(whatsAppGatewayGroup)
 	kelolaMenuGroup := protectedAPI.Group("/kelola-menu")
 	kelolaMenuGroup.Use(dependencies.Autentikasi.WajibPermission("kelola_menu"))
 	dependencies.KelolaMenu.Register(kelolaMenuGroup)

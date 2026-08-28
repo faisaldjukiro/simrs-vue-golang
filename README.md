@@ -11,7 +11,7 @@ agar migration aplikasi baru tidak mengubah struktur database lama.
 - Backend: Go, Gin, dan MySQL
 - Frontend: Vue 3, Vite, dan PrimeVue
 - Database aplikasi: MySQL lokal
-- Integrasi: SIMRS Khanza, E-Klaim, dan BPJS VClaim
+- Integrasi: SIMRS Khanza, E-Klaim, BPJS VClaim, dan WhatsApp Gateway
 
 ## Persyaratan
 
@@ -124,8 +124,16 @@ SIMRS_DB_PASSWORD=
 Gunakan alamat, username, dan password MySQL sesuai komputer masing-masing.
 Untuk `SIMRS_DB_*`, gunakan user MySQL read-only jika tersedia.
 
-Konfigurasi E-Klaim dan BPJS boleh dikosongkan saat instalasi awal. Modul yang
-memerlukan servis tersebut baru dapat digunakan setelah kredensialnya diisi.
+Konfigurasi E-Klaim, BPJS, dan WhatsApp Gateway boleh dikosongkan saat
+instalasi awal. Modul yang memerlukan servis tersebut baru dapat digunakan
+setelah kredensialnya diisi. Untuk WhatsApp Gateway, isi hanya pada env backend:
+
+```env
+URL_WHATSAPP=http://alamat-whatsapp-gateway
+KEY_WHATSAPP=api-key-gateway
+```
+
+`KEY_WHATSAPP` tidak boleh ditaruh pada env Vue atau dikirim ke browser.
 
 ### 4. Jalankan migration dan seeder
 

@@ -1,5 +1,5 @@
 <script setup>
-import { CheckCircle2, Heart, MapPin, Search, Server } from '@lucide/vue'
+import { CheckCircle2, Heart, MapPin, Server } from '@lucide/vue'
 
 defineProps({
   dashboardLoading: Boolean,
@@ -9,7 +9,7 @@ defineProps({
   isAuthenticated: Boolean,
 })
 
-const emit = defineEmits(['select-tab', 'open-menu'])
+const emit = defineEmits(['select-tab'])
 </script>
 
 <template>
@@ -43,19 +43,12 @@ const emit = defineEmits(['select-tab', 'open-menu'])
 
     <aside class="monitor-card">
       <div>
-        <header><div><span>Monitoring</span><h2>Koneksi</h2></div><i><Server :size="22" /></i></header>
+        <header><div><h2>Koneksi</h2></div><i><Server :size="22" /></i></header>
         <div class="service-list">
           <div v-for="status in serviceStatuses" :key="status.label">
             <span>{{ status.label }}</span>
             <strong :class="status.tone"><i></i>{{ status.value }}</strong>
           </div>
-        </div>
-      </div>
-      <div class="monitor-actions">
-        <button class="primary-action" type="button" @click="emit('open-menu')"><Search :size="17" /> Buka Menu</button>
-        <div>
-          <button type="button" :disabled="!isAuthenticated" @click="emit('select-tab', 'Registrasi')">Registrasi Baru</button>
-          <button type="button" :disabled="!isAuthenticated" @click="emit('select-tab', 'Rawat Jalan')">Lihat Antrian</button>
         </div>
       </div>
     </aside>

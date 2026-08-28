@@ -13,11 +13,23 @@ import (
 )
 
 type Handler struct {
-	repositori *beranda.Repositori
+	repositori      *beranda.Repositori
+	pemeriksaEKlaim *beranda.PemeriksaEKlaim
+	pemeriksaBPJS   *beranda.PemeriksaBPJS
 }
 
-func NewHandler(repositori *beranda.Repositori) *Handler {
-	return &Handler{repositori: repositori}
+func NewHandler(repositori *beranda.Repositori, pemeriksaEKlaim *beranda.PemeriksaEKlaim, pemeriksaBPJS *beranda.PemeriksaBPJS) *Handler {
+	return &Handler{repositori: repositori, pemeriksaEKlaim: pemeriksaEKlaim, pemeriksaBPJS: pemeriksaBPJS}
+}
+
+func (h *Handler) KoneksiEKlaim(c *gin.Context) {
+	hasil := h.pemeriksaEKlaim.Periksa(c.Request.Context())
+	httpresponse.Success(c, http.StatusOK, hasil)
+}
+
+func (h *Handler) KoneksiBPJS(c *gin.Context) {
+	hasil := h.pemeriksaBPJS.Periksa(c.Request.Context())
+	httpresponse.Success(c, http.StatusOK, hasil)
 }
 
 func (h *Handler) Beranda(c *gin.Context) {

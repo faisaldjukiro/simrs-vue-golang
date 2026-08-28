@@ -18,6 +18,7 @@ INSERT INTO permissions (`group`, name, code, created_at, updated_at) VALUES
     ('Klaim', 'E-Klaim iDRG/INACBG', 'eklaim', NOW(), NOW()),
     ('Sistem', 'Kelola Menu Navigasi', 'kelola_menu', NOW(), NOW()),
     ('Sistem', 'Log Aktivitas', 'sistem.audit_log', NOW(), NOW()),
+    ('Integrasi', 'WhatsApp Gateway', 'whatsapp_gateway', NOW(), NOW()),
     ('Sistem', 'Akses Penuh', '*', NOW(), NOW())
 ON DUPLICATE KEY UPDATE
     `group` = VALUES(`group`),
@@ -62,7 +63,8 @@ VALUES
     ('dashboard', 'Rawat Jalan', 'Daftar pasien, tindakan, dan billing rawat jalan.', 'Stethoscope', 'cyan', NULL, JSON_ARRAY('registrasi', 'tindakan_ralan', 'billing_ralan'), 7, TRUE, NOW(), NOW()),
     ('dashboard', 'User', 'Kelola permission dan akses menu petugas.', 'UsersRound', 'slate', NULL, JSON_ARRAY('*'), 8, TRUE, NOW(), NOW()),
     ('dashboard', 'IDRG', 'Bridging klaim BPJS E-Klaim iDRG / INA-CBG.', 'FileSpreadsheet', 'emerald', '/faisal/eklaim', JSON_ARRAY('eklaim'), 9, TRUE, NOW(), NOW()),
-    ('dashboard', 'Kelola Menu', 'Tambah, ubah, hapus menu navigasi ribbon & dashboard.', 'LayoutDashboard', 'slate', '/admin/menu', JSON_ARRAY('kelola_menu'), 10, TRUE, NOW(), NOW());
+    ('dashboard', 'Kelola Menu', 'Tambah, ubah, hapus menu navigasi ribbon & dashboard.', 'LayoutDashboard', 'slate', '/admin/menu', JSON_ARRAY('kelola_menu'), 10, TRUE, NOW(), NOW()),
+    ('dashboard', 'WhatsApp Gateway', 'Kelola perangkat dan kirim pesan WhatsApp dari SIRAPI.', 'MessageCircle', 'teal', NULL, JSON_ARRAY('whatsapp_gateway'), 12, TRUE, NOW(), NOW());
 
 DELETE FROM sidebar_pasien;
 

@@ -37,6 +37,7 @@ const hariIni = new Date().toLocaleDateString('en-CA')
 const loadingDaftar = ref(false)
 const loadingDetail = ref(false)
 const loadingCodingIdrg = ref('')
+const loadingCodingInacbg = ref('')
 const loadingProses = ref('')
 const loadingImportInacbg = ref(false)
 const loadingNewClaimOtomatis = ref(false)
@@ -51,6 +52,9 @@ const prosedurInacbg = ref([])
 const hasilProses = ref(null)
 const hasilGroupingIdrg = ref(null)
 const hasilGroupingInacbg = ref(null)
+const opsiSpecialCmg = ref([])
+const kategoriSpecialCmg = ['Special Procedure', 'Special Prosthesis', 'Special Investigation', 'Special Drug']
+const pilihanSpecialCmg = reactive(Object.fromEntries(kategoriSpecialCmg.map((tipe) => [tipe, ''])))
 const dataKlaimEclaim = ref(null)
 const waktuGroupingIdrg = ref('')
 const waktuGroupingInacbg = ref('')
@@ -372,6 +376,26 @@ const hasilGroupingInacbgTabel = computed(() => {
   }
 })
 
+const opsiSpecialCmgPerKategori = computed(() => Object.fromEntries(
+  kategoriSpecialCmg.map((tipe) => [
+    tipe,
+    [
+      { label: 'None', value: '' },
+      ...opsiSpecialCmg.value
+        .filter((item) => item.type === tipe)
+        .map((item) => ({ label: item.description || item.code, value: item.code })),
+    ],
+  ]),
+))
+
+const adaOpsiSpecialCmg = computed(() => opsiSpecialCmg.value.length > 0)
+
+const inacbgGroupingGagal = computed(() => {
+  const kode = String(hasilGroupingInacbgTabel.value.kode || '').toUpperCase()
+  const deskripsi = String(hasilGroupingInacbgTabel.value.deskripsi || '').toUpperCase()
+  return kode.startsWith('X-') || deskripsi.includes('FAILED') || deskripsi.includes('ERROR')
+})
+
 onMounted(muatDaftar)
 watch(() => props.token, () => {
   pasienTerpilih.value = null
@@ -456,6 +480,8 @@ function toggleSidebar() {
 async function pilihPasien(pasien) {
   const perluKirimNewClaim = Boolean(pasien?.no_rawat)
 
+  loadingProses.value = ''
+  loadingCodingInacbg.value = ''
   pasienTerpilih.value = pasien
   isiFormKlaim(pasien)
   menuSidebarAktif.value = 'pengajuan'
@@ -467,6 +493,8 @@ async function pilihPasien(pasien) {
   hasilProses.value = null
   hasilGroupingIdrg.value = null
   hasilGroupingInacbg.value = null
+  opsiSpecialCmg.value = []
+  kategoriSpecialCmg.forEach((tipe) => { pilihanSpecialCmg[tipe] = '' })
   dataKlaimEclaim.value = null
   waktuGroupingIdrg.value = ''
   waktuGroupingInacbg.value = ''
@@ -688,9 +716,9 @@ function terapkanDaftarCodingInacbg(hasil, jenis) {
 }
 
 async function muatCodingInacbg(jenis) {
-  if (!pasienTerpilih.value?.no_sep || loadingProses.value || inacbgSudahFinal.value) return
+  if (!pasienTerpilih.value?.no_sep || loadingCodingInacbg.value || inacbgSudahFinal.value) return
   const aksi = jenis === 'diagnosa' ? 'inacbg_diagnosa_get' : 'inacbg_procedure_get'
-  loadingProses.value = aksi
+  loadingCodingInacbg.value = jenis
   try {
     const hasil = await prosesIdrg(props.token, {
       aksi,
@@ -705,7 +733,7 @@ async function muatCodingInacbg(jenis) {
   } catch (error) {
     notifikasi.gagal(error.message || `Coding ${jenis} INA-CBG tidak dapat dibaca.`)
   } finally {
-    loadingProses.value = ''
+    loadingCodingInacbg.value = ''
   }
 }
 
@@ -890,7 +918,10 @@ function bukaEditorProsedurInacbg(index) {
 }
 
 async function jalankanProses(aksi) {
-  if (!pasienTerpilih.value || loadingProses.value) {
+  // Satu proses lama dari tab lain tidak boleh mengunci seluruh aksi INA-CBG.
+  // Cegah hanya klik ganda pada aksi yang sama; aksi baru mengambil alih
+  // indikator loading dan respons proses lama tidak akan mematikannya.
+  if (!pasienTerpilih.value || loadingProses.value === aksi) {
     return
   }
 
@@ -1024,7 +1055,12 @@ async function jalankanProses(aksi) {
     }
     notifikasi.gagal(error.message || 'Proses E-Klaim belum aktif di backend Go.')
   } finally {
-    loadingProses.value = ''
+    if (loadingProses.value === aksi) loadingProses.value = ''
+  }
+
+  if (aksi === 'final_inacbg' && inacbgGroupingGagal.value) {
+    notifikasi.peringatan('Hasil grouper masih gagal. Edit diagnosis/prosedur lalu jalankan Grouping kembali.', 'INA-CBG Belum Dapat Difinalkan')
+    return
   }
 }
 
@@ -1297,9 +1333,22 @@ function terapkanHasilGroupingIdrg(hasil) {
 
 function terapkanHasilGroupingInacbg(hasil) {
   const responseInacbg = ekstrakResponseInacbg(hasil)
+  const opsi = ekstrakOpsiSpecialCmg(hasil)
+  if (opsi.length > 0) {
+    opsiSpecialCmg.value = opsi
+    kategoriSpecialCmg.forEach((tipe) => {
+      const masihTersedia = opsi.some((item) => item.type === tipe && item.code === pilihanSpecialCmg[tipe])
+      if (!masihTersedia) pilihanSpecialCmg[tipe] = ''
+    })
+  }
   if (!responseInacbg) return null
 
   hasilGroupingInacbg.value = responseInacbg
+  if (Array.isArray(responseInacbg.special_cmg)) {
+    responseInacbg.special_cmg.forEach((item) => {
+      if (kategoriSpecialCmg.includes(item?.type)) pilihanSpecialCmg[item.type] = String(item?.code || '')
+    })
+  }
   waktuGroupingInacbg.value = waktuIndoLengkap(new Date())
   return responseInacbg
 }
@@ -1525,7 +1574,7 @@ function ekstrakResponseInacbg(hasil) {
   ]
 
   if (Array.isArray(hasil?.tahapan)) {
-    hasil.tahapan.forEach((tahap) => {
+    ;[...hasil.tahapan].reverse().forEach((tahap) => {
       daftarKandidat.push(tahap?.hasil)
       daftarKandidat.push(tahap?.hasil?.raw)
       daftarKandidat.push(tahap?.hasil?.data)
@@ -1541,6 +1590,56 @@ function ekstrakResponseInacbg(hasil) {
   }
 
   return null
+}
+
+function ekstrakOpsiSpecialCmg(hasil) {
+  const daftarKandidat = [
+    hasil,
+    hasil?.hasil,
+    hasil?.hasil?.raw,
+    hasil?.hasil?.data,
+    hasil?.hasil?.response,
+    hasil?.hasil?.response?.data,
+    dataKlaimEclaim.value,
+    dataKlaimEclaim.value?.grouper,
+  ]
+
+  const daftarTahapan = [
+    ...(Array.isArray(hasil?.tahapan) ? hasil.tahapan : []),
+    ...(Array.isArray(hasil?.hasil?.tahapan) ? hasil.hasil.tahapan : []),
+  ]
+  daftarTahapan.forEach((tahap) => {
+    daftarKandidat.push(tahap?.hasil)
+    daftarKandidat.push(tahap?.hasil?.raw)
+    daftarKandidat.push(tahap?.hasil?.data)
+    daftarKandidat.push(tahap?.hasil?.response)
+    daftarKandidat.push(tahap?.hasil?.response?.data)
+  })
+
+  const hasilOpsi = new Map()
+  daftarKandidat.forEach((kandidat) => {
+    const sumber = [
+      kandidat?.special_cmg_option,
+      kandidat?.data?.special_cmg_option,
+      kandidat?.response?.special_cmg_option,
+      kandidat?.grouper?.special_cmg_option,
+    ]
+    sumber.forEach((daftar) => {
+      if (!Array.isArray(daftar)) return
+      daftar.forEach((item) => {
+        const code = String(item?.code || '').trim()
+        const type = String(item?.type || '').trim()
+        if (!code || !kategoriSpecialCmg.includes(type)) return
+        hasilOpsi.set(`${type}:${code}`, {
+          code,
+          type,
+          description: String(item?.description || code).trim(),
+        })
+      })
+    })
+  })
+
+  return [...hasilOpsi.values()]
 }
 
 function tipeKlaim() {
@@ -1693,6 +1792,12 @@ function payloadKlaim(aksi = '') {
   const memakaiCodingInacbg = String(aksi).startsWith('grouping_inacbg')
   payload.diagnosa = memakaiCodingInacbg ? stringDiagnosaKlaim(diagnosaInacbg.value) : stringDiagnosaKlaim()
   payload.prosedur = memakaiCodingInacbg ? (stringProsedurKlaim(prosedurInacbg.value) || '#') : stringProsedurKlaim()
+  if (memakaiCodingInacbg) {
+    payload.special_cmg = kategoriSpecialCmg
+      .map((tipe) => String(pilihanSpecialCmg[tipe] || '').trim())
+      .filter(Boolean)
+      .join('#') || '#'
+  }
   if (aksi === 'grouping_idrg') payload.topup_codes = ''
   return payload
 }
@@ -2302,13 +2407,13 @@ function payloadKlaim(aksi = '') {
                     <FileSpreadsheet v-else :size="15" />
                     Import IDRG ke INA-CBG
                   </button>
-                  <button type="button" class="coding-load-action" :disabled="loadingProses || inacbgSudahFinal" @click="muatCodingInacbg('diagnosa')">
-                    <LoaderCircle v-if="loadingProses === 'inacbg_diagnosa_get'" class="spin" :size="15" />
+                  <button type="button" class="coding-load-action" :disabled="Boolean(loadingCodingInacbg) || inacbgSudahFinal" @click="muatCodingInacbg('diagnosa')">
+                    <LoaderCircle v-if="loadingCodingInacbg === 'diagnosa'" class="spin" :size="15" />
                     <RefreshCw v-else :size="15" />
                     Muat Diagnosa
                   </button>
-                  <button type="button" class="coding-load-action" :disabled="loadingProses || inacbgSudahFinal" @click="muatCodingInacbg('prosedur')">
-                    <LoaderCircle v-if="loadingProses === 'inacbg_procedure_get'" class="spin" :size="15" />
+                  <button type="button" class="coding-load-action" :disabled="Boolean(loadingCodingInacbg) || inacbgSudahFinal" @click="muatCodingInacbg('prosedur')">
+                    <LoaderCircle v-if="loadingCodingInacbg === 'prosedur'" class="spin" :size="15" />
                     <RefreshCw v-else :size="15" />
                     Muat Prosedur
                   </button>
@@ -2322,10 +2427,13 @@ function payloadKlaim(aksi = '') {
                   <div v-else class="coding-list-table">
                     <div class="coding-list-head"><span>Kode</span><span>Nama Diagnosa</span><span>Status</span></div>
                     <template v-for="(item, index) in diagnosaInacbg" :key="`inacbg-diagnosa-${index}`">
-                      <button type="button" class="coding-list-row" :class="{ invalid: item.validcode === '0' }" :disabled="inacbgSudahFinal" @click="bukaEditorDiagnosaInacbg(index)">
+                      <button type="button" class="coding-list-row" :class="{ invalid: item.validcode === '0' }" :disabled="inacbgSudahFinal" :title="inacbgSudahFinal ? 'Coding sudah final' : 'Klik untuk edit diagnosa'" @click="bukaEditorDiagnosaInacbg(index)">
                         <b>{{ item.code || '-' }}</b>
                         <span>{{ item.display || '-' }} <em v-if="item.validcode === '0'">{{ item.metadata?.message || 'Kode tidak berlaku' }}</em></span>
-                        <small :class="{ primary: index === 0 }">{{ index === 0 ? 'Primer' : 'Sekunder' }}</small>
+                        <small class="coding-status-edit" :class="{ primary: index === 0 }">
+                          {{ index === 0 ? 'Primer' : 'Sekunder' }}
+                          <span v-if="!inacbgSudahFinal"><Edit3 :size="10" /> Edit</span>
+                        </small>
                       </button>
                       <div v-if="!inacbgSudahFinal && activeSubstitusiDiagnosaInacbg === index" class="coding-inline-editor">
                         <AutoComplete
@@ -2349,10 +2457,13 @@ function payloadKlaim(aksi = '') {
                   <div v-else class="coding-list-table">
                     <div class="coding-list-head"><span>Kode</span><span>Nama Prosedur</span><span>Status</span></div>
                     <template v-for="(item, index) in prosedurInacbg" :key="`inacbg-prosedur-${index}`">
-                      <button type="button" class="coding-list-row" :class="{ invalid: item.validcode === '0' }" :disabled="inacbgSudahFinal" @click="bukaEditorProsedurInacbg(index)">
+                      <button type="button" class="coding-list-row" :class="{ invalid: item.validcode === '0' }" :disabled="inacbgSudahFinal" :title="inacbgSudahFinal ? 'Coding sudah final' : 'Klik untuk edit prosedur'" @click="bukaEditorProsedurInacbg(index)">
                         <b>{{ item.code || '-' }}</b>
                         <span>{{ item.display || '-' }} <em v-if="item.validcode === '0'">{{ item.metadata?.message || 'Kode tidak berlaku' }}</em></span>
-                        <small>{{ index === 0 ? 'Primer' : 'Sekunder' }}</small>
+                        <small class="coding-status-edit">
+                          {{ index === 0 ? 'Primer' : 'Sekunder' }}
+                          <span v-if="!inacbgSudahFinal"><Edit3 :size="10" /> Edit</span>
+                        </small>
                       </button>
                       <div v-if="!inacbgSudahFinal && activeSubstitusiProsedurInacbg === index" class="coding-inline-editor">
                         <AutoComplete
@@ -2400,12 +2511,12 @@ function payloadKlaim(aksi = '') {
                     </button>
                   </template>
                   <template v-else>
-                    <button type="button" class="purple" :disabled="!pasienTerpilih.no_sep || loadingProses" @click="jalankanProses('grouping_inacbg')">
+                    <button type="button" class="purple" :disabled="!pasienTerpilih.no_sep || loadingProses === 'grouping_inacbg'" @click="jalankanProses('grouping_inacbg')">
                       <LoaderCircle v-if="loadingProses === 'grouping_inacbg'" class="spin" :size="15" />
                       <Layers v-else :size="15" />
                       Grouping
                     </button>
-                    <button type="button" class="teal" :disabled="!pasienTerpilih.no_sep || loadingProses || !responseInacbgTerakhir" @click="jalankanProses('final_inacbg')">
+                    <button type="button" class="teal" :disabled="!pasienTerpilih.no_sep || loadingProses === 'final_inacbg' || !responseInacbgTerakhir || inacbgGroupingGagal" :title="inacbgGroupingGagal ? 'Edit coding dan Grouping ulang terlebih dahulu' : ''" @click="jalankanProses('final_inacbg')">
                       <LoaderCircle v-if="loadingProses === 'final_inacbg'" class="spin" :size="15" />
                       <CheckCircle2 v-else :size="15" />
                       Final INA-CBG
@@ -2445,7 +2556,21 @@ function payloadKlaim(aksi = '') {
                       </tr>
                       <tr v-for="item in hasilGroupingInacbgTabel.specialRows" :key="item.type">
                         <th>{{ item.type }}</th>
-                        <td>{{ item.description }}</td>
+                        <td>
+                          <Select
+                            v-if="!inacbgGroupingFinal && opsiSpecialCmgPerKategori[item.type]?.length > 1"
+                            v-model="pilihanSpecialCmg[item.type]"
+                            class="inacbg-special-select"
+                            :options="opsiSpecialCmgPerKategori[item.type]"
+                            option-label="label"
+                            option-value="value"
+                            placeholder="None"
+                            append-to="body"
+                            overlay-class="inacbg-special-cmg-overlay"
+                            filter
+                          />
+                          <span v-else>{{ item.description }}</span>
+                        </td>
                         <td class="text-right">{{ item.code }}</td>
                         <td class="text-right">Rp</td>
                         <td class="text-right">{{ rupiah(item.tariff) }}</td>
@@ -2462,6 +2587,12 @@ function payloadKlaim(aksi = '') {
                     </tbody>
                   </table>
                 </div>
+                <p v-if="inacbgGroupingGagal" class="inacbg-grouping-warning">
+                  Grouper tidak menemukan kelompok INA-CBG untuk kombinasi coding ini. Edit diagnosis/prosedur, kemudian lakukan Grouping ulang.
+                </p>
+                <p v-else-if="adaOpsiSpecialCmg && !inacbgGroupingFinal" class="inacbg-option-note">
+                  Pilih Special CMG yang sesuai, lalu klik Grouping kembali agar pilihan dikirim ke INA-CBG Stage 2 dan tarif dihitung ulang.
+                </p>
               </div>
               <div v-else class="inacbg-empty-result">Hasil grouping INA-CBG belum ada.</div>
             </section>

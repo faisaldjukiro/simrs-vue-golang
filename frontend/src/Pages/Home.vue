@@ -11,6 +11,7 @@ import {
   LogIn,
   LogOut,
   Microscope,
+  MessageCircle,
   Pill,
   ScrollText,
   Stethoscope,
@@ -24,10 +25,11 @@ import IdrgPage from './Eklaim/IdrgPage.vue'
 import MonitoringDataKlaimPage from './BPJS/MonitoringDataKlaimPage.vue'
 import AktivitasLogPage from './Sistem/AktivitasLogPage.vue'
 import KelolaMenuPage from './Sistem/KelolaMenuPage.vue'
+import WhatsAppGatewayPage from './Integrasi/WhatsAppGatewayPage.vue'
 import ModulePlaceholder from '../Components/Tabs/ModulePlaceholder.vue'
 import ModuleTab from '../Components/Tabs/ModuleTab.vue'
 import UserManagementTab from '../Components/Tabs/UserManagementTab.vue'
-import { dashboardData, userManagementData } from '../lib/faisal/api'
+import { dashboardData, koneksiBPJS, koneksiEKlaim, userManagementData } from '../lib/faisal/api'
 import { useNotifikasi } from '../lib/shared/useNotifikasi'
 
 const props = defineProps({
@@ -46,6 +48,8 @@ const selectedPatientModule = ref('')
 const now = ref(new Date())
 const dashboardLoading = ref(true)
 const dashboardError = ref('')
+const koneksiEKlaimStatus = ref({ memeriksa: false, dikonfigurasi: false, terhubung: false, latensi_ms: null })
+const koneksiBPJSStatus = ref({ memeriksa: false, dikonfigurasi: false, terhubung: false, latensi_ms: null })
 const userManagementLoading = ref(false)
 const userManagementError = ref('')
 const notifikasi = useNotifikasi()
@@ -152,6 +156,7 @@ const dashboardMenus = [
   { label: 'Rawat Jalan', description: 'Daftar pasien dan pelayanan rawat jalan.', icon: Stethoscope, tone: 'cyan' },
   { label: 'IDRG', description: 'Bridging klaim BPJS E-Klaim iDRG / INA-CBG.', icon: FileSpreadsheet, tone: 'emerald' },
   { label: 'Monitoring Klaim BPJS', description: 'Monitoring data klaim VClaim berdasarkan periode.', icon: FileSpreadsheet, tone: 'blue' },
+  { label: 'WhatsApp Gateway', description: 'Kelola perangkat dan kirim pesan WhatsApp dari SIRAPI.', icon: MessageCircle, tone: 'teal' },
   { label: 'Kelola Menu', description: 'Pengaturan sidebar pasien dan hak aksesnya.', icon: LayoutDashboard, tone: 'slate' },
   { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
   { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate' },
@@ -171,13 +176,42 @@ const quickStats = computed(() => [
 ])
 
 const serviceStatuses = computed(() => [
-  { label: 'Koneksi API', value: 'Online', tone: 'online' },
+  { label: 'Web Servis', value: 'Online', tone: 'online' },
   {
-    label: 'Koneksi SIMRS Lama',
+    label: 'Simrs Khanza',
     value: !isAuthenticated.value ? 'Perlu login' : dashboardLoading.value ? 'Memeriksa...' : dashboardError.value ? 'Offline' : `Online - ${dashboard.value.koneksi_database.latensi_ms} ms`,
     tone: !isAuthenticated.value || dashboardLoading.value ? 'pending' : dashboardError.value ? 'offline' : 'online',
   },
-  { label: 'Koneksi E-Klaim', value: 'Belum tersedia', tone: 'pending' },
+  {
+    label: 'E-Klaim',
+    value: !isAuthenticated.value
+      ? 'Perlu login'
+      : koneksiEKlaimStatus.value.memeriksa
+        ? 'Memeriksa...'
+        : !koneksiEKlaimStatus.value.dikonfigurasi
+          ? 'Belum dikonfigurasi'
+          : koneksiEKlaimStatus.value.terhubung
+            ? `Online - ${koneksiEKlaimStatus.value.latensi_ms} ms`
+            : 'Offline',
+    tone: !isAuthenticated.value || koneksiEKlaimStatus.value.memeriksa || !koneksiEKlaimStatus.value.dikonfigurasi
+      ? 'pending'
+      : koneksiEKlaimStatus.value.terhubung ? 'online' : 'offline',
+  },
+  {
+    label: 'BPJS VClaim',
+    value: !isAuthenticated.value
+      ? 'Perlu login'
+      : koneksiBPJSStatus.value.memeriksa
+        ? 'Memeriksa...'
+        : !koneksiBPJSStatus.value.dikonfigurasi
+          ? 'Belum dikonfigurasi'
+          : koneksiBPJSStatus.value.terhubung
+            ? `Online - ${koneksiBPJSStatus.value.latensi_ms} ms`
+            : 'Offline',
+    tone: !isAuthenticated.value || koneksiBPJSStatus.value.memeriksa || !koneksiBPJSStatus.value.dikonfigurasi
+      ? 'pending'
+      : koneksiBPJSStatus.value.terhubung ? 'online' : 'offline',
+  },
 ])
 
 const patientRows = computed(() => ({
@@ -280,6 +314,48 @@ async function loadDashboard(filterPerModul = patientFilters.value) {
   }
 }
 
+async function loadKoneksiEKlaim() {
+  if (!isAuthenticated.value) {
+    koneksiEKlaimStatus.value = { memeriksa: false, dikonfigurasi: false, terhubung: false, latensi_ms: null }
+    return
+  }
+
+  koneksiEKlaimStatus.value.memeriksa = true
+  try {
+    const hasil = await koneksiEKlaim(props.token)
+    koneksiEKlaimStatus.value = { memeriksa: false, ...hasil }
+  } catch {
+    koneksiEKlaimStatus.value = {
+      ...koneksiEKlaimStatus.value,
+      memeriksa: false,
+      dikonfigurasi: true,
+      terhubung: false,
+      latensi_ms: null,
+    }
+  }
+}
+
+async function loadKoneksiBPJS() {
+  if (!isAuthenticated.value) {
+    koneksiBPJSStatus.value = { memeriksa: false, dikonfigurasi: false, terhubung: false, latensi_ms: null }
+    return
+  }
+
+  koneksiBPJSStatus.value.memeriksa = true
+  try {
+    const hasil = await koneksiBPJS(props.token)
+    koneksiBPJSStatus.value = { memeriksa: false, ...hasil }
+  } catch {
+    koneksiBPJSStatus.value = {
+      ...koneksiBPJSStatus.value,
+      memeriksa: false,
+      dikonfigurasi: true,
+      terhubung: false,
+      latensi_ms: null,
+    }
+  }
+}
+
 function sinkronkanPaginasi(paginasi = {}) {
   patientPagination.value = {
     Registrasi: paginasi.registrasi ?? patientPagination.value.Registrasi ?? paginationKosong(),
@@ -307,8 +383,14 @@ async function loadUserManagement() {
 onMounted(() => {
   terapkanClassDarkMode()
   loadDashboard()
+  loadKoneksiEKlaim()
+  loadKoneksiBPJS()
 })
-watch(() => props.token, loadDashboard)
+watch(() => props.token, () => {
+  loadDashboard()
+  loadKoneksiEKlaim()
+  loadKoneksiBPJS()
+})
 watch(isAuthenticated, (loggedIn) => {
   if (!loggedIn) {
     currentTab.value = 'Menu'
@@ -451,7 +533,6 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
       :service-statuses="serviceStatuses"
       :is-authenticated="isAuthenticated"
       @select-tab="selectMenu"
-      @open-menu="openMenu"
     />
 
     <PatientSidebar
@@ -514,6 +595,11 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
       v-else-if="currentTab === 'Kelola Menu'"
       :token="token"
       @saved="loadDashboard"
+    />
+
+    <WhatsAppGatewayPage
+      v-else-if="currentTab === 'WhatsApp Gateway'"
+      :token="token"
     />
 
     <ModulePlaceholder

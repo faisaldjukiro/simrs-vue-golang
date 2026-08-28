@@ -1,4 +1,4 @@
-import { request } from '../shared/http'
+import { request, requestBlob } from '../shared/http'
 
 export function login(credentials) {
   return request('/api/auth/login', {
@@ -26,6 +26,65 @@ export function dashboardData(token, params = {}) {
 
   return request(path, {
     headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function koneksiEKlaim(token) {
+  return request('/api/beranda/koneksi-eklaim', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function koneksiBPJS(token) {
+  return request('/api/beranda/koneksi-bpjs', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function statusWhatsAppGateway(token) {
+  return request('/api/whatsapp-gateway/status', { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function daftarPerangkatWhatsApp(token) {
+  return request('/api/whatsapp-gateway/perangkat', { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function buatPerangkatWhatsApp(token, nama) {
+  return request('/api/whatsapp-gateway/perangkat', {
+    method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify({ nama }),
+  })
+}
+
+export function detailPerangkatWhatsApp(token, id) {
+  return request(`/api/whatsapp-gateway/perangkat/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function hubungkanPerangkatWhatsApp(token, id) {
+  return request(`/api/whatsapp-gateway/perangkat/${encodeURIComponent(id)}/hubungkan`, {
+    method: 'POST', headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function qrPerangkatWhatsApp(token, id) {
+  return requestBlob(`/api/whatsapp-gateway/perangkat/${encodeURIComponent(id)}/qr`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'image/png' },
+  })
+}
+
+export function kodePasanganWhatsApp(token, id, nomor) {
+  return request(`/api/whatsapp-gateway/perangkat/${encodeURIComponent(id)}/kode-pasangan`, {
+    method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify({ nomor }),
+  })
+}
+
+export function daftarPesanWhatsApp(token, params = {}) {
+  const query = new URLSearchParams(params).toString()
+  return request(`/api/whatsapp-gateway/pesan${query ? `?${query}` : ''}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
+export function kirimPesanWhatsApp(token, payload) {
+  return request('/api/whatsapp-gateway/pesan', {
+    method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload),
   })
 }
 

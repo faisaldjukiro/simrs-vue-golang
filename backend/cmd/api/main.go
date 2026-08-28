@@ -63,6 +63,8 @@ import (
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	"simrs-backend/internal/modules/triase_igd"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
+	"simrs-backend/internal/modules/whatsapp_gateway"
+	whatsappgatewayhttp "simrs-backend/internal/modules/whatsapp_gateway/delivery/http"
 	"simrs-backend/internal/platform/database"
 	faisalroutes "simrs-backend/internal/routes/faisal"
 	sahrulroutes "simrs-backend/internal/routes/sahrul"
@@ -95,6 +97,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	whatsappConfig := config.WhatsAppConfig()
 
 	ctx := context.Background()
 	db, err := database.OpenMySQL(ctx, databaseConfig)
@@ -115,7 +118,11 @@ func main() {
 	autentikasiRepositori := autentikasi.NewRepositori(db, simrsDB)
 	autentikasiLayanan := autentikasi.NewLayanan(autentikasiRepositori, tokenTTL)
 	autentikasiHandler := autentikasihttp.NewHandler(autentikasiLayanan)
-	berandaHandler := berandahttp.NewHandler(beranda.NewRepositori(simrsDB, db))
+	berandaHandler := berandahttp.NewHandler(
+		beranda.NewRepositori(simrsDB, db),
+		beranda.NewPemeriksaEKlaim(eklaimConfig.WSURL, eklaimConfig.Key),
+		beranda.NewPemeriksaBPJS(bpjsConfig.VClaimURL, bpjsConfig.ConsumerID, bpjsConfig.SecretKey, bpjsConfig.UserKey),
+	)
 	bpjsHandler := bpjshttp.NewHandler(bpjs.NewLayanan(bpjs.Konfigurasi{
 		ConsumerID: bpjsConfig.ConsumerID,
 		SecretKey:  bpjsConfig.SecretKey,
@@ -169,6 +176,11 @@ func main() {
 	resepHandler := resephttp.NewHandler(resep.NewLayanan(resepRepositori))
 	aktivitasLogRepositori := aktivitas_log.NewRepositori(db, simrsDB)
 	aktivitasLogHandler := aktivitasloghttp.NewHandler(aktivitasLogRepositori)
+	whatsappGatewayHandler := whatsappgatewayhttp.NewHandler(whatsapp_gateway.NewLayanan(
+		whatsappConfig.URL,
+		whatsappConfig.Key,
+		whatsappConfig.Timeout,
+	))
 
 	router := gin.New()
 	router.Use(gin.Logger(), aktivitas_log.Middleware(aktivitasLogRepositori), gin.Recovery())
@@ -197,6 +209,7 @@ func main() {
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,
 		Resep:                   resepHandler,
+		WhatsAppGateway:         whatsappGatewayHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 

@@ -76,6 +76,12 @@ Module untuk login, token, logout, dan middleware Bearer Token. Endpoint publikn
 
 Module untuk data yang tampil di halaman beranda/dashboard. Module ini membaca database SIMRS lama memakai koneksi `SIMRS_DB_*` dengan transaksi read-only.
 
+`internal/modules/whatsapp_gateway`
+
+Module integrasi WhatsApp Gateway. API key hanya dibaca backend dan tidak
+pernah diberikan ke frontend. Module ini menangani perangkat pengirim,
+QR/pairing, pengiriman pesan teks, serta riwayat pesan.
+
 Jika nanti membuat fitur baru, buat module baru di:
 
 ```text
@@ -178,6 +184,30 @@ Pastikan target migration tetap database lokal:
 DB_DATABASE=simrs-golang
 MIGRATION_ALLOWED_DATABASE=simrs-golang
 ```
+
+Konfigurasi WhatsApp Gateway:
+
+```env
+URL_WHATSAPP=http://alamat-whatsapp-gateway
+KEY_WHATSAPP=api-key-gateway
+```
+
+Endpoint internal SIRAPI yang tersedia setelah login:
+
+```text
+GET  /api/whatsapp-gateway/status
+GET  /api/whatsapp-gateway/perangkat
+POST /api/whatsapp-gateway/perangkat
+POST /api/whatsapp-gateway/perangkat/:id/hubungkan
+GET  /api/whatsapp-gateway/perangkat/:id/qr
+POST /api/whatsapp-gateway/perangkat/:id/kode-pasangan
+GET  /api/whatsapp-gateway/pesan
+POST /api/whatsapp-gateway/pesan
+```
+
+Nomor WhatsApp memakai format `62` tanpa tanda `+`. Respons `202` pada saat
+kirim pesan berarti pesan sudah masuk antrean gateway, belum berarti sudah
+terkirim ke penerima.
 
 ## Migration
 

@@ -239,6 +239,14 @@ func (l *Layanan) aturDataKlaim(ctx context.Context, input InputProses) (HasilPr
 	}
 	jamMasuk := fallbackString(nilaiKlaim(input, "jam_masuk"), "08:00:00")
 	jamPulang := fallbackString(nilaiKlaim(input, "jam_pulang"), "09:00:00")
+	tanggalMasukKlaim, err := tanggalJamTerformat(tanggalMasuk, jamMasuk)
+	if err != nil {
+		return HasilProses{}, fmt.Errorf("%w: tanggal masuk tidak valid (%q)", ErrInputTidakValid, tanggalMasuk)
+	}
+	tanggalPulangKlaim, err := tanggalJamTerformat(tanggalPulang, jamPulang)
+	if err != nil {
+		return HasilProses{}, fmt.Errorf("%w: tanggal pulang tidak valid (%q)", ErrInputTidakValid, tanggalPulang)
+	}
 	icuIndikator := stringBinerDariBool(nilaiBoolKlaim(input, "icu_indikator"))
 	ventilatorUseInd := stringBinerDariBool(nilaiBoolKlaim(input, "ventilator_use_ind"))
 	upgradeClassInd := stringBinerDariBool(nilaiBoolKlaim(input, "upgrade_class_ind"))
@@ -255,8 +263,8 @@ func (l *Layanan) aturDataKlaim(ctx context.Context, input InputProses) (HasilPr
 
 	payload := map[string]any{
 		"nomor_kartu":     nilaiPasien(input, "no_kartu"),
-		"tgl_masuk":       tanggalJam(tanggalMasuk, jamMasuk),
-		"tgl_pulang":      tanggalJam(tanggalPulang, jamPulang),
+		"tgl_masuk":       tanggalMasukKlaim,
+		"tgl_pulang":      tanggalPulangKlaim,
 		"cara_masuk":      fallbackString(nilaiKlaim(input, "cara_masuk"), "gp"),
 		"jenis_rawat":     fallbackString(nilaiKlaim(input, "jenis_rawat"), jenisRawatEklaim(nilaiPasien(input, "jenis_rawat_data"))),
 		"kelas_rawat":     fallbackString(nilaiKlaim(input, "kelas_rawat"), fallbackString(nilaiPasien(input, "kelas_rawat"), "3")),
@@ -527,6 +535,10 @@ func (l *Layanan) groupingINACBGLengkap(ctx context.Context, input InputProses) 
 	if err != nil {
 		return HasilProses{}, err
 	}
+	if gagal, pesan := hasilGroupingINACBGGagal(hasilGrouping1); gagal {
+		hasilGrouping1.Sukses = false
+		hasilGrouping1.Pesan = pesan
+	}
 	tahapan = append(tahapan, TahapanProses{Nama: "inacbg_grouper_stage_1", Hasil: hasilGrouping1})
 
 	if !hasilGrouping1.Sukses {
@@ -545,12 +557,46 @@ func (l *Layanan) groupingINACBGLengkap(ctx context.Context, input InputProses) 
 	if err != nil {
 		return HasilProses{}, err
 	}
+	if gagal, pesan := hasilGroupingINACBGGagal(hasilGrouping2); gagal {
+		hasilGrouping2.Sukses = false
+		hasilGrouping2.Pesan = pesan
+	}
 	tahapan = append(tahapan, TahapanProses{Nama: "inacbg_grouper_stage_2", Hasil: hasilGrouping2})
 	if !hasilGrouping2.Sukses {
 		return hasilProsesTahapan(input, "Grouping INA-CBG Tahap 2 gagal.", tahapan), nil
 	}
 
 	return hasilProsesTahapan(input, "Grouping INA-CBG Tahap 1 dan Tahap 2 selesai diproses.", tahapan), nil
+}
+
+// E-Klaim dapat mengembalikan metadata 200 walaupun grouper tidak menemukan
+// kelompok CBG. Kondisi itu ditandai dengan kode X-* atau deskripsi
+// FAILED/ERROR dan tidak boleh dianggap berhasil maupun dilanjutkan ke final.
+func hasilGroupingINACBGGagal(hasil ResponseEClaim) (bool, string) {
+	kandidat := []any{hasil.Raw, hasil.Data, hasil.Response}
+	for _, nilai := range kandidat {
+		objek, ok := nilai.(map[string]any)
+		if !ok {
+			continue
+		}
+		if response, ada := objek["response_inacbg"].(map[string]any); ada {
+			objek = response
+		}
+		cbg, ok := objek["cbg"].(map[string]any)
+		if !ok {
+			continue
+		}
+		kode := strings.ToUpper(strings.TrimSpace(fmt.Sprint(cbg["code"])))
+		deskripsi := strings.TrimSpace(fmt.Sprint(cbg["description"]))
+		deskripsiUpper := strings.ToUpper(deskripsi)
+		if strings.HasPrefix(kode, "X-") || strings.Contains(deskripsiUpper, "FAILED") || strings.Contains(deskripsiUpper, "ERROR") {
+			if deskripsi == "" || deskripsi == "<nil>" {
+				deskripsi = "Grouper INA-CBG tidak menemukan hasil untuk coding yang dikirim."
+			}
+			return true, deskripsi
+		}
+	}
+	return false, ""
 }
 
 func (l *Layanan) groupingINACBGStage2(ctx context.Context, input InputProses) (HasilProses, error) {
@@ -912,6 +958,11 @@ func fallbackString(value string, fallback string) string {
 }
 
 func tanggalJam(tanggal string, jam string) string {
+	hasil, err := tanggalJamTerformat(tanggal, jam)
+	if err == nil {
+		return hasil
+	}
+
 	tanggal = strings.TrimSpace(tanggal)
 	if len(tanggal) >= 10 {
 		tanggal = tanggal[:10]
@@ -920,6 +971,38 @@ func tanggalJam(tanggal string, jam string) string {
 		tanggal = time.Now().Format("2006-01-02")
 	}
 	return tanggal + " " + jamLengkap(jam)
+}
+
+func tanggalJamTerformat(tanggal string, jam string) (string, error) {
+	nilaiTanggal := strings.TrimSpace(tanggal)
+	if nilaiTanggal == "" || nilaiTanggal == "<nil>" {
+		return "", errors.New("tanggal kosong")
+	}
+
+	// Ambil bagian tanggal dari nilai ISO/RFC3339 maupun datetime MySQL.
+	if posisi := strings.IndexAny(nilaiTanggal, "T "); posisi > 0 {
+		nilaiTanggal = nilaiTanggal[:posisi]
+	}
+
+	var tanggalValid time.Time
+	var err error
+	for _, layout := range []string{"2006-01-02", "2006/01/02", "02/01/2006", "02-01-2006"} {
+		tanggalValid, err = time.Parse(layout, nilaiTanggal)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		return "", err
+	}
+
+	nilaiJam := jamLengkap(jam)
+	jamValid, err := time.Parse("15:04:05", nilaiJam)
+	if err != nil {
+		return "", err
+	}
+
+	return tanggalValid.Format("2006-01-02") + " " + jamValid.Format("15:04:05"), nil
 }
 
 func jamLengkap(jam string) string {

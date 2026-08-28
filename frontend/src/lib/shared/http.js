@@ -23,3 +23,15 @@ export async function request(path, options = {}) {
 
   return payload?.data
 }
+
+export async function requestBlob(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, options)
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null)
+    const error = new Error(payload?.error?.message || 'File tidak dapat dibaca dari server.')
+    error.code = payload?.error?.code
+    error.status = response.status
+    throw error
+  }
+  return response.blob()
+}
