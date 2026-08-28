@@ -23,6 +23,12 @@ function clearSession() {
   user.value = null
 }
 
+function clearNavigation() {
+  Object.keys(localStorage)
+    .filter((key) => key.startsWith('sirapi.navigation.') || key.startsWith('sirapi.patient_sidebar.'))
+    .forEach((key) => localStorage.removeItem(key))
+}
+
 function openLoginModal() {
   errorMessage.value = ''
   loginModalOpen.value = true
@@ -80,6 +86,7 @@ async function handleLogout() {
   } catch {
     notifikasi.peringatan('Server tidak merespons, sesi lokal tetap dihapus.')
   } finally {
+    clearNavigation()
     clearSession()
     loading.value = false
     notifikasi.info('Anda sudah logout dari SIRAPI.')

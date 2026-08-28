@@ -37,6 +37,25 @@ const pencarianSidebar = ref('')
 const sidebarCollapsed = ref(localStorage.getItem('sirapi.patient_sidebar.collapsed') === '1')
 const copyResepDraft = ref(null)
 
+function kunciSidebarAktif() {
+  const nomorRawat = String(props.patient?.no_rawat || '').trim()
+  if (!nomorRawat || !props.moduleName) return ''
+  return `sirapi.patient_sidebar.active.${props.moduleName}.${nomorRawat}`
+}
+
+function pulihkanSidebarAktif() {
+  if (!aksesSidebarTersedia.value) {
+    kodeSidebarAktif.value = ''
+    return
+  }
+
+  const kunci = kunciSidebarAktif()
+  const tersimpan = kunci ? localStorage.getItem(kunci) : ''
+  kodeSidebarAktif.value = daftarSidebarAktif.value.some((item) => item.kode === tersimpan)
+    ? tersimpan
+    : 'ringkasan'
+}
+
 const halamanSidebar = {
   cppt_soap: CpptPage,
   penanganan_dokter_petugas: PenangananDokterPetugasPage,
@@ -134,15 +153,26 @@ watch(sidebarCollapsed, (collapsed) => {
 })
 
 watch(() => props.patient.no_rawat, () => {
-  kodeSidebarAktif.value = aksesSidebarTersedia.value ? 'ringkasan' : ''
   pencarianSidebar.value = ''
   copyResepDraft.value = null
 })
 
-watch(aksesSidebarTersedia, (tersedia) => {
-  if (!tersedia) kodeSidebarAktif.value = ''
-  else if (!daftarSidebarAktif.value.some((item) => item.kode === kodeSidebarAktif.value)) kodeSidebarAktif.value = 'ringkasan'
-}, { immediate: true })
+watch(
+  [
+    () => props.patient.no_rawat,
+    () => props.moduleName,
+    () => daftarSidebarAktif.value.map((item) => item.kode).join('|'),
+    aksesSidebarTersedia,
+  ],
+  pulihkanSidebarAktif,
+  { immediate: true },
+)
+
+watch(kodeSidebarAktif, (kode) => {
+  const kunci = kunciSidebarAktif()
+  if (!kunci || !kode || !daftarSidebarAktif.value.some((item) => item.kode === kode)) return
+  localStorage.setItem(kunci, kode)
+})
 </script>
 
 <template>

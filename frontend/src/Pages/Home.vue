@@ -39,6 +39,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['login', 'logout'])
 
+const PREFIX_NAVIGASI = 'sirapi.navigation.'
 const isDark = ref(localStorage.getItem('simrs_theme') !== 'light')
 const currentTab = ref('Menu')
 const menuOpen = ref(false)
@@ -106,6 +107,40 @@ const userManagement = ref({
 })
 
 const isAuthenticated = computed(() => Boolean(props.user && props.token))
+
+function kunciNavigasi() {
+  const identitas = props.user?.id || props.user?.username
+  return identitas ? `${PREFIX_NAVIGASI}${identitas}` : ''
+}
+
+function simpanNavigasi() {
+  const kunci = kunciNavigasi()
+  if (!kunci || !isAuthenticated.value) return
+
+  localStorage.setItem(kunci, JSON.stringify({
+    menu: currentTab.value,
+    modul_pasien: selectedPatientModule.value,
+    pasien: selectedPatient.value,
+  }))
+}
+
+function pulihkanNavigasi() {
+  const kunci = kunciNavigasi()
+  if (!kunci || !isAuthenticated.value) return
+
+  try {
+    const tersimpan = JSON.parse(localStorage.getItem(kunci) || '{}')
+    const menu = typeof tersimpan.menu === 'string' ? tersimpan.menu : 'Menu'
+    const modulPasienValid = ['Rawat Jalan', 'IGD/UGD', 'Rawat Inap'].includes(tersimpan.modul_pasien)
+    const pasienValid = tersimpan.pasien && typeof tersimpan.pasien === 'object' && tersimpan.pasien.no_rawat
+
+    currentTab.value = ['Login', 'Logout'].includes(menu) ? 'Menu' : menu
+    selectedPatientModule.value = modulPasienValid && pasienValid ? tersimpan.modul_pasien : ''
+    selectedPatient.value = modulPasienValid && pasienValid ? tersimpan.pasien : null
+  } catch {
+    localStorage.removeItem(kunci)
+  }
+}
 
 const clockTimer = window.setInterval(() => {
   now.value = new Date()
@@ -382,11 +417,13 @@ async function loadUserManagement() {
 
 onMounted(() => {
   terapkanClassDarkMode()
+  pulihkanNavigasi()
   loadDashboard()
   loadKoneksiEKlaim()
   loadKoneksiBPJS()
 })
 watch(() => props.token, () => {
+  pulihkanNavigasi()
   loadDashboard()
   loadKoneksiEKlaim()
   loadKoneksiBPJS()
@@ -398,6 +435,7 @@ watch(isAuthenticated, (loggedIn) => {
     selectedPatientModule.value = ''
   }
 })
+watch([currentTab, selectedPatientModule, selectedPatient], simpanNavigasi, { deep: true })
 
 function toggleTheme() {
   isDark.value = !isDark.value
