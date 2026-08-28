@@ -135,7 +135,7 @@ VALUES
     ('Triase IGD', 'Stethoscope', JSON_ARRAY('IGD/UGD'), 64, TRUE, NOW(), NOW());
 
 UPDATE sidebar_pasien
-SET kode_sidebar = CONCAT('sidebar_', LPAD(id, 4, '0'));
+SET kode_sidebar = CONCAT('sidebar_lama_', LPAD(id, 4, '0'));
 
 UPDATE sidebar_pasien SET kode_sidebar = 'cppt_soap'
 WHERE nama_sidebar = 'Cppt/Soap';
