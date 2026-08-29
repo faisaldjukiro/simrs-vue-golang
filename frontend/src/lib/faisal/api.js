@@ -266,6 +266,17 @@ export function hapusEwsRanap(token, payload) {
   })
 }
 
+const authHeader = (token) => ({ Authorization: `Bearer ${token}` })
+export function masterVentilatorData(token) { return request('/api/master-ventilator', { headers: authHeader(token) }) }
+export function simpanMasterVentilator(token, payload) { return request('/api/master-ventilator', { method: 'POST', headers: authHeader(token), body: JSON.stringify(payload) }) }
+export function ubahMasterVentilator(token, kode, payload) { return request(`/api/master-ventilator/${encodeURIComponent(kode)}`, { method: 'PUT', headers: authHeader(token), body: JSON.stringify(payload) }) }
+export function hapusMasterVentilator(token, kode) { return request(`/api/master-ventilator/${encodeURIComponent(kode)}`, { method: 'DELETE', headers: authHeader(token) }) }
+export function ventilatorPasienData(token, noRawat) { return request(`/api/ventilator?${new URLSearchParams({ no_rawat: noRawat })}`, { headers: authHeader(token) }) }
+export function mulaiVentilator(token, payload) { return request('/api/ventilator/pemakaian', { method: 'POST', headers: authHeader(token), body: JSON.stringify(payload) }) }
+export function simpanSettingVentilator(token, payload) { return request('/api/ventilator/setting', { method: 'POST', headers: authHeader(token), body: JSON.stringify(payload) }) }
+export function simpanMonitoringVentilator(token, payload) { return request('/api/ventilator/monitoring', { method: 'POST', headers: authHeader(token), body: JSON.stringify(payload) }) }
+export function simpanChecklistVAP(token, payload) { return request('/api/ventilator/checklist-vap', { method: 'POST', headers: authHeader(token), body: JSON.stringify(payload) }) }
+
 export function implementasiKeperawatanData(token, noRawat) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/implementasi-keperawatan?${query}`, {

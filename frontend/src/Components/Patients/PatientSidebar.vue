@@ -20,6 +20,7 @@ import InputResepPage from '../../Pages/Pasien/InputResepPage.vue'
 import CopyResepPage from '../../Pages/Pasien/CopyResepPage.vue'
 import BerkasDigitalPage from '../../Pages/Pasien/BerkasDigitalPage.vue'
 import ImplementasiKeperawatanPage from '../../Pages/RawatInap/ImplementasiKeperawatanPage.vue'
+import VentilatorPage from '../../Pages/RawatInap/VentilatorPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
@@ -74,6 +75,7 @@ const halamanSidebar = {
   sidebar_0007: CopyResepPage,
   berkas_digital: BerkasDigitalPage,
   implementasi_keperawatan: ImplementasiKeperawatanPage,
+  ventilator: VentilatorPage,
 }
 
 const daftarSidebarAktif = computed(() => {

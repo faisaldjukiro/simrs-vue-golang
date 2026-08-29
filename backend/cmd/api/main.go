@@ -65,6 +65,8 @@ import (
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	"simrs-backend/internal/modules/triase_igd"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
+	"simrs-backend/internal/modules/ventilator"
+	ventilatorhttp "simrs-backend/internal/modules/ventilator/delivery/http"
 	"simrs-backend/internal/modules/whatsapp_gateway"
 	whatsappgatewayhttp "simrs-backend/internal/modules/whatsapp_gateway/delivery/http"
 	"simrs-backend/internal/platform/database"
@@ -185,6 +187,7 @@ func main() {
 		whatsappConfig.Key,
 		whatsappConfig.Timeout,
 	))
+	ventilatorHandler := ventilatorhttp.NewHandler(ventilator.NewRepositori(simrsDB))
 
 	router := gin.New()
 	router.Use(gin.Logger(), aktivitas_log.Middleware(aktivitasLogRepositori), gin.Recovery())
@@ -215,6 +218,7 @@ func main() {
 		ResumePasienRanap:       resumePasienRanapHandler,
 		Resep:                   resepHandler,
 		WhatsAppGateway:         whatsappGatewayHandler,
+		Ventilator:              ventilatorHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 

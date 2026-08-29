@@ -16,6 +16,7 @@ import {
   ScrollText,
   Stethoscope,
   UsersRound,
+  Wind,
 } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import DashboardLayout from '../Components/Layout/DashboardLayout.vue'
@@ -26,6 +27,7 @@ import MonitoringDataKlaimPage from './BPJS/MonitoringDataKlaimPage.vue'
 import AktivitasLogPage from './Sistem/AktivitasLogPage.vue'
 import KelolaMenuPage from './Sistem/KelolaMenuPage.vue'
 import WhatsAppGatewayPage from './Integrasi/WhatsAppGatewayPage.vue'
+import MasterVentilatorPage from './Sistem/MasterVentilatorPage.vue'
 import ModulePlaceholder from '../Components/Tabs/ModulePlaceholder.vue'
 import ModuleTab from '../Components/Tabs/ModuleTab.vue'
 import UserManagementTab from '../Components/Tabs/UserManagementTab.vue'
@@ -193,6 +195,7 @@ const dashboardMenus = [
   { label: 'Monitoring Klaim BPJS', description: 'Monitoring data klaim VClaim berdasarkan periode.', icon: FileSpreadsheet, tone: 'blue' },
   { label: 'WhatsApp Gateway', description: 'Kelola perangkat dan kirim pesan WhatsApp dari SIRAPI.', icon: MessageCircle, tone: 'teal' },
   { label: 'Kelola Menu', description: 'Pengaturan sidebar pasien dan hak aksesnya.', icon: LayoutDashboard, tone: 'slate' },
+  { label: 'Master Ventilator', description: 'Kelola perangkat ventilator dan jadwal pemeliharaannya.', icon: Wind, tone: 'cyan' },
   { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
   { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate' },
 ]
@@ -637,6 +640,11 @@ function tampilkanToastDataKosong(namaTab, dataBeranda) {
 
     <WhatsAppGatewayPage
       v-else-if="currentTab === 'WhatsApp Gateway'"
+      :token="token"
+    />
+
+    <MasterVentilatorPage
+      v-else-if="currentTab === 'Master Ventilator'"
       :token="token"
     />
 
