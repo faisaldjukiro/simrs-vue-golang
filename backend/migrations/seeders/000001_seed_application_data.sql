@@ -165,4 +165,9 @@ WHERE nama_sidebar = 'Input Resep';
 UPDATE sidebar_pasien SET kode_sidebar = 'copy_resep', daftar_modul = JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap')
 WHERE nama_sidebar = 'Copy Resep';
 
+UPDATE sidebar_pasien SET kode_sidebar = 'implementasi_keperawatan', daftar_modul = JSON_ARRAY('Rawat Inap'), aktif = TRUE
+WHERE nama_sidebar = 'Implementasi Keperawatan';
+UPDATE sidebar_pasien SET aktif = FALSE
+WHERE nama_sidebar = 'Imp. Keperawatan';
+
 COMMIT;

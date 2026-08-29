@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import InputPencarian from './InputPencarian.vue'
-import { cariPetugasCppt, cariPetugasEwsRanap, cariPetugasPenanganan } from '../../lib/faisal/api'
+import { cariPetugasCppt, cariPetugasEwsRanap, cariPetugasImplementasiKeperawatan, cariPetugasPenanganan } from '../../lib/faisal/api'
 
 const model = defineModel({ default: () => ({}) })
 const props = defineProps({
@@ -18,6 +18,7 @@ const kodeField = computed(() => props.sumber === 'penanganan' ? 'kode' : 'nip')
 const cariPetugas = (kataKunci) => {
   if (props.sumber === 'penanganan') return cariPetugasPenanganan(props.token, kataKunci)
   if (props.sumber === 'ews_ranap') return cariPetugasEwsRanap(props.token, kataKunci)
+  if (props.sumber === 'implementasi_keperawatan') return cariPetugasImplementasiKeperawatan(props.token, kataKunci)
   return cariPetugasCppt(props.token, kataKunci)
 }
 </script>

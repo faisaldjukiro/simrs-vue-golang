@@ -266,6 +266,44 @@ export function hapusEwsRanap(token, payload) {
   })
 }
 
+export function implementasiKeperawatanData(token, noRawat) {
+  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+  return request(`/api/implementasi-keperawatan?${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function cariPetugasImplementasiKeperawatan(token, kataKunci) {
+  const query = new URLSearchParams({ q: kataKunci }).toString()
+  return request(`/api/implementasi-keperawatan/petugas?${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export function simpanImplementasiKeperawatan(token, payload) {
+  return request('/api/implementasi-keperawatan', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function ubahImplementasiKeperawatan(token, payload) {
+  return request('/api/implementasi-keperawatan', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function hapusImplementasiKeperawatan(token, payload) {
+  return request('/api/implementasi-keperawatan', {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
 export function penangananDokterPetugasData(token, noRawat, jenisRawat = 'ranap') {
   const query = new URLSearchParams({ no_rawat: noRawat, jenis_rawat: jenisRawat }).toString()
   return request(`/api/penanganan-dokter-petugas?${query}`, { headers: { Authorization: `Bearer ${token}` } })
