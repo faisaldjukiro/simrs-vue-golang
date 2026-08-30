@@ -127,6 +127,35 @@ Rekomendasi spacing:
 }
 ```
 
+## Struktur Halaman Frontend
+
+Halaman di dalam `frontend/src/Pages` hanya menangani susunan tampilan dan
+binding ke controller fitur. Proses pengambilan data, state, validasi, simpan,
+edit, dan hapus ditempatkan pada composable `useNamaFitur.js`.
+
+Style yang hanya digunakan satu fitur ditempatkan pada folder fitur. Style
+bersama seperti `clinical-form-card`, `clinical-button`, form input, dan tabel
+tetap berada pada stylesheet/component global.
+
+Contoh struktur:
+
+```text
+Pages/RawatInap/
+|-- VentilatorPage.vue
+`-- Ventilator/
+    |-- useVentilator.js
+    `-- ventilator.css
+```
+
+Aturan:
+
+- Jangan mengembalikan proses API atau validasi panjang ke dalam file Page.
+- Jangan memindahkan style global ke CSS fitur.
+- Pecah template menjadi komponen anak hanya jika bagiannya berdiri sendiri,
+  digunakan ulang, atau membuat Page sulit dibaca.
+- Pertahankan file `*Page.vue` sebagai entry point agar route dan pemetaan
+  `kode_sidebar` tetap stabil.
+
 ## Tabel
 
 Tabel SIRAPI harus:

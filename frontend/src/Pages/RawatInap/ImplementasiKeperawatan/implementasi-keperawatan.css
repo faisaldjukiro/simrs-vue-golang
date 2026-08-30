@@ -1,0 +1,9 @@
+.implementasi-page { color:var(--text); }
+.form-grid { display:grid; grid-template-columns:220px 180px minmax(300px,1fr); gap:12px; margin-bottom:14px; }
+.implementasi-uraian { width:100%; }
+.billing-lock { border-bottom:1px solid rgba(245,158,11,.24); padding:11px 20px; color:#b45309; background:rgba(245,158,11,.09); font-size:12px; }
+.implementasi-table-note { width:min(680px,58vw); }
+.implementasi-history-card :deep(.p-datatable-table) { min-width:1050px; }
+.implementasi-page :deep(.staff-search-results) { z-index:1000; }
+@media (max-width:850px) { .form-grid { grid-template-columns:1fr 1fr; }.petugas-field { grid-column:1/-1; }.implementasi-history-card :deep(.table-search) { width:100%; } }
+@media (max-width:540px) { .form-grid { grid-template-columns:1fr; }.petugas-field { grid-column:auto; }.implementasi-table-note { width:300px; } }
