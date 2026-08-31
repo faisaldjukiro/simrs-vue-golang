@@ -1,19 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import PrimeDataTable from 'primevue/datatable'
 
-defineProps({
-  rows: { type: Array, default: () => [] },
-  dataKey: { type: String, default: 'id' },
-  loading: Boolean,
-  emptyMessage: { type: String, default: 'Data tidak ditemukan.' },
-  loadingMessage: { type: String, default: 'Memuat data...' },
-  paginator: Boolean,
-  lazy: Boolean,
-  first: { type: Number, default: 0 },
-  rowsPerPage: { type: Number, default: 100 },
-  rowsPerPageOptions: { type: Array, default: () => [50, 100, 200, 500] },
-  totalRecords: { type: Number, default: 0 },
-  clickable: Boolean,
+withDefaults(defineProps<{
+  rows?: Record<string, any>[]
+  dataKey?: string
+  loading?: boolean
+  emptyMessage?: string
+  loadingMessage?: string
+  paginator?: boolean
+  lazy?: boolean
+  first?: number
+  rowsPerPage?: number
+  rowsPerPageOptions?: number[]
+  totalRecords?: number
+  clickable?: boolean
+}>(), {
+  rows: () => [],
+  dataKey: 'id',
+  loading: false,
+  emptyMessage: 'Data tidak ditemukan.',
+  loadingMessage: 'Memuat data...',
+  paginator: false,
+  lazy: false,
+  first: 0,
+  rowsPerPage: 100,
+  rowsPerPageOptions: () => [50, 100, 200, 500],
+  totalRecords: 0,
+  clickable: false,
 })
 
 const emit = defineEmits(['page', 'row-click'])

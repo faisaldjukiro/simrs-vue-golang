@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, useAttrs, useId } from 'vue'
 import Select from './Select.vue'
 
@@ -28,6 +28,8 @@ const props = defineProps({
 })
 
 const inputId = computed(() => props.id || generatedId)
+type ModeInput = 'none' | 'text' | 'search' | 'email' | 'tel' | 'url' | 'numeric' | 'decimal'
+const inputMode = computed<ModeInput | undefined>(() => props.inputmode as ModeInput | undefined)
 const rootClass = computed(() => ['form-input-field', attrs.class, { invalid: props.error }])
 const inheritedAttrs = computed(() => {
   const { class: _class, ...rest } = attrs
@@ -76,7 +78,7 @@ const inheritedAttrs = computed(() => {
       :type="type"
       :placeholder="placeholder"
       :maxlength="maxlength"
-      :inputmode="inputmode"
+      :inputmode="inputMode"
       :step="step"
       :required="required"
       :disabled="disabled"

@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 import InputPencarian from './InputPencarian.vue'
 import { cariDokterAwalMedisUmum, cariDokterAwalMedisRanap, cariDokterLaboratorium, cariDokterPenanganan, cariDokterRadiologi } from '../../lib/faisal/api'
 
-const model = defineModel({ default: () => ({}) })
+const model = defineModel<Record<string, any>>({ default: () => ({}) })
 const props = defineProps({
   token: { type: String, required: true },
   sumber: { type: String, default: 'penanganan' },

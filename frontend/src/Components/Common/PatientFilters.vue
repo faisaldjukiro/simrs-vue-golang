@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck -- komponen lama, tipe props akan dimigrasikan bertahap.
 import { computed, reactive, watch } from 'vue'
 import { ListFilter, LoaderCircle, Search } from '@lucide/vue'
 import DatePicker from '../Ui/DatePicker.vue'

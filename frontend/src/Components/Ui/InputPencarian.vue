@@ -1,27 +1,39 @@
-<script setup>
+<script setup lang="ts">
 import { Check, LoaderCircle, Search, X } from '@lucide/vue'
 import { onBeforeUnmount, ref, watch } from 'vue'
 
-const model = defineModel({ default: () => ({}) })
-const props = defineProps({
-  label: { type: String, required: true },
-  placeholder: { type: String, default: 'Ketik minimal 2 huruf...' },
-  search: { type: Function, required: true },
-  codeField: { type: String, default: 'kode' },
-  nameField: { type: String, default: 'nama' },
-  descriptionField: { type: String, default: '' },
-  rightField: { type: String, default: '' },
-  rightFormatter: { type: Function, default: null },
-  required: Boolean,
-  disabled: Boolean,
-  error: { type: String, default: '' },
+type ItemPencarian = Record<string, any>
+
+const model = defineModel<ItemPencarian>({ default: () => ({}) })
+const props = withDefaults(defineProps<{
+  label: string
+  placeholder?: string
+  search: (kataKunci: string) => Promise<ItemPencarian[]> | ItemPencarian[]
+  codeField?: string
+  nameField?: string
+  descriptionField?: string
+  rightField?: string
+  rightFormatter?: ((nilai: unknown, item: ItemPencarian) => unknown) | null
+  required?: boolean
+  disabled?: boolean
+  error?: string
+}>(), {
+  placeholder: 'Ketik minimal 2 huruf...',
+  codeField: 'kode',
+  nameField: 'nama',
+  descriptionField: '',
+  rightField: '',
+  rightFormatter: null,
+  required: false,
+  disabled: false,
+  error: '',
 })
 
 const query = ref('')
-const results = ref([])
+const results = ref<ItemPencarian[]>([])
 const loading = ref(false)
 const open = ref(false)
-let timer
+let timer: number | undefined
 let order = 0
 
 function pilih(item) {

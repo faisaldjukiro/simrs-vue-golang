@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
 import { CheckCircle2, Heart, MapPin, Server } from '@lucide/vue'
 
 defineProps({

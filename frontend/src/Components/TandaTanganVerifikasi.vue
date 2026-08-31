@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { QrCode } from '@lucide/vue'
 import { onMounted, ref, watch } from 'vue'
 

@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { X } from '@lucide/vue'
 import { ref, watch } from 'vue'
 import InputPencarian from './InputPencarian.vue'
 import { cariTindakanRadiologi } from '../../lib/faisal/api'
 
-const model = defineModel({ default: () => [] })
+const model = defineModel<Record<string, any>[]>({ default: () => [] })
 const props = defineProps({
   token: { type: String, required: true },
   noRawat: { type: String, required: true },
@@ -12,7 +12,7 @@ const props = defineProps({
   required: Boolean,
 })
 
-const pilihan = ref({})
+const pilihan = ref<Record<string, any>>({})
 const rupiah = (value) => new Intl.NumberFormat('id-ID', {
   style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
 }).format(Number(value || 0))

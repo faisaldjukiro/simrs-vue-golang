@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Search, X } from '@lucide/vue'
 
 const model = defineModel({ default: '' })

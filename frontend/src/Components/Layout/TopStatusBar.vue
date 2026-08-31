@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { CalendarClock, Moon, Sun, UserRound, UsersRound } from '@lucide/vue'
 
 defineProps({

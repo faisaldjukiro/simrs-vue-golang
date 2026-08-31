@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
 const props = defineProps({
   currentTab: { type: String, required: true },
   menus: { type: Array, required: true },

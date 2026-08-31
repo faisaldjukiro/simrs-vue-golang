@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import InputPencarian from './InputPencarian.vue'
 import { cariPetugasCppt, cariPetugasEwsRanap, cariPetugasImplementasiKeperawatan, cariPetugasPenanganan } from '../../lib/faisal/api'
 
-const model = defineModel({ default: () => ({}) })
+const model = defineModel<Record<string, any>>({ default: () => ({}) })
 const props = defineProps({
   token: { type: String, required: true },
   sumber: { type: String, default: 'cppt' },

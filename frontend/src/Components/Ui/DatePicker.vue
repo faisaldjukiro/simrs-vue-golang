@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import PrimeDatePicker from 'primevue/datepicker'
 
 const model = defineModel({ default: null })

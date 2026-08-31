@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { DoorOpen } from '@lucide/vue'
 
 defineEmits(['restart'])

@@ -1,10 +1,11 @@
-<script setup>
+<script setup lang="ts">
+// @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
 import { X } from '@lucide/vue'
 import { ref, watch } from 'vue'
 import { cariTindakanLaboratorium, detailTindakanLaboratorium } from '../../lib/faisal/api'
 import InputPencarian from './InputPencarian.vue'
 
-const model = defineModel({ default: () => [] })
+const model = defineModel<Record<string, any>[]>({ default: () => [] })
 const props = defineProps({
   token: { type: String, required: true },
   noRawat: { type: String, required: true },
@@ -12,7 +13,7 @@ const props = defineProps({
   required: Boolean,
 })
 
-const pilihan = ref({})
+const pilihan = ref<Record<string, any>>({})
 const loadingDetail = ref('')
 const detailError = ref('')
 const rupiah = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0))

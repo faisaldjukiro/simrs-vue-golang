@@ -131,30 +131,35 @@ Rekomendasi spacing:
 
 Halaman di dalam `frontend/src/Pages` hanya menangani susunan tampilan dan
 binding ke controller fitur. Proses pengambilan data, state, validasi, simpan,
-edit, dan hapus ditempatkan pada composable `useNamaFitur.js`.
+edit, dan hapus ditempatkan pada composable TypeScript `useNamaFitur.ts`.
 
 Style yang hanya digunakan satu fitur ditempatkan pada folder fitur. Style
 bersama seperti `clinical-form-card`, `clinical-button`, form input, dan tabel
 tetap berada pada stylesheet/component global.
 
-Contoh struktur:
+Setiap tampilan, composable, dan stylesheet khusus fitur ditempatkan dalam
+satu folder fitur. Contoh struktur:
 
 ```text
 Pages/RawatInap/
-|-- VentilatorPage.vue
 `-- Ventilator/
-    |-- useVentilator.js
+    |-- VentilatorPage.vue
+    |-- useVentilator.ts
     `-- ventilator.css
 ```
 
 Aturan:
 
+- Jangan menaruh `*Page.vue` di luar folder fiturnya.
 - Jangan mengembalikan proses API atau validasi panjang ke dalam file Page.
+- Gunakan TypeScript (`.ts` dan `<script setup lang="ts">`) untuk kode baru.
+- Gunakan tipe dari `frontend/src/types` dan jangan menambah `@ts-nocheck`
+  baru; penanda yang ada hanya untuk migrasi modul lama secara bertahap.
 - Jangan memindahkan style global ke CSS fitur.
 - Pecah template menjadi komponen anak hanya jika bagiannya berdiri sendiri,
   digunakan ulang, atau membuat Page sulit dibaca.
-- Pertahankan file `*Page.vue` sebagai entry point agar route dan pemetaan
-  `kode_sidebar` tetap stabil.
+- Pertahankan file `*Page.vue` sebagai entry point di dalam folder fitur dan
+  perbarui path import pemetaan `kode_sidebar` saat folder dipindahkan.
 
 ## Tabel
 
@@ -208,7 +213,7 @@ user meminta lagi.
 Gunakan PrimeVue toast melalui helper:
 
 ```text
-frontend/src/lib/shared/useNotifikasi.js
+frontend/src/lib/shared/useNotifikasi.ts
 ```
 
 Jangan gunakan alert browser untuk flow normal kecuali konfirmasi sederhana

@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import LoginPage from './Components/LoginPage.vue'
 import Toast from './Components/Ui/Toast.vue'
-import HomePage from './Pages/Home.vue'
+import HomePage from './Pages/Home/Home.vue'
 import { currentUser, login, logout } from './lib/faisal/api'
 import { useNotifikasi } from './lib/shared/useNotifikasi'
 

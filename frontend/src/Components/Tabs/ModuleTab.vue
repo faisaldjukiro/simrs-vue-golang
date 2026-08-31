@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { LoaderCircle } from '@lucide/vue'
 import Column from 'primevue/column'

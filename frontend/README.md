@@ -36,21 +36,21 @@ src/
 |       `-- ModulePlaceholder.vue
 `-- lib/
     |-- shared/
-    |   |-- http.js             # helper request API bersama
-    |   `-- useNotifikasi.js    # helper toast PrimeVue
+    |   |-- http.ts             # helper request API bersama
+    |   `-- useNotifikasi.ts    # helper toast PrimeVue
     |-- faisal/
-    |   `-- api.js              # function/query API milik Faisal
+    |   `-- api.ts              # function/query API milik Faisal
     `-- sahrul/
-        `-- api.js              # function/query API milik Sahrul
+        `-- api.ts              # function/query API milik Sahrul
 ```
 
 Struktur Vue mengikuti pola `simrs-lama`: `Pages/` untuk halaman besar, `Components/Tabs/` untuk isi tab dashboard, `Components/` untuk komponen yang dipakai ulang, lalu `composables/` dan `Data/` bisa ditambahkan nanti jika sudah dibutuhkan.
 
 Untuk menghindari tabrakan kerja, function API/query frontend dipisah per programmer:
 
-- Faisal menaruh function API di `src/lib/faisal/api.js`.
-- Sahrul menaruh function API di `src/lib/sahrul/api.js`.
-- Helper koneksi API bersama berada di `src/lib/shared/http.js`.
+- Faisal menaruh function API di `src/lib/faisal/api.ts`.
+- Sahrul menaruh function API di `src/lib/sahrul/api.ts`.
+- Helper koneksi API bersama berada di `src/lib/shared/http.ts`.
 
 Page CRUD seperti rawat jalan, rawat inap, IGD, farmasi, dan lainnya belum dibuat. Nanti jika modul CRUD mulai dikerjakan, buat file page baru di `src/Pages/` sesuai modulnya.
 
@@ -116,7 +116,13 @@ VITE_API_URL=http://127.0.0.1:8080
 ## Build production
 
 ```powershell
+npm run type-check
 npm run build
 ```
+
+Frontend menggunakan TypeScript. File Vue memakai `<script setup lang="ts">`,
+entry point berada di `src/main.ts`, dan tipe domain bersama berada di
+`src/types/domain.ts`. Modul lama yang kontrak datanya masih dinamis ditandai
+untuk migrasi tipe bertahap; kode baru tidak boleh menambah `@ts-nocheck`.
 
 Hasil build berada di folder `dist`.

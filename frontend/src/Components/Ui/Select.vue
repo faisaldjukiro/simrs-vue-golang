@@ -1,23 +1,34 @@
-<script setup>
+<script setup lang="ts">
 import { computed, useAttrs } from 'vue'
 import PrimeSelect from 'primevue/select'
 
-const model = defineModel({ default: '' })
+const model = defineModel<any>({ default: '' })
 const attrs = useAttrs()
 
 defineOptions({ inheritAttrs: false })
 
-defineProps({
-  options: { type: Array, default: () => [] },
-  optionLabel: { type: String, default: 'label' },
-  optionValue: { type: String, default: 'value' },
-  placeholder: { type: String, default: 'Pilih Data' },
-  emptyMessage: { type: String, default: 'Data tidak ditemukan' },
-  filterPlaceholder: { type: String, default: 'Cari data' },
-  appendTo: { type: [String, Object], default: 'self' },
-  overlayClass: { type: [String, Object], default: undefined },
-  filter: Boolean,
-  disabled: Boolean,
+withDefaults(defineProps<{
+  options?: unknown[]
+  optionLabel?: string
+  optionValue?: string
+  placeholder?: string
+  emptyMessage?: string
+  filterPlaceholder?: string
+  appendTo?: 'self' | 'body' | HTMLElement
+  overlayClass?: string | Record<string, boolean>
+  filter?: boolean
+  disabled?: boolean
+}>(), {
+  options: () => [],
+  optionLabel: 'label',
+  optionValue: 'value',
+  placeholder: 'Pilih Data',
+  emptyMessage: 'Data tidak ditemukan',
+  filterPlaceholder: 'Cari data',
+  appendTo: 'self',
+  overlayClass: undefined,
+  filter: false,
+  disabled: false,
 })
 
 const atributTurunan = computed(() => {
