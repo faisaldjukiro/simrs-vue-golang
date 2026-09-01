@@ -16,12 +16,13 @@ const (
 )
 
 type Pengguna struct {
-	ID           uint64 `json:"id"`
-	Username     string `json:"username"`
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"-"`
-	IsActive     bool   `json:"is_active"`
+	ID           uint64   `json:"id"`
+	Username     string   `json:"username"`
+	Name         string   `json:"name"`
+	Email        string   `json:"email"`
+	PasswordHash string   `json:"-"`
+	IsActive     bool     `json:"is_active"`
+	Permissions  []string `json:"permissions"`
 }
 
 type PenggunaSIMRS struct {
@@ -59,6 +60,9 @@ func (r *Repositori) CariPenggunaByUsername(ctx context.Context, username string
 		&user.IsActive,
 	)
 	if err != nil {
+		return Pengguna{}, err
+	}
+	if err := r.isiPermissions(ctx, &user); err != nil {
 		return Pengguna{}, err
 	}
 	return user, nil
@@ -149,12 +153,39 @@ func (r *Repositori) CariPenggunaByToken(ctx context.Context, tokenHash string) 
 	if err != nil {
 		return Pengguna{}, err
 	}
+	if err := r.isiPermissions(ctx, &user); err != nil {
+		return Pengguna{}, err
+	}
 
 	_, _ = r.db.ExecContext(ctx, `
 		UPDATE access_tokens SET last_used_at = UTC_TIMESTAMP()
 		WHERE token_hash = ?
 	`, tokenHash)
 	return user, nil
+}
+
+func (r *Repositori) isiPermissions(ctx context.Context, user *Pengguna) error {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT permissions.code
+		FROM user_permissions
+		INNER JOIN permissions ON permissions.id = user_permissions.permission_id
+		WHERE user_permissions.user_id = ?
+		ORDER BY permissions.code
+	`, user.ID)
+	if err != nil {
+		return fmt.Errorf("load user permissions: %w", err)
+	}
+	defer rows.Close()
+
+	user.Permissions = make([]string, 0)
+	for rows.Next() {
+		var code string
+		if err := rows.Scan(&code); err != nil {
+			return fmt.Errorf("scan user permission: %w", err)
+		}
+		user.Permissions = append(user.Permissions, code)
+	}
+	return rows.Err()
 }
 
 func (r *Repositori) HapusToken(ctx context.Context, tokenHash string) error {

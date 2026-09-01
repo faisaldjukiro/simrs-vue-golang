@@ -282,8 +282,29 @@ export function useHome(props, emit) {
   }
   
   function isMenuDisabled(label) {
-    if (isAuthenticated.value) return false
-    return !['Menu', 'Beranda', 'Login', 'Logout'].includes(label)
+    if (['Menu', 'Beranda', 'Login', 'Logout'].includes(label)) return false
+    if (!isAuthenticated.value) return true
+
+    const permissions = Array.isArray(props.user?.permissions) ? props.user.permissions : []
+    if (permissions.includes('*')) return false
+
+    const aksesMenu = {
+      Registrasi: ['registrasi'],
+      'IGD/UGD': ['igd'],
+      Laborat: ['periksa_lab', 'permintaan_lab'],
+      Radiologi: ['periksa_radiologi', 'permintaan_radiologi'],
+      Farmasi: ['obat', 'beri_obat', 'resep_obat'],
+      'Rawat Inap': ['kamar_inap', 'daftar_pasien_ranap'],
+      'Rawat Jalan': ['registrasi', 'tindakan_ralan', 'billing_ralan'],
+      IDRG: ['eklaim'],
+      'WhatsApp Gateway': ['whatsapp_gateway'],
+      'Kelola Menu': ['kelola_menu'],
+      'Master Ventilator': ['master_ventilator'],
+      'User Management': ['*'],
+      'Log Aktivitas': ['sistem.audit_log'],
+    }
+    const dibutuhkan = aksesMenu[label] || []
+    return dibutuhkan.length === 0 || !dibutuhkan.some((kode) => permissions.includes(kode))
   }
   
   async function loadDashboard(filterPerModul = patientFilters.value) {

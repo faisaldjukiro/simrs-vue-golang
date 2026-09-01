@@ -22,6 +22,7 @@ const form = reactive({ username: '', password: '', remember: false })
 const showPassword = ref(false)
 const loaded = ref(false)
 const year = computed(() => new Date().getFullYear())
+const themeClass = localStorage.getItem('simrs_theme') === 'light' ? 'theme-light' : 'theme-dark'
 
 onMounted(() => window.setTimeout(() => { loaded.value = true }, 80))
 
@@ -31,7 +32,7 @@ function submit() {
 </script>
 
 <template>
-  <main class="login-page">
+  <main class="login-page" :class="themeClass">
     <div class="background-gradient"></div>
     <div class="ambient" aria-hidden="true">
       <span class="orb orb-one"></span>

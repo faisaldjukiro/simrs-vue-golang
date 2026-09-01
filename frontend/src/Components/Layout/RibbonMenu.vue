@@ -26,6 +26,8 @@ function selectMenu(label) {
         `tone-${item.tone}`,
       ]"
       :disabled="isMenuDisabled(item.label)"
+      :title="isMenuDisabled(item.label) ? 'Anda tidak memiliki akses ke modul ini' : item.label"
+      :aria-label="isMenuDisabled(item.label) ? `${item.label} - tidak memiliki akses` : item.label"
       @click="selectMenu(item.label)"
     >
       <component :is="item.icon" :size="20" />

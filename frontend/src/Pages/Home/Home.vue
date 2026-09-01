@@ -81,6 +81,7 @@ const {
       :quick-stats="quickStats"
       :service-statuses="serviceStatuses"
       :is-authenticated="isAuthenticated"
+      :is-menu-disabled="isMenuDisabled"
       @select-tab="selectMenu"
     />
 

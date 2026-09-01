@@ -8,6 +8,7 @@ defineProps({
   quickStats: { type: Array, required: true },
   serviceStatuses: { type: Array, required: true },
   isAuthenticated: Boolean,
+  isMenuDisabled: { type: Function, default: () => false },
 })
 
 const emit = defineEmits(['select-tab'])
@@ -35,7 +36,7 @@ const emit = defineEmits(['select-tab'])
       </article>
 
       <div class="quick-stats">
-        <button v-for="stat in quickStats" :key="stat.label" type="button" :disabled="!isAuthenticated" @click="emit('select-tab', stat.tab)">
+        <button v-for="stat in quickStats" :key="stat.label" type="button" :disabled="isMenuDisabled(stat.tab)" :title="isMenuDisabled(stat.tab) ? 'Anda tidak memiliki akses ke modul ini' : stat.label" @click="emit('select-tab', stat.tab)">
           <div><strong>{{ stat.value }}</strong><span :class="`tone-bg-${stat.tone}`"><component :is="stat.icon" :size="20" /></span></div>
           <p>{{ stat.label }}</p>
         </button>

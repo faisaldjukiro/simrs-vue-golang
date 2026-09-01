@@ -11,6 +11,7 @@ const loading = ref(false)
 const checkingSession = ref(true)
 const errorMessage = ref('')
 const loginModalOpen = ref(false)
+const logoutConfirmOpen = ref(false)
 const notifikasi = useNotifikasi()
 
 function savedToken() {
@@ -88,9 +89,15 @@ async function handleLogout() {
   } finally {
     clearNavigation()
     clearSession()
+    logoutConfirmOpen.value = false
     loading.value = false
     notifikasi.info('Anda sudah logout dari SIRAPI.')
   }
+}
+
+function requestLogout() {
+  if (loading.value) return
+  logoutConfirmOpen.value = true
 }
 </script>
 
@@ -109,7 +116,7 @@ async function handleLogout() {
       :token="savedToken() || ''"
       :loading="loading"
       @login="openLoginModal"
-      @logout="handleLogout"
+      @logout="requestLogout"
     />
 
     <Transition name="modal-fade">
@@ -123,6 +130,20 @@ async function handleLogout() {
             @submit="handleLogin"
           />
         </div>
+      </div>
+    </Transition>
+
+    <Transition name="modal-fade">
+      <div v-if="logoutConfirmOpen" class="logout-confirm-backdrop" @click.self="logoutConfirmOpen = false">
+        <section class="logout-confirm-card" role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title">
+          <div class="logout-confirm-icon" aria-hidden="true">↪</div>
+          <h2 id="logout-confirm-title">Keluar dari SIRAPI?</h2>
+          <p>Sesi Anda akan diakhiri dan halaman kerja yang sedang dibuka akan ditutup.</p>
+          <div class="logout-confirm-actions">
+            <button type="button" class="secondary" :disabled="loading" @click="logoutConfirmOpen = false">Tidak, kembali</button>
+            <button type="button" class="danger" :disabled="loading" @click="handleLogout">{{ loading ? 'Mengeluarkan...' : 'Ya, logout' }}</button>
+          </div>
+        </section>
       </div>
     </Transition>
   </template>
