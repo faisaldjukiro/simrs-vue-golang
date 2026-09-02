@@ -8,6 +8,7 @@ import AktivitasLogPage from "../Sistem/AktivitasLog/AktivitasLogPage.vue"
 import KelolaMenuPage from "../Sistem/KelolaMenu/KelolaMenuPage.vue"
 import WhatsAppGatewayPage from "../Integrasi/WhatsAppGateway/WhatsAppGatewayPage.vue"
 import MasterVentilatorPage from "../Sistem/MasterVentilator/MasterVentilatorPage.vue"
+import KunjunganRalanPage from "../Laporan/KunjunganRalan/KunjunganRalanPage.vue"
 import ModulePlaceholder from "../../Components/Tabs/ModulePlaceholder.vue"
 import ModuleTab from "../../Components/Tabs/ModuleTab.vue"
 import UserManagementTab from "../../Components/Tabs/UserManagementTab.vue"
@@ -154,6 +155,11 @@ const {
 
     <MasterVentilatorPage
       v-else-if="currentTab === 'Master Ventilator'"
+      :token="token"
+    />
+
+    <KunjunganRalanPage
+      v-else-if="currentTab === 'Laporan Kunjungan Ralan'"
       :token="token"
     />
 

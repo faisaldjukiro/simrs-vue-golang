@@ -162,6 +162,7 @@ export function useHome(props, emit) {
     { label: 'Master Ventilator', description: 'Kelola perangkat ventilator dan jadwal pemeliharaannya.', icon: Wind, tone: 'cyan' },
     { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
     { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate' },
+    { label: 'Laporan Kunjungan Ralan', description: 'Laporan kunjungan rawat jalan berdasarkan periode dan pelayanan.', icon: FileSpreadsheet, tone: 'emerald' },
   ]
   
   const filteredMenus = computed(() => {
@@ -302,6 +303,7 @@ export function useHome(props, emit) {
       'Master Ventilator': ['master_ventilator'],
       'User Management': ['*'],
       'Log Aktivitas': ['sistem.audit_log'],
+      'Laporan Kunjungan Ralan': ['laporan_kunjungan_ralan'],
     }
     const dibutuhkan = aksesMenu[label] || []
     return dibutuhkan.length === 0 || !dibutuhkan.some((kode) => permissions.includes(kode))
@@ -433,7 +435,7 @@ export function useHome(props, emit) {
   
   function selectMenu(label) {
     if (isMenuDisabled(label)) {
-      notifikasi.peringatan('Silakan login dulu untuk membuka menu ini.')
+      notifikasi.peringatan(isAuthenticated.value ? 'Anda tidak memiliki akses ke modul ini.' : 'Silakan login dulu untuk membuka menu ini.')
       return
     }
   

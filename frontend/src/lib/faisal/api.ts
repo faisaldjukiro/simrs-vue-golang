@@ -642,3 +642,10 @@ export function hapusAwalMedisIgd(token, noRawat) {
   const query = new URLSearchParams({ no_rawat: noRawat }).toString()
   return request(`/api/awal-medis-igd?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
+
+export function laporanKunjunganRalanData(token, params) {
+  return request(`/api/laporan-kunjungan-ralan?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+export function cariReferensiLaporanKunjunganRalan(token, jenis, q) {
+  return request(`/api/laporan-kunjungan-ralan/referensi?${new URLSearchParams({ jenis, q })}`, { headers: { Authorization: `Bearer ${token}` } })
+}
