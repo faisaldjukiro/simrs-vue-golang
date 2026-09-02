@@ -21,6 +21,7 @@ INSERT INTO permissions (`group`, name, code, created_at, updated_at) VALUES
     ('Integrasi', 'WhatsApp Gateway', 'whatsapp_gateway', NOW(), NOW()),
     ('Sistem', 'Akses Penuh', '*', NOW(), NOW())
     ,('Laporan', 'Laporan Kunjungan Rawat Jalan', 'laporan_kunjungan_ralan', NOW(), NOW())
+    ,('Laporan', 'Laporan Kunjungan Rawat Inap', 'laporan_kunjungan_ranap', NOW(), NOW())
 ON DUPLICATE KEY UPDATE
     `group` = VALUES(`group`),
     name = VALUES(name),
@@ -182,6 +183,10 @@ WHERE NOT EXISTS (SELECT 1 FROM menu_navigasi WHERE tipe='dashboard' AND label='
 INSERT INTO menu_navigasi (tipe,label,deskripsi,ikon,tone,route,permissions,urutan,aktif,created_at,updated_at)
 SELECT 'dashboard','Laporan Kunjungan Ralan','Laporan kunjungan rawat jalan berdasarkan periode dan filter pelayanan.','FileBarChart','emerald',NULL,JSON_ARRAY('laporan_kunjungan_ralan'),13,TRUE,NOW(),NOW()
 WHERE NOT EXISTS (SELECT 1 FROM menu_navigasi WHERE tipe='dashboard' AND label='Laporan Kunjungan Ralan');
+
+INSERT INTO menu_navigasi (tipe,label,deskripsi,ikon,tone,route,permissions,urutan,aktif,created_at,updated_at)
+SELECT 'dashboard','Laporan Kunjungan Ranap','Laporan pasien masuk, pulang, dan kunjungan berulang rawat inap.','ChartNoAxesCombined','indigo',NULL,JSON_ARRAY('laporan_kunjungan_ranap'),14,TRUE,NOW(),NOW()
+WHERE NOT EXISTS (SELECT 1 FROM menu_navigasi WHERE tipe='dashboard' AND label='Laporan Kunjungan Ranap');
 
 INSERT INTO sidebar_pasien (kode_sidebar,nama_sidebar,ikon,daftar_modul,urutan,aktif,created_at,updated_at)
 SELECT 'ventilator','Ventilator','Wind',JSON_ARRAY('Rawat Inap'),49,TRUE,NOW(),NOW()

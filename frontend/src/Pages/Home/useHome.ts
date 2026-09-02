@@ -163,6 +163,7 @@ export function useHome(props, emit) {
     { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
     { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate' },
     { label: 'Laporan Kunjungan Ralan', description: 'Laporan kunjungan rawat jalan berdasarkan periode dan pelayanan.', icon: FileSpreadsheet, tone: 'emerald' },
+    { label: 'Laporan Kunjungan Ranap', description: 'Laporan pasien masuk, pulang, dan kunjungan berulang rawat inap.', icon: FileSpreadsheet, tone: 'indigo' },
   ]
   
   const filteredMenus = computed(() => {
@@ -304,6 +305,7 @@ export function useHome(props, emit) {
       'User Management': ['*'],
       'Log Aktivitas': ['sistem.audit_log'],
       'Laporan Kunjungan Ralan': ['laporan_kunjungan_ralan'],
+      'Laporan Kunjungan Ranap': ['laporan_kunjungan_ranap'],
     }
     const dibutuhkan = aksesMenu[label] || []
     return dibutuhkan.length === 0 || !dibutuhkan.some((kode) => permissions.includes(kode))

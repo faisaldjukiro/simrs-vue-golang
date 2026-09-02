@@ -9,6 +9,7 @@ import KelolaMenuPage from "../Sistem/KelolaMenu/KelolaMenuPage.vue"
 import WhatsAppGatewayPage from "../Integrasi/WhatsAppGateway/WhatsAppGatewayPage.vue"
 import MasterVentilatorPage from "../Sistem/MasterVentilator/MasterVentilatorPage.vue"
 import KunjunganRalanPage from "../Laporan/KunjunganRalan/KunjunganRalanPage.vue"
+import KunjunganRanapPage from "../Laporan/KunjunganRanap/KunjunganRanapPage.vue"
 import ModulePlaceholder from "../../Components/Tabs/ModulePlaceholder.vue"
 import ModuleTab from "../../Components/Tabs/ModuleTab.vue"
 import UserManagementTab from "../../Components/Tabs/UserManagementTab.vue"
@@ -162,6 +163,7 @@ const {
       v-else-if="currentTab === 'Laporan Kunjungan Ralan'"
       :token="token"
     />
+    <KunjunganRanapPage v-else-if="currentTab === 'Laporan Kunjungan Ranap'" :token="token" />
 
     <ModulePlaceholder
       v-else

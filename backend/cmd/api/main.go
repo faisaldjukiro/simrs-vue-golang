@@ -49,6 +49,8 @@ import (
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	"simrs-backend/internal/modules/laporan_kunjungan_ralan"
 	laporankunjunganralanhttp "simrs-backend/internal/modules/laporan_kunjungan_ralan/delivery/http"
+	"simrs-backend/internal/modules/laporan_kunjungan_ranap"
+	laporankunjunganranaphttp "simrs-backend/internal/modules/laporan_kunjungan_ranap/delivery/http"
 	"simrs-backend/internal/modules/manajemen_pengguna"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	"simrs-backend/internal/modules/penanganan_dokter_petugas"
@@ -144,6 +146,7 @@ func main() {
 	idrgHandler := idrghttp.NewHandler(idrgRepositori, idrg.NewLayanan(idrgRepositori, eklaimConfig))
 	kelolaMenuHandler := kelolamenuhttp.NewHandler(kelola_menu.NewRepositori(db))
 	laporanKunjunganRalanHandler := laporankunjunganralanhttp.NewHandler(laporan_kunjungan_ralan.NewRepositori(simrsDB))
+	laporanKunjunganRanapHandler := laporankunjunganranaphttp.NewHandler(laporan_kunjungan_ranap.NewRepositori(simrsDB))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
 	cpptRepositori := cppt.NewRepositori(db, simrsDB)
 	cpptHandler := cppthttp.NewHandler(cppt.NewLayanan(cpptRepositori))
@@ -203,6 +206,7 @@ func main() {
 		IDRG:                    idrgHandler,
 		KelolaMenu:              kelolaMenuHandler,
 		LaporanKunjunganRalan:   laporanKunjunganRalanHandler,
+		LaporanKunjunganRanap:   laporanKunjunganRanapHandler,
 		ManajemenPengguna:       manajemenPenggunaHandler,
 		CPPT:                    cpptHandler,
 		DiagnosaPasien:          diagnosaPasienHandler,

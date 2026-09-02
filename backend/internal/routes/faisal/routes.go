@@ -23,6 +23,7 @@ import (
 	implementasikeperawatanhttp "simrs-backend/internal/modules/implementasi_keperawatan/delivery/http"
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	laporankunjunganralanhttp "simrs-backend/internal/modules/laporan_kunjungan_ralan/delivery/http"
+	laporankunjunganranaphttp "simrs-backend/internal/modules/laporan_kunjungan_ranap/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
@@ -51,6 +52,7 @@ type Dependencies struct {
 	IDRG                    *idrghttp.Handler
 	KelolaMenu              *kelolamenuhttp.Handler
 	LaporanKunjunganRalan   *laporankunjunganralanhttp.Handler
+	LaporanKunjunganRanap   *laporankunjunganranaphttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
 	CPPT                    *cppthttp.Handler
 	DiagnosaPasien          *diagnosapasienhttp.Handler
@@ -89,6 +91,9 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	laporanKunjunganGroup := protectedAPI.Group("/laporan-kunjungan-ralan")
 	laporanKunjunganGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_kunjungan_ralan"))
 	dependencies.LaporanKunjunganRalan.Register(laporanKunjunganGroup)
+	laporanRanapGroup := protectedAPI.Group("/laporan-kunjungan-ranap")
+	laporanRanapGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_kunjungan_ranap"))
+	dependencies.LaporanKunjunganRanap.Register(laporanRanapGroup)
 	whatsAppGatewayGroup := protectedAPI.Group("/whatsapp-gateway")
 	whatsAppGatewayGroup.Use(dependencies.Autentikasi.WajibPermission("whatsapp_gateway"))
 	dependencies.WhatsAppGateway.Register(whatsAppGatewayGroup)

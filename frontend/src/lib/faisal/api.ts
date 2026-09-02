@@ -649,3 +649,5 @@ export function laporanKunjunganRalanData(token, params) {
 export function cariReferensiLaporanKunjunganRalan(token, jenis, q) {
   return request(`/api/laporan-kunjungan-ralan/referensi?${new URLSearchParams({ jenis, q })}`, { headers: { Authorization: `Bearer ${token}` } })
 }
+export function laporanKunjunganRanapData(token, params) { return request(`/api/laporan-kunjungan-ranap?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${token}` } }) }
+export function cariReferensiLaporanKunjunganRanap(token, jenis, q) { return request(`/api/laporan-kunjungan-ranap/referensi?${new URLSearchParams({ jenis, q })}`, { headers: { Authorization: `Bearer ${token}` } }) }
