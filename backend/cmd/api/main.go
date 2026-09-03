@@ -47,6 +47,8 @@ import (
 	implementasikeperawatanhttp "simrs-backend/internal/modules/implementasi_keperawatan/delivery/http"
 	"simrs-backend/internal/modules/kelola_menu"
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
+	"simrs-backend/internal/modules/laporan_10_penyakit"
+	laporan10penyakithttp "simrs-backend/internal/modules/laporan_10_penyakit/delivery/http"
 	"simrs-backend/internal/modules/laporan_kunjungan_ralan"
 	laporankunjunganralanhttp "simrs-backend/internal/modules/laporan_kunjungan_ralan/delivery/http"
 	"simrs-backend/internal/modules/laporan_kunjungan_ranap"
@@ -145,6 +147,9 @@ func main() {
 	idrgRepositori := idrg.NewRepositori(simrsDB)
 	idrgHandler := idrghttp.NewHandler(idrgRepositori, idrg.NewLayanan(idrgRepositori, eklaimConfig))
 	kelolaMenuHandler := kelolamenuhttp.NewHandler(kelola_menu.NewRepositori(db))
+	laporan10PenyakitHandler := laporan10penyakithttp.NewHandler(
+		laporan_10_penyakit.NewRepositori(simrsDB),
+	)
 	laporanKunjunganRalanHandler := laporankunjunganralanhttp.NewHandler(laporan_kunjungan_ralan.NewRepositori(simrsDB))
 	laporanKunjunganRanapHandler := laporankunjunganranaphttp.NewHandler(laporan_kunjungan_ranap.NewRepositori(simrsDB))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
@@ -205,6 +210,7 @@ func main() {
 		BPJSDataKlaim:           bpjsDataKlaimHandler,
 		IDRG:                    idrgHandler,
 		KelolaMenu:              kelolaMenuHandler,
+		Laporan10Penyakit:       laporan10PenyakitHandler,
 		LaporanKunjunganRalan:   laporanKunjunganRalanHandler,
 		LaporanKunjunganRanap:   laporanKunjunganRanapHandler,
 		ManajemenPengguna:       manajemenPenggunaHandler,

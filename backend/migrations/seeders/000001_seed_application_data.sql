@@ -22,6 +22,7 @@ INSERT INTO permissions (`group`, name, code, created_at, updated_at) VALUES
     ('Sistem', 'Akses Penuh', '*', NOW(), NOW())
     ,('Laporan', 'Laporan Kunjungan Rawat Jalan', 'laporan_kunjungan_ralan', NOW(), NOW())
     ,('Laporan', 'Laporan Kunjungan Rawat Inap', 'laporan_kunjungan_ranap', NOW(), NOW())
+    ,('Laporan', 'Laporan 10 Penyakit', 'laporan_10_penyakit', NOW(), NOW())
 ON DUPLICATE KEY UPDATE
     `group` = VALUES(`group`),
     name = VALUES(name),
@@ -187,6 +188,10 @@ WHERE NOT EXISTS (SELECT 1 FROM menu_navigasi WHERE tipe='dashboard' AND label='
 INSERT INTO menu_navigasi (tipe,label,deskripsi,ikon,tone,route,permissions,urutan,aktif,created_at,updated_at)
 SELECT 'dashboard','Laporan Kunjungan Ranap','Laporan pasien masuk, pulang, dan kunjungan berulang rawat inap.','ChartNoAxesCombined','indigo',NULL,JSON_ARRAY('laporan_kunjungan_ranap'),14,TRUE,NOW(),NOW()
 WHERE NOT EXISTS (SELECT 1 FROM menu_navigasi WHERE tipe='dashboard' AND label='Laporan Kunjungan Ranap');
+
+INSERT INTO menu_navigasi (tipe,label,deskripsi,ikon,tone,route,permissions,urutan,aktif,created_at,updated_at)
+SELECT 'dashboard','Laporan 10 Penyakit','Rekap 10 penyakit terbanyak berdasarkan periode pelayanan.','ChartBarBig','rose',NULL,JSON_ARRAY('laporan_10_penyakit'),15,TRUE,NOW(),NOW()
+WHERE NOT EXISTS (SELECT 1 FROM menu_navigasi WHERE tipe='dashboard' AND label='Laporan 10 Penyakit');
 
 INSERT INTO sidebar_pasien (kode_sidebar,nama_sidebar,ikon,daftar_modul,urutan,aktif,created_at,updated_at)
 SELECT 'ventilator','Ventilator','Wind',JSON_ARRAY('Rawat Inap'),49,TRUE,NOW(),NOW()
