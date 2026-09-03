@@ -86,11 +86,16 @@ func (r *Repositori) Daftar(ctx context.Context, f Filter) (Hasil, error) {
 	if f.Jenis == "berulang" {
 		return r.berulang(ctx, f)
 	}
-	tanggal := "ki.tgl_masuk"
+	// DlgKunjunganRanap.tampil() memakai tanggal registrasi untuk pasien masuk,
+	// sedangkan tampil2() memakai tanggal keluar untuk pasien pulang.
+	tanggal := "rp.tgl_registrasi"
+	where := []string{"rp.status_lanjut='Ranap'", "rp.stts<>'Batal'", "ki.stts_pulang<>'Pindah Kamar'"}
 	if f.Jenis == "pulang" {
 		tanggal = "ki.tgl_keluar"
+		// Query pasien pulang lama tidak membatasi status_lanjut maupun stts registrasi.
+		where = []string{"ki.stts_pulang<>'Pindah Kamar'"}
 	}
-	where := []string{"rp.status_lanjut='Ranap'", "rp.stts<>'Batal'", "ki.stts_pulang<>'Pindah Kamar'", tanggal + " BETWEEN ? AND ?"}
+	where = append(where, tanggal+" BETWEEN ? AND ?")
 	args := []any{f.TanggalMulai, f.TanggalSelesai}
 	filters := [][2]string{{f.Status, "rp.stts_daftar"}, {f.Bangsal, "b.nm_bangsal"}, {f.Penjamin, "pj.png_jawab"}, {f.Kabupaten, "kab.nm_kab"}, {f.Kecamatan, "kec.nm_kec"}, {f.Kelurahan, "kel.nm_kel"}}
 	for _, x := range filters {
@@ -110,7 +115,7 @@ func (r *Repositori) Daftar(ctx context.Context, f Filter) (Hasil, error) {
 			args = append(args, like)
 		}
 	}
-	query := `SELECT rp.no_rawat,DATE_FORMAT(ki.tgl_masuk,'%Y-%m-%d'),DATE_FORMAT(ki.tgl_keluar,'%Y-%m-%d'),rp.stts_daftar,rp.no_rkm_medis,p.nm_pasien,p.jk,CONCAT(rp.umurdaftar,' ',rp.sttsumur),CONCAT_WS(', ',NULLIF(p.alamat,''),NULLIF(kel.nm_kel,''),NULLIF(kec.nm_kec,''),NULLIF(kab.nm_kab,'')),COALESCE(GROUP_CONCAT(DISTINCT dx.kd_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),COALESCE(GROUP_CONCAT(DISTINCT py.nm_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),CONCAT(ki.kd_kamar,' ',b.nm_bangsal),ki.stts_pulang,COALESCE(GROUP_CONCAT(DISTINCT dp.nm_dokter SEPARATOR ', '),d.nm_dokter),GREATEST(DATEDIFF(IF(ki.tgl_keluar='0000-00-00' OR ki.tgl_keluar IS NULL,CURDATE(),ki.tgl_keluar),ki.tgl_masuk),0),k.kelas,pj.png_jawab,COALESCE(GROUP_CONCAT(DISTINCT sep.no_sep SEPARATOR ', '),'') FROM reg_periksa rp JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis JOIN kamar_inap ki ON ki.no_rawat=rp.no_rawat JOIN kamar k ON k.kd_kamar=ki.kd_kamar JOIN bangsal b ON b.kd_bangsal=k.kd_bangsal JOIN dokter d ON d.kd_dokter=rp.kd_dokter JOIN penjab pj ON pj.kd_pj=rp.kd_pj LEFT JOIN dpjp_ranap dr ON dr.no_rawat=rp.no_rawat LEFT JOIN dokter dp ON dp.kd_dokter=dr.kd_dokter LEFT JOIN kabupaten kab ON kab.kd_kab=p.kd_kab LEFT JOIN kecamatan kec ON kec.kd_kec=p.kd_kec LEFT JOIN kelurahan kel ON kel.kd_kel=p.kd_kel LEFT JOIN diagnosa_pasien dx ON dx.no_rawat=rp.no_rawat LEFT JOIN penyakit py ON py.kd_penyakit=dx.kd_penyakit LEFT JOIN bridging_sep sep ON sep.no_rawat=rp.no_rawat WHERE ` + strings.Join(where, " AND ") + ` GROUP BY rp.no_rawat ORDER BY ` + tanggal + `,rp.no_rawat`
+	query := `SELECT rp.no_rawat,DATE_FORMAT(rp.tgl_registrasi,'%Y-%m-%d'),DATE_FORMAT(ki.tgl_keluar,'%Y-%m-%d'),rp.stts_daftar,rp.no_rkm_medis,p.nm_pasien,p.jk,CONCAT(rp.umurdaftar,' ',rp.sttsumur),IFNULL(CONCAT(p.alamat,', ',kel.nm_kel,', ',kec.nm_kec,', ',kab.nm_kab),p.alamat),COALESCE(GROUP_CONCAT(DISTINCT dx.kd_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),COALESCE(GROUP_CONCAT(DISTINCT py.nm_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),CONCAT(ki.kd_kamar,' ',b.nm_bangsal),ki.stts_pulang,CONCAT_WS(', ',NULLIF(GROUP_CONCAT(DISTINCT dp.nm_dokter SEPARATOR ', '),''),d.nm_dokter),GREATEST(DATEDIFF(IF(ki.tgl_keluar='0000-00-00' OR ki.tgl_keluar IS NULL,CURDATE(),ki.tgl_keluar),rp.tgl_registrasi),0),k.kelas,pj.png_jawab,COALESCE(GROUP_CONCAT(DISTINCT sep.no_sep SEPARATOR ', '),'') FROM reg_periksa rp JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis JOIN kamar_inap ki ON ki.no_rawat=rp.no_rawat JOIN kamar k ON k.kd_kamar=ki.kd_kamar JOIN bangsal b ON b.kd_bangsal=k.kd_bangsal JOIN dokter d ON d.kd_dokter=rp.kd_dokter JOIN penjab pj ON pj.kd_pj=rp.kd_pj LEFT JOIN dpjp_ranap dr ON dr.no_rawat=rp.no_rawat LEFT JOIN dokter dp ON dp.kd_dokter=dr.kd_dokter LEFT JOIN kabupaten kab ON kab.kd_kab=p.kd_kab LEFT JOIN kecamatan kec ON kec.kd_kec=p.kd_kec LEFT JOIN kelurahan kel ON kel.kd_kel=p.kd_kel LEFT JOIN diagnosa_pasien dx ON dx.no_rawat=rp.no_rawat LEFT JOIN penyakit py ON py.kd_penyakit=dx.kd_penyakit LEFT JOIN bridging_sep sep ON sep.no_rawat=rp.no_rawat WHERE ` + strings.Join(where, " AND ") + ` GROUP BY rp.no_rawat ORDER BY ` + tanggal + `,rp.no_rawat`
 	rows, e := r.db.QueryContext(ctx, query, args...)
 	if e != nil {
 		return Hasil{}, fmt.Errorf("baca laporan ranap: %w", e)

@@ -94,7 +94,9 @@ func (r *Repositori) Daftar(ctx context.Context, f Filter) (Hasil, error) {
 		return r.berulang(ctx, f)
 	}
 	args := []any{f.TanggalMulai, f.TanggalSelesai}
-	where := []string{"rp.tgl_registrasi BETWEEN ? AND ?", "rp.status_lanjut = 'Ralan'"}
+	// DlgKunjunganRalan.tampil() tidak membatasi status_lanjut. Laporan lama
+	// menarik seluruh registrasi pada tanggal dan status daftar yang dipilih.
+	where := []string{"rp.tgl_registrasi BETWEEN ? AND ?"}
 	if f.Jenis == "rekap" {
 		where = append(where, "rp.stts <> 'Batal'")
 	}
@@ -112,7 +114,18 @@ func (r *Repositori) Daftar(ctx context.Context, f Filter) (Hasil, error) {
 			args = append(args, like)
 		}
 	}
-	query := `SELECT rp.no_rawat,DATE_FORMAT(rp.tgl_registrasi,'%Y-%m-%d'),TIME_FORMAT(rp.jam_reg,'%H:%i:%s'),rp.stts_daftar,rp.no_rkm_medis,p.nm_pasien,p.jk,CONCAT(rp.umurdaftar,' ',rp.sttsumur),CONCAT_WS(', ',NULLIF(p.alamat,''),NULLIF(kel.nm_kel,''),NULLIF(kec.nm_kec,''),NULLIF(kab.nm_kab,'')),COALESCE(GROUP_CONCAT(DISTINCT dx.kd_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),COALESCE(GROUP_CONCAT(DISTINCT py.nm_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),d.nm_dokter,pol.nm_poli,pj.png_jawab,COALESCE(GROUP_CONCAT(DISTINCT sep.no_sep SEPARATOR ', '),'') FROM reg_periksa rp JOIN dokter d ON d.kd_dokter=rp.kd_dokter JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis JOIN poliklinik pol ON pol.kd_poli=rp.kd_poli JOIN penjab pj ON pj.kd_pj=rp.kd_pj LEFT JOIN kelurahan kel ON kel.kd_kel=p.kd_kel LEFT JOIN kecamatan kec ON kec.kd_kec=p.kd_kec LEFT JOIN kabupaten kab ON kab.kd_kab=p.kd_kab LEFT JOIN diagnosa_pasien dx ON dx.no_rawat=rp.no_rawat LEFT JOIN penyakit py ON py.kd_penyakit=dx.kd_penyakit LEFT JOIN bridging_sep sep ON sep.no_rawat=rp.no_rawat WHERE ` + strings.Join(where, " AND ") + ` GROUP BY rp.no_rawat ORDER BY rp.tgl_registrasi,rp.jam_reg`
+	query := `SELECT rp.no_rawat,DATE_FORMAT(rp.tgl_registrasi,'%Y-%m-%d'),TIME_FORMAT(rp.jam_reg,'%H:%i:%s'),rp.stts_daftar,rp.no_rkm_medis,p.nm_pasien,p.jk,CONCAT(rp.umurdaftar,' ',rp.sttsumur),IFNULL(CONCAT(p.alamat,', ',kel.nm_kel,', ',kec.nm_kec,', ',kab.nm_kab),p.alamat),COALESCE(GROUP_CONCAT(DISTINCT dx.kd_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),COALESCE(GROUP_CONCAT(DISTINCT py.nm_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),d.nm_dokter,pol.nm_poli,pj.png_jawab,COALESCE(GROUP_CONCAT(DISTINCT sep.no_sep SEPARATOR ', '),'') FROM reg_periksa rp JOIN dokter d ON d.kd_dokter=rp.kd_dokter JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis JOIN poliklinik pol ON pol.kd_poli=rp.kd_poli JOIN penjab pj ON pj.kd_pj=rp.kd_pj LEFT JOIN kelurahan kel ON kel.kd_kel=p.kd_kel LEFT JOIN kecamatan kec ON kec.kd_kec=p.kd_kec LEFT JOIN kabupaten kab ON kab.kd_kab=p.kd_kab LEFT JOIN diagnosa_pasien dx ON dx.no_rawat=rp.no_rawat LEFT JOIN penyakit py ON py.kd_penyakit=dx.kd_penyakit LEFT JOIN bridging_sep sep ON sep.no_rawat=rp.no_rawat WHERE ` + strings.Join(where, " AND ") + ` GROUP BY rp.no_rawat ORDER BY rp.tgl_registrasi,rp.jam_reg`
+
+	// DlgKunjunganRalan.tampil() tanpa filter tambahan dan tampil2() (Kunjungan
+	// Non Batal) tidak memakai GROUP BY. Pertahankan perilaku tersebut supaya
+	// baris bridging_sep ganda dan total laporan sama persis dengan SIMRS lama.
+	tanpaFilterTambahan := strings.TrimSpace(f.Poli) == "" && strings.TrimSpace(f.Dokter) == "" &&
+		strings.TrimSpace(f.Penjamin) == "" && strings.TrimSpace(f.Kabupaten) == "" &&
+		strings.TrimSpace(f.Kecamatan) == "" && strings.TrimSpace(f.Kelurahan) == "" &&
+		strings.TrimSpace(f.KataKunci) == ""
+	if f.Jenis == "rekap" || tanpaFilterTambahan {
+		query = `SELECT rp.no_rawat,DATE_FORMAT(rp.tgl_registrasi,'%Y-%m-%d'),TIME_FORMAT(rp.jam_reg,'%H:%i:%s'),rp.stts_daftar,rp.no_rkm_medis,p.nm_pasien,p.jk,CONCAT(rp.umurdaftar,' ',rp.sttsumur),IFNULL(CONCAT(p.alamat,', ',kel.nm_kel,', ',kec.nm_kec,', ',kab.nm_kab),p.alamat),COALESCE((SELECT GROUP_CONCAT(py2.kd_penyakit ORDER BY dx2.prioritas SEPARATOR ', ') FROM diagnosa_pasien dx2 JOIN penyakit py2 ON py2.kd_penyakit=dx2.kd_penyakit WHERE dx2.no_rawat=rp.no_rawat),''),COALESCE((SELECT GROUP_CONCAT(py2.nm_penyakit ORDER BY dx2.prioritas SEPARATOR ', ') FROM diagnosa_pasien dx2 JOIN penyakit py2 ON py2.kd_penyakit=dx2.kd_penyakit WHERE dx2.no_rawat=rp.no_rawat),''),d.nm_dokter,pol.nm_poli,pj.png_jawab,COALESCE(sep.no_sep,'') FROM reg_periksa rp JOIN dokter d ON d.kd_dokter=rp.kd_dokter JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis JOIN poliklinik pol ON pol.kd_poli=rp.kd_poli JOIN penjab pj ON pj.kd_pj=rp.kd_pj LEFT JOIN bridging_sep sep ON sep.no_rawat=rp.no_rawat LEFT JOIN kabupaten kab ON kab.kd_kab=p.kd_kab LEFT JOIN kecamatan kec ON kec.kd_kec=p.kd_kec LEFT JOIN kelurahan kel ON kel.kd_kel=p.kd_kel WHERE ` + strings.Join(where, " AND ") + ` ORDER BY rp.tgl_registrasi,rp.jam_reg`
+	}
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return Hasil{}, fmt.Errorf("baca laporan kunjungan ralan: %w", err)
@@ -144,14 +157,27 @@ func (r *Repositori) Daftar(ctx context.Context, f Filter) (Hasil, error) {
 func (r *Repositori) berulang(ctx context.Context, f Filter) (Hasil, error) {
 	q := strings.TrimSpace(f.KataKunci)
 	args := []any{f.TanggalMulai, f.TanggalSelesai}
-	having := ""
+	filterPencarian := ""
 	if q != "" {
-		having = ` HAVING p.no_rkm_medis LIKE ? OR p.nm_pasien LIKE ? OR p.alamat LIKE ? OR kode_diagnosa LIKE ? OR status_kunjungan LIKE ?`
+		filterPencarian = ` WHERE tabel_kunjungan.no_rm LIKE ? OR tabel_kunjungan.nama_pasien LIKE ? OR tabel_kunjungan.alamat LIKE ? OR tabel_kunjungan.kode_diagnosa LIKE ? OR tabel_kunjungan.status_kunjungan LIKE ?`
 		for i := 0; i < 5; i++ {
 			args = append(args, "%"+q+"%")
 		}
 	}
-	rows, err := r.db.QueryContext(ctx, `SELECT p.no_rkm_medis,p.nm_pasien,DATE_FORMAT(p.tgl_lahir,'%Y-%m-%d'),p.alamat,p.jk,COALESCE(GROUP_CONCAT(DISTINCT dx.kd_penyakit ORDER BY dx.prioritas SEPARATOR ', '),''),IF(COUNT(DISTINCT rp.no_rawat)>1,'Berulang','Tidak Berulang') status_kunjungan,COUNT(DISTINCT rp.no_rawat) jumlah FROM reg_periksa rp JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis LEFT JOIN diagnosa_pasien dx ON dx.no_rawat=rp.no_rawat WHERE rp.status_lanjut='Ralan' AND rp.stts<>'Batal' AND rp.tgl_registrasi BETWEEN ? AND ? GROUP BY YEAR(rp.tgl_registrasi),p.no_rkm_medis,p.nm_pasien,p.tgl_lahir,p.alamat,p.jk`+having+` ORDER BY p.nm_pasien`, args...)
+	query := `SELECT tabel_kunjungan.no_rm,tabel_kunjungan.nama_pasien,tabel_kunjungan.tanggal_lahir,tabel_kunjungan.alamat,tabel_kunjungan.jenis_kelamin,tabel_kunjungan.kode_diagnosa,tabel_kunjungan.status_kunjungan,tabel_kunjungan.jumlah
+		FROM (
+			SELECT p.no_rkm_medis AS no_rm,p.nm_pasien AS nama_pasien,DATE_FORMAT(p.tgl_lahir,'%Y-%m-%d') AS tanggal_lahir,p.alamat,p.jk AS jenis_kelamin,
+			COALESCE(GROUP_CONCAT(DISTINCT dx.kd_penyakit SEPARATOR ', '),'') AS kode_diagnosa,
+			IF(COUNT(DISTINCT rp.no_rawat)>1,'Berulang','Tidak Berulang') AS status_kunjungan,
+			COUNT(DISTINCT rp.no_rawat) AS jumlah
+			FROM reg_periksa rp
+			JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis
+			JOIN diagnosa_pasien dx ON dx.no_rawat=rp.no_rawat
+			JOIN penyakit py ON py.kd_penyakit=dx.kd_penyakit
+			WHERE rp.tgl_registrasi BETWEEN ? AND ?
+			GROUP BY YEAR(rp.tgl_registrasi),p.no_rkm_medis,p.nm_pasien,p.tgl_lahir,p.alamat,p.jk
+		) AS tabel_kunjungan` + filterPencarian + ` ORDER BY tabel_kunjungan.nama_pasien`
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return Hasil{}, fmt.Errorf("baca kunjungan berulang: %w", err)
 	}

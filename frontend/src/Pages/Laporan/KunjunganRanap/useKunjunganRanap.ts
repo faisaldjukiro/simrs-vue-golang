@@ -1,2 +1,169 @@
-import{computed,onMounted,reactive,ref}from'vue';import{cariReferensiLaporanKunjunganRanap,laporanKunjunganRanapData}from'../../../lib/faisal/api';import{useNotifikasi}from'../../../lib/shared/useNotifikasi'
-export function useKunjunganRanap(props){const notif=useNotifikasi(),loading=ref(false),error=ref(''),data=ref<any[]>([]),firstRow=ref(0),grafikVisible=ref(false);const now=new Date().toISOString().slice(0,10);const filter=reactive({jenis:'masuk',tanggal_mulai:now,tanggal_selesai:now,status:'',q:''});const pilihan=reactive<any>({bangsal:{},dokter:{},penjamin:{},kabupaten:{},kecamatan:{},kelurahan:{}});const ringkasan=ref<any>({total:0,baru:0,lama:0,laki_laki:0,perempuan:0,berulang:0,tidak_berulang:0,total_lama_rawat:0});const berulang=computed(()=>filter.jenis==='berulang');async function muat(){loading.value=true;error.value='';firstRow.value=0;try{const x=await laporanKunjunganRanapData(props.token,{...filter,...Object.fromEntries(Object.entries(pilihan).map(([k,v]:any)=>[k,v.nama||'']))});data.value=x?.data||[];ringkasan.value=x?.ringkasan||ringkasan.value}catch(e:any){error.value=e.message;notif.gagal(e.message||'Laporan tidak dapat dibaca')}finally{loading.value=false}}function refData(j,q){return cariReferensiLaporanKunjunganRanap(props.token,j,q)}function gantiJenis(j){filter.jenis=j;muat()}function gantiHalaman(e){firstRow.value=e.first||0}function ranking(field,split=false){const m=new Map<string,number>();data.value.forEach(x=>(split?String(x[field]||'').split(','):[x[field]||'Tidak diketahui']).map(v=>String(v).trim()).filter(Boolean).forEach(v=>m.set(v,(m.get(v)||0)+1)));const a=[...m].map(([label,nilai])=>({label,nilai})).sort((a,b)=>b.nilai-a.nilai),max=Math.max(...a.map(x=>x.nilai),1);return a.map(x=>({...x,persen:x.nilai/max*100}))}const ruang=computed(()=>berulang.value?ranking('status_kunjungan'):ranking('ruang')),penyakit=computed(()=>ranking(berulang.value?'kode_diagnosa':'diagnosa',true)),dokter=computed(()=>ranking('dpjp'));const tren=computed(()=>{if(berulang.value)return[];const field=filter.jenis==='pulang'?'tanggal_keluar':'tanggal_masuk',m=new Map<string,number>();data.value.forEach(x=>m.set(x[field],(m.get(x[field])||0)+1));const a=[...m].map(([label,nilai])=>({label,nilai})),max=Math.max(...a.map(x=>x.nilai),1);return a.map(x=>({...x,persen:x.nilai/max*100}))});const persenGender=computed(()=>{const t=ringkasan.value.laki_laki+ringkasan.value.perempuan;return t?Math.round(ringkasan.value.laki_laki/t*100):0}),persenBaru=computed(()=>{const t=ringkasan.value.baru+ringkasan.value.lama;return t?Math.round(ringkasan.value.baru/t*100):0});function excel(){if(!data.value.length)return notif.peringatan('Tidak ada data untuk diekspor.');const keys=Object.keys(data.value[0]),esc=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');const rows=data.value.map((x,i)=>`<tr><td>${i+1}</td>${keys.map(k=>`<td>${esc(x[k])}</td>`).join('')}</tr>`).join('');const html=`<meta charset="UTF-8"><h2>Laporan Kunjungan Rawat Inap</h2><table border="1"><tr><th>No.</th>${keys.map(k=>`<th>${k}</th>`).join('')}</tr>${rows}</table>`,blob=new Blob(['\ufeff'+html],{type:'application/vnd.ms-excel'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`laporan-kunjungan-ranap-${filter.tanggal_mulai}-${filter.tanggal_selesai}.xls`;a.click();URL.revokeObjectURL(a.href)}onMounted(muat);return{loading,error,data,firstRow,grafikVisible,filter,pilihan,ringkasan,berulang,ruang,penyakit,dokter,tren,persenGender,persenBaru,muat,refData,gantiJenis,gantiHalaman,excel,cetak:()=>window.print()}}
+import { computed, onMounted, reactive, ref } from "vue";
+import {
+  cariReferensiLaporanKunjunganRanap,
+  laporanKunjunganRanapData,
+} from "../../../lib/faisal/api";
+import { useNotifikasi } from "../../../lib/shared/useNotifikasi";
+export function useKunjunganRanap(props) {
+  const notif = useNotifikasi(),
+    loading = ref(false),
+    error = ref(""),
+    data = ref<any[]>([]),
+    firstRow = ref(0),
+    grafikVisible = ref(false);
+  const now = new Date().toISOString().slice(0, 10);
+  const filter = reactive({
+    jenis: "masuk",
+    tanggal_mulai: now,
+    tanggal_selesai: now,
+    status: "",
+    q: "",
+  });
+  const pilihan = reactive<any>({
+    bangsal: {},
+    dokter: {},
+    penjamin: {},
+    kabupaten: {},
+    kecamatan: {},
+    kelurahan: {},
+  });
+  const ringkasan = ref<any>({
+    total: 0,
+    baru: 0,
+    lama: 0,
+    laki_laki: 0,
+    perempuan: 0,
+    berulang: 0,
+    tidak_berulang: 0,
+    total_lama_rawat: 0,
+  });
+  const berulang = computed(() => filter.jenis === "berulang");
+  async function muat() {
+    loading.value = true;
+    error.value = "";
+    firstRow.value = 0;
+    try {
+      const x = await laporanKunjunganRanapData(props.token, {
+        ...filter,
+        ...Object.fromEntries(
+          Object.entries(pilihan).map(([k, v]: any) => [k, v.nama || ""]),
+        ),
+      });
+      data.value = x?.data || [];
+      ringkasan.value = x?.ringkasan || ringkasan.value;
+    } catch (e: any) {
+      error.value = e.message;
+      notif.gagal(e.message || "Laporan tidak dapat dibaca");
+    } finally {
+      loading.value = false;
+    }
+  }
+  function refData(j, q) {
+    return cariReferensiLaporanKunjunganRanap(props.token, j, q);
+  }
+  function gantiJenis(j) {
+    filter.jenis = j;
+    muat();
+  }
+  function gantiHalaman(e) {
+    firstRow.value = e.first || 0;
+  }
+  function ranking(field, split = false) {
+    const m = new Map<string, number>();
+    data.value.forEach((x) =>
+      (split
+        ? String(x[field] || "").split(",")
+        : [x[field] || "Tidak diketahui"]
+      )
+        .map((v) => String(v).trim())
+        .filter(Boolean)
+        .forEach((v) => m.set(v, (m.get(v) || 0) + 1)),
+    );
+    const a = [...m]
+        .map(([label, nilai]) => ({ label, nilai }))
+        .sort((a, b) => b.nilai - a.nilai),
+      max = Math.max(...a.map((x) => x.nilai), 1);
+    return a.map((x) => ({ ...x, persen: (x.nilai / max) * 100 }));
+  }
+  const ruang = computed(() =>
+      berulang.value ? ranking("status_kunjungan") : ranking("ruang"),
+    ),
+    penyakit = computed(() =>
+      ranking(berulang.value ? "kode_diagnosa" : "diagnosa", true),
+    ),
+    dokter = computed(() => ranking("dpjp"));
+  const tren = computed(() => {
+    if (berulang.value) return [];
+    const field =
+        filter.jenis === "pulang" ? "tanggal_keluar" : "tanggal_masuk",
+      m = new Map<string, number>();
+    data.value.forEach((x) => m.set(x[field], (m.get(x[field]) || 0) + 1));
+    const a = [...m].map(([label, nilai]) => ({ label, nilai })),
+      max = Math.max(...a.map((x) => x.nilai), 1);
+    return a.map((x) => ({ ...x, persen: (x.nilai / max) * 100 }));
+  });
+  const persenGender = computed(() => {
+      const t = ringkasan.value.laki_laki + ringkasan.value.perempuan;
+      return t ? Math.round((ringkasan.value.laki_laki / t) * 100) : 0;
+    }),
+    persenBaru = computed(() => {
+      const t = ringkasan.value.baru + ringkasan.value.lama;
+      return t ? Math.round((ringkasan.value.baru / t) * 100) : 0;
+    });
+  function excel() {
+    if (!data.value.length)
+      return notif.peringatan("Tidak ada data untuk diekspor.");
+    const keys = Object.keys(data.value[0]),
+      esc = (v) =>
+        String(v ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+    const rows = data.value
+      .map(
+        (x, i) =>
+          `<tr><td>${i + 1}</td>${keys.map((k) => `<td>${esc(x[k])}</td>`).join("")}</tr>`,
+      )
+      .join("");
+    const html = `
+      <meta charset="UTF-8">
+      <h2>Laporan Kunjungan Rawat Inap</h2>
+      <table border="1">
+        <tr>
+          <th>No.</th>
+          ${keys.map((k) => `<th>${k}</th>`).join("")}
+        </tr>
+        ${rows}
+      </table>`,
+      blob = new Blob(["\ufeff" + html], { type: "application/vnd.ms-excel" }),
+      a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `laporan-kunjungan-ranap-${filter.tanggal_mulai}-${filter.tanggal_selesai}.xls`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  onMounted(muat);
+  return {
+    loading,
+    error,
+    data,
+    firstRow,
+    grafikVisible,
+    filter,
+    pilihan,
+    ringkasan,
+    berulang,
+    ruang,
+    penyakit,
+    dokter,
+    tren,
+    persenGender,
+    persenBaru,
+    muat,
+    refData,
+    gantiJenis,
+    gantiHalaman,
+    excel,
+    cetak: () => window.print(),
+  };
+}
