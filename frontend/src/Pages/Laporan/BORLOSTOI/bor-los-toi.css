@@ -1,0 +1,27 @@
+.indicator-filter {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+}
+
+.indicator-table :deep(.p-datatable-thead > tr > th:nth-child(n + 3)),
+.indicator-table :deep(.p-datatable-tbody > tr > td:nth-child(n + 3)) {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicator-table :deep(.p-datatable-thead > tr > th:nth-child(n + 3) .p-datatable-column-header-content) {
+  justify-content: flex-end;
+}
+
+.indicator-table :deep(.center-column) {
+  text-align: center !important;
+}
+
+.indicator-table :deep(.center-column .p-datatable-column-header-content) {
+  justify-content: center;
+}
+
+@media (max-width: 800px) {
+  .indicator-filter {
+    grid-template-columns: 1fr;
+  }
+}

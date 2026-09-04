@@ -652,6 +652,17 @@ export function laporan10PenyakitData(token, params) {
     headers: { Authorization: `Bearer ${token}` },
   })
 }
+export function laporanPenggunaanBedData(token, params) {
+  return request(`/api/laporan-penggunaan-bed?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+export function laporanBORLOSTOIData(token, params) {
+  return request(`/api/laporan-bor-los-toi?${new URLSearchParams(params)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+export function cariBangsalPenggunaanBed(token, q) {
+  return request(`/api/laporan-penggunaan-bed/referensi?${new URLSearchParams({ q })}`, { headers: { Authorization: `Bearer ${token}` } })
+}
 export function cariReferensiLaporanKunjunganRalan(token, jenis, q) {
   return request(`/api/laporan-kunjungan-ralan/referensi?${new URLSearchParams({ jenis, q })}`, { headers: { Authorization: `Bearer ${token}` } })
 }

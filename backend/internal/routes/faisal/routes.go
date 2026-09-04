@@ -23,8 +23,10 @@ import (
 	implementasikeperawatanhttp "simrs-backend/internal/modules/implementasi_keperawatan/delivery/http"
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	laporan10penyakithttp "simrs-backend/internal/modules/laporan_10_penyakit/delivery/http"
+	laporanborlostoihttp "simrs-backend/internal/modules/laporan_bor_los_toi/delivery/http"
 	laporankunjunganralanhttp "simrs-backend/internal/modules/laporan_kunjungan_ralan/delivery/http"
 	laporankunjunganranaphttp "simrs-backend/internal/modules/laporan_kunjungan_ranap/delivery/http"
+	laporanpenggunaanbedhttp "simrs-backend/internal/modules/laporan_penggunaan_bed/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
@@ -53,6 +55,8 @@ type Dependencies struct {
 	IDRG                    *idrghttp.Handler
 	KelolaMenu              *kelolamenuhttp.Handler
 	Laporan10Penyakit       *laporan10penyakithttp.Handler
+	LaporanBORLOSTOI        *laporanborlostoihttp.Handler
+	LaporanPenggunaanBed    *laporanpenggunaanbedhttp.Handler
 	LaporanKunjunganRalan   *laporankunjunganralanhttp.Handler
 	LaporanKunjunganRanap   *laporankunjunganranaphttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
@@ -93,6 +97,12 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	laporan10PenyakitGroup := protectedAPI.Group("/laporan-10-penyakit")
 	laporan10PenyakitGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_10_penyakit"))
 	dependencies.Laporan10Penyakit.Register(laporan10PenyakitGroup)
+	laporanBORLOSTOIGroup := protectedAPI.Group("/laporan-bor-los-toi")
+	laporanBORLOSTOIGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_bor_los_toi"))
+	dependencies.LaporanBORLOSTOI.Register(laporanBORLOSTOIGroup)
+	laporanPenggunaanBedGroup := protectedAPI.Group("/laporan-penggunaan-bed")
+	laporanPenggunaanBedGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_penggunaan_bed"))
+	dependencies.LaporanPenggunaanBed.Register(laporanPenggunaanBedGroup)
 	laporanKunjunganGroup := protectedAPI.Group("/laporan-kunjungan-ralan")
 	laporanKunjunganGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_kunjungan_ralan"))
 	dependencies.LaporanKunjunganRalan.Register(laporanKunjunganGroup)

@@ -11,6 +11,8 @@ import MasterVentilatorPage from "../Sistem/MasterVentilator/MasterVentilatorPag
 import KunjunganRalanPage from "../Laporan/KunjunganRalan/KunjunganRalanPage.vue"
 import KunjunganRanapPage from "../Laporan/KunjunganRanap/KunjunganRanapPage.vue"
 import SepuluhPenyakitPage from "../Laporan/SepuluhPenyakit/SepuluhPenyakitPage.vue"
+import PenggunaanBedPage from "../Laporan/PenggunaanBed/PenggunaanBedPage.vue"
+import BORLOSTOIPage from "../Laporan/BORLOSTOI/BORLOSTOIPage.vue"
 import ModulePlaceholder from "../../Components/Tabs/ModulePlaceholder.vue"
 import ModuleTab from "../../Components/Tabs/ModuleTab.vue"
 import UserManagementTab from "../../Components/Tabs/UserManagementTab.vue"
@@ -167,6 +169,14 @@ const {
     <KunjunganRanapPage v-else-if="currentTab === 'Laporan Kunjungan Ranap'" :token="token" />
     <SepuluhPenyakitPage
       v-else-if="currentTab === 'Laporan 10 Penyakit'"
+      :token="token"
+    />
+    <PenggunaanBedPage
+      v-else-if="currentTab === 'Penggunaan Bed & Frekuensi'"
+      :token="token"
+    />
+    <BORLOSTOIPage
+      v-else-if="currentTab === 'Laporan BOR, LOS & TOI'"
       :token="token"
     />
 

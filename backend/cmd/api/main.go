@@ -49,10 +49,14 @@ import (
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	"simrs-backend/internal/modules/laporan_10_penyakit"
 	laporan10penyakithttp "simrs-backend/internal/modules/laporan_10_penyakit/delivery/http"
+	"simrs-backend/internal/modules/laporan_bor_los_toi"
+	laporanborlostoihttp "simrs-backend/internal/modules/laporan_bor_los_toi/delivery/http"
 	"simrs-backend/internal/modules/laporan_kunjungan_ralan"
 	laporankunjunganralanhttp "simrs-backend/internal/modules/laporan_kunjungan_ralan/delivery/http"
 	"simrs-backend/internal/modules/laporan_kunjungan_ranap"
 	laporankunjunganranaphttp "simrs-backend/internal/modules/laporan_kunjungan_ranap/delivery/http"
+	"simrs-backend/internal/modules/laporan_penggunaan_bed"
+	laporanpenggunaanbedhttp "simrs-backend/internal/modules/laporan_penggunaan_bed/delivery/http"
 	"simrs-backend/internal/modules/manajemen_pengguna"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	"simrs-backend/internal/modules/penanganan_dokter_petugas"
@@ -150,6 +154,12 @@ func main() {
 	laporan10PenyakitHandler := laporan10penyakithttp.NewHandler(
 		laporan_10_penyakit.NewRepositori(simrsDB),
 	)
+	laporanBORLOSTOIHandler := laporanborlostoihttp.NewHandler(
+		laporan_bor_los_toi.NewRepositori(simrsDB),
+	)
+	laporanPenggunaanBedHandler := laporanpenggunaanbedhttp.NewHandler(
+		laporan_penggunaan_bed.NewRepositori(simrsDB),
+	)
 	laporanKunjunganRalanHandler := laporankunjunganralanhttp.NewHandler(laporan_kunjungan_ralan.NewRepositori(simrsDB))
 	laporanKunjunganRanapHandler := laporankunjunganranaphttp.NewHandler(laporan_kunjungan_ranap.NewRepositori(simrsDB))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
@@ -211,6 +221,8 @@ func main() {
 		IDRG:                    idrgHandler,
 		KelolaMenu:              kelolaMenuHandler,
 		Laporan10Penyakit:       laporan10PenyakitHandler,
+		LaporanBORLOSTOI:        laporanBORLOSTOIHandler,
+		LaporanPenggunaanBed:    laporanPenggunaanBedHandler,
 		LaporanKunjunganRalan:   laporanKunjunganRalanHandler,
 		LaporanKunjunganRanap:   laporanKunjunganRanapHandler,
 		ManajemenPengguna:       manajemenPenggunaHandler,

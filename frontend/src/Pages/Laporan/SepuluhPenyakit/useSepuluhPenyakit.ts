@@ -65,6 +65,10 @@ export function useSepuluhPenyakit(props: { token: string }) {
       const hasil = await laporan10PenyakitData(props.token, filter);
       data.value = hasil?.data ?? [];
       ringkasan.value = hasil?.ringkasan ?? ringkasan.value;
+      notifikasi.sukses(
+        `${data.value.length} penyakit berhasil ditarik.`,
+        "Laporan berhasil dimuat",
+      );
     } catch (err: any) {
       error.value = err.message || "Laporan 10 penyakit tidak dapat dibaca.";
       notifikasi.gagal(error.value);

@@ -51,6 +51,10 @@ export function useKunjunganRanap(props) {
       });
       data.value = x?.data || [];
       ringkasan.value = x?.ringkasan || ringkasan.value;
+      notif.sukses(
+        `${data.value.length} data kunjungan berhasil ditarik.`,
+        "Laporan berhasil dimuat",
+      );
     } catch (e: any) {
       error.value = e.message;
       notif.gagal(e.message || "Laporan tidak dapat dibaca");

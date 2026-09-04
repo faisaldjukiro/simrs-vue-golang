@@ -113,6 +113,10 @@ export function useKunjunganRalan(props) {
       });
       data.value = hasil?.data || [];
       ringkasan.value = hasil?.ringkasan || ringkasan.value;
+      notifikasi.sukses(
+        `${data.value.length} data kunjungan berhasil ditarik.`,
+        "Laporan berhasil dimuat",
+      );
     } catch (e: any) {
       error.value = e.message || "Laporan tidak dapat dibaca.";
       notifikasi.gagal(error.value);

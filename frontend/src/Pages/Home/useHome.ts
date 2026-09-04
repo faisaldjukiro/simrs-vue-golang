@@ -165,6 +165,8 @@ export function useHome(props, emit) {
     { label: 'Laporan Kunjungan Ralan', description: 'Laporan kunjungan rawat jalan berdasarkan periode dan pelayanan.', icon: FileSpreadsheet, tone: 'emerald' },
     { label: 'Laporan Kunjungan Ranap', description: 'Laporan pasien masuk, pulang, dan kunjungan berulang rawat inap.', icon: FileSpreadsheet, tone: 'indigo' },
     { label: 'Laporan 10 Penyakit', description: 'Rekap 10 penyakit terbanyak berdasarkan periode pelayanan.', icon: FileSpreadsheet, tone: 'rose' },
+    { label: 'Penggunaan Bed & Frekuensi', description: 'Frekuensi rata-rata penggunaan bed per bangsal berdasarkan pasien keluar.', icon: Bed, tone: 'indigo' },
+    { label: 'Laporan BOR, LOS & TOI', description: 'Indikator pemanfaatan tempat tidur rawat inap per bulan.', icon: Bed, tone: 'teal' },
   ]
   
   const filteredMenus = computed(() => {
@@ -308,6 +310,8 @@ export function useHome(props, emit) {
       'Laporan Kunjungan Ralan': ['laporan_kunjungan_ralan'],
       'Laporan Kunjungan Ranap': ['laporan_kunjungan_ranap'],
       'Laporan 10 Penyakit': ['laporan_10_penyakit'],
+      'Penggunaan Bed & Frekuensi': ['laporan_penggunaan_bed'],
+      'Laporan BOR, LOS & TOI': ['laporan_bor_los_toi'],
     }
     const dibutuhkan = aksesMenu[label] || []
     return dibutuhkan.length === 0 || !dibutuhkan.some((kode) => permissions.includes(kode))
