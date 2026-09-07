@@ -28,6 +28,7 @@ import (
 	laporankunjunganranaphttp "simrs-backend/internal/modules/laporan_kunjungan_ranap/delivery/http"
 	laporanpenggunaanbedhttp "simrs-backend/internal/modules/laporan_penggunaan_bed/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
+	"simrs-backend/internal/modules/monitoring_bed"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
@@ -57,6 +58,7 @@ type Dependencies struct {
 	Laporan10Penyakit       *laporan10penyakithttp.Handler
 	LaporanBORLOSTOI        *laporanborlostoihttp.Handler
 	LaporanPenggunaanBed    *laporanpenggunaanbedhttp.Handler
+	MonitoringBed           *monitoring_bed.Handler
 	LaporanKunjunganRalan   *laporankunjunganralanhttp.Handler
 	LaporanKunjunganRanap   *laporankunjunganranaphttp.Handler
 	ManajemenPengguna       *manajemenpenggunahttp.Handler
@@ -103,6 +105,9 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	laporanPenggunaanBedGroup := protectedAPI.Group("/laporan-penggunaan-bed")
 	laporanPenggunaanBedGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_penggunaan_bed"))
 	dependencies.LaporanPenggunaanBed.Register(laporanPenggunaanBedGroup)
+	monitoringBedGroup := protectedAPI.Group("/monitoring-bed")
+	monitoringBedGroup.Use(dependencies.Autentikasi.WajibPermission("monitoring_bed"))
+	dependencies.MonitoringBed.Route(monitoringBedGroup)
 	laporanKunjunganGroup := protectedAPI.Group("/laporan-kunjungan-ralan")
 	laporanKunjunganGroup.Use(dependencies.Autentikasi.WajibPermission("laporan_kunjungan_ralan"))
 	dependencies.LaporanKunjunganRalan.Register(laporanKunjunganGroup)

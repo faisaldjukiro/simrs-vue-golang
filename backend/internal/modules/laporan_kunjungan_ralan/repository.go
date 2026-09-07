@@ -98,7 +98,7 @@ func (r *Repositori) Daftar(ctx context.Context, f Filter) (Hasil, error) {
 	// menarik seluruh registrasi pada tanggal dan status daftar yang dipilih.
 	where := []string{"rp.tgl_registrasi BETWEEN ? AND ?"}
 	if f.Jenis == "rekap" {
-		where = append(where, "rp.stts <> 'Batal'")
+		where = append(where, "(rp.stts <> 'Batal' AND (rp.stts <> 'belum' OR rp.status_bayar = 'Sudah Bayar') AND rp.status_lanjut <> 'Ranap')")
 	}
 	filterLike := []struct{ nilai, kolom string }{{f.Status, "rp.stts_daftar"}, {f.Poli, "pol.nm_poli"}, {f.Dokter, "d.nm_dokter"}, {f.Penjamin, "pj.png_jawab"}, {f.Kabupaten, "kab.nm_kab"}, {f.Kecamatan, "kec.nm_kec"}, {f.Kelurahan, "kel.nm_kel"}}
 	for _, item := range filterLike {

@@ -647,6 +647,11 @@ export function laporanKunjunganRalanData(token, params) {
   return request(`/api/laporan-kunjungan-ralan?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
+export function monitoringBedData(token, filter = {}) {
+  const query = new URLSearchParams(filter).toString()
+  return request(`/api/monitoring-bed?${query}`, { headers: { Authorization: `Bearer ${token}` } })
+}
+
 export function laporan10PenyakitData(token, params) {
   return request(`/api/laporan-10-penyakit?${new URLSearchParams(params)}`, {
     headers: { Authorization: `Bearer ${token}` },

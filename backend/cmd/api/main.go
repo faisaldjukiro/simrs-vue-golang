@@ -59,6 +59,7 @@ import (
 	laporanpenggunaanbedhttp "simrs-backend/internal/modules/laporan_penggunaan_bed/delivery/http"
 	"simrs-backend/internal/modules/manajemen_pengguna"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
+	"simrs-backend/internal/modules/monitoring_bed"
 	"simrs-backend/internal/modules/penanganan_dokter_petugas"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	"simrs-backend/internal/modules/permintaan_laboratorium"
@@ -160,6 +161,8 @@ func main() {
 	laporanPenggunaanBedHandler := laporanpenggunaanbedhttp.NewHandler(
 		laporan_penggunaan_bed.NewRepositori(simrsDB),
 	)
+	monitoringBedHandler := monitoring_bed.NewHandler(simrsDB)
+
 	laporanKunjunganRalanHandler := laporankunjunganralanhttp.NewHandler(laporan_kunjungan_ralan.NewRepositori(simrsDB))
 	laporanKunjunganRanapHandler := laporankunjunganranaphttp.NewHandler(laporan_kunjungan_ranap.NewRepositori(simrsDB))
 	manajemenPenggunaHandler := manajemenpenggunahttp.NewHandler(manajemen_pengguna.NewRepositori(db, simrsDB))
@@ -223,6 +226,7 @@ func main() {
 		Laporan10Penyakit:       laporan10PenyakitHandler,
 		LaporanBORLOSTOI:        laporanBORLOSTOIHandler,
 		LaporanPenggunaanBed:    laporanPenggunaanBedHandler,
+		MonitoringBed:           monitoringBedHandler,
 		LaporanKunjunganRalan:   laporanKunjunganRalanHandler,
 		LaporanKunjunganRanap:   laporanKunjunganRanapHandler,
 		ManajemenPengguna:       manajemenPenggunaHandler,

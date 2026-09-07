@@ -13,6 +13,7 @@ import KunjunganRanapPage from "../Laporan/KunjunganRanap/KunjunganRanapPage.vue
 import SepuluhPenyakitPage from "../Laporan/SepuluhPenyakit/SepuluhPenyakitPage.vue"
 import PenggunaanBedPage from "../Laporan/PenggunaanBed/PenggunaanBedPage.vue"
 import BORLOSTOIPage from "../Laporan/BORLOSTOI/BORLOSTOIPage.vue"
+import MonitoringBedPage from "../MonitoringBed/MonitoringBedPage.vue"
 import ModulePlaceholder from "../../Components/Tabs/ModulePlaceholder.vue"
 import ModuleTab from "../../Components/Tabs/ModuleTab.vue"
 import UserManagementTab from "../../Components/Tabs/UserManagementTab.vue"
@@ -177,6 +178,10 @@ const {
     />
     <BORLOSTOIPage
       v-else-if="currentTab === 'Laporan BOR, LOS & TOI'"
+      :token="token"
+    />
+    <MonitoringBedPage
+      v-else-if="currentTab === 'Monitoring Bed'"
       :token="token"
     />
 

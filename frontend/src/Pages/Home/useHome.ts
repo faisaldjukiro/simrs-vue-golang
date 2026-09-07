@@ -1,5 +1,5 @@
 // @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
-import { Activity, Bed, ClipboardList, FileSpreadsheet, FlaskConical, HeartPulse, Home, LayoutDashboard, LogIn, LogOut, Microscope, MessageCircle, Pill, ScrollText, Stethoscope, UsersRound, Wind } from "@lucide/vue"
+import { Activity, Bed, BedDouble, ClipboardList, FileSpreadsheet, FlaskConical, HeartPulse, Home, LayoutDashboard, LogIn, LogOut, Microscope, MessageCircle, Pill, ScrollText, Stethoscope, UsersRound, Wind } from "@lucide/vue"
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { dashboardData, koneksiBPJS, koneksiEKlaim, userManagementData } from "../../lib/faisal/api"
 import { useNotifikasi } from "../../lib/shared/useNotifikasi"
@@ -148,25 +148,26 @@ export function useHome(props, emit) {
   ])
   
   const dashboardMenus = [
-    { label: 'Registrasi', description: 'Pendaftaran dan daftar kunjungan pasien hari ini.', icon: ClipboardList, tone: 'blue' },
-    { label: 'IGD/UGD', description: 'Daftar pasien instalasi gawat darurat.', icon: HeartPulse, tone: 'rose' },
-    { label: 'Laborat', description: 'Pemeriksaan dan permintaan laboratorium.', icon: FlaskConical, tone: 'amber' },
-    { label: 'Radiologi', description: 'Pemeriksaan dan permintaan radiologi.', icon: Microscope, tone: 'violet' },
-    { label: 'Farmasi', description: 'Resep, obat, dan pelayanan farmasi.', icon: Pill, tone: 'teal' },
-    { label: 'Rawat Inap', description: 'Kamar inap dan daftar pasien rawat inap.', icon: Bed, tone: 'indigo' },
-    { label: 'Rawat Jalan', description: 'Daftar pasien dan pelayanan rawat jalan.', icon: Stethoscope, tone: 'cyan' },
-    { label: 'IDRG', description: 'Bridging klaim BPJS E-Klaim iDRG / INA-CBG.', icon: FileSpreadsheet, tone: 'emerald' },
-    { label: 'Monitoring Klaim BPJS', description: 'Monitoring data klaim VClaim berdasarkan periode.', icon: FileSpreadsheet, tone: 'blue' },
-    { label: 'WhatsApp Gateway', description: 'Kelola perangkat dan kirim pesan WhatsApp dari SIRAPI.', icon: MessageCircle, tone: 'teal' },
-    { label: 'Kelola Menu', description: 'Pengaturan sidebar pasien dan hak aksesnya.', icon: LayoutDashboard, tone: 'slate' },
-    { label: 'Master Ventilator', description: 'Kelola perangkat ventilator dan jadwal pemeliharaannya.', icon: Wind, tone: 'cyan' },
-    { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate' },
-    { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate' },
-    { label: 'Laporan Kunjungan Ralan', description: 'Laporan kunjungan rawat jalan berdasarkan periode dan pelayanan.', icon: FileSpreadsheet, tone: 'emerald' },
-    { label: 'Laporan Kunjungan Ranap', description: 'Laporan pasien masuk, pulang, dan kunjungan berulang rawat inap.', icon: FileSpreadsheet, tone: 'indigo' },
-    { label: 'Laporan 10 Penyakit', description: 'Rekap 10 penyakit terbanyak berdasarkan periode pelayanan.', icon: FileSpreadsheet, tone: 'rose' },
-    { label: 'Penggunaan Bed & Frekuensi', description: 'Frekuensi rata-rata penggunaan bed per bangsal berdasarkan pasien keluar.', icon: Bed, tone: 'indigo' },
-    { label: 'Laporan BOR, LOS & TOI', description: 'Indikator pemanfaatan tempat tidur rawat inap per bulan.', icon: Bed, tone: 'teal' },
+    { label: 'Registrasi', description: 'Pendaftaran dan daftar kunjungan pasien hari ini.', icon: ClipboardList, tone: 'blue', category: 'Layanan Medis' },
+    { label: 'IGD/UGD', description: 'Daftar pasien instalasi gawat darurat.', icon: HeartPulse, tone: 'rose', category: 'Layanan Medis' },
+    { label: 'Laborat', description: 'Pemeriksaan dan permintaan laboratorium.', icon: FlaskConical, tone: 'amber', category: 'Penunjang Medis' },
+    { label: 'Radiologi', description: 'Pemeriksaan dan permintaan radiologi.', icon: Microscope, tone: 'violet', category: 'Penunjang Medis' },
+    { label: 'Farmasi', description: 'Resep, obat, dan pelayanan farmasi.', icon: Pill, tone: 'teal', category: 'Penunjang Medis' },
+    { label: 'Rawat Inap', description: 'Kamar inap dan daftar pasien rawat inap.', icon: Bed, tone: 'indigo', category: 'Layanan Medis' },
+    { label: 'Rawat Jalan', description: 'Daftar pasien dan pelayanan rawat jalan.', icon: Stethoscope, tone: 'cyan', category: 'Layanan Medis' },
+    { label: 'IDRG', description: 'Bridging klaim BPJS E-Klaim iDRG / INA-CBG.', icon: FileSpreadsheet, tone: 'emerald', category: 'Integrasi & Klaim' },
+    { label: 'Monitoring Klaim BPJS', description: 'Monitoring data klaim VClaim berdasarkan periode.', icon: FileSpreadsheet, tone: 'blue', category: 'Integrasi & Klaim' },
+    { label: 'WhatsApp Gateway', description: 'Kelola perangkat dan kirim pesan WhatsApp dari SIRAPI.', icon: MessageCircle, tone: 'teal', category: 'Integrasi & Klaim' },
+    { label: 'Kelola Menu', description: 'Pengaturan sidebar pasien dan hak aksesnya.', icon: LayoutDashboard, tone: 'slate', category: 'Sistem' },
+    { label: 'Master Ventilator', description: 'Kelola perangkat ventilator dan jadwal pemeliharaannya.', icon: Wind, tone: 'cyan', category: 'Sistem' },
+    { label: 'User Management', description: 'Kelola user, status akun, dan permission aplikasi.', icon: UsersRound, tone: 'slate', category: 'Sistem' },
+    { label: 'Log Aktivitas', description: 'Audit login, akses data, perubahan, dan kegagalan proses.', icon: ScrollText, tone: 'slate', category: 'Sistem' },
+    { label: 'Laporan Kunjungan Ralan', description: 'Laporan kunjungan rawat jalan berdasarkan periode dan pelayanan.', icon: FileSpreadsheet, tone: 'emerald', category: 'Laporan' },
+    { label: 'Laporan Kunjungan Ranap', description: 'Laporan pasien masuk, pulang, dan kunjungan berulang rawat inap.', icon: FileSpreadsheet, tone: 'indigo', category: 'Laporan' },
+    { label: 'Laporan 10 Penyakit', description: 'Rekap 10 penyakit terbanyak berdasarkan periode pelayanan.', icon: FileSpreadsheet, tone: 'rose', category: 'Laporan' },
+    { label: 'Penggunaan Bed & Frekuensi', description: 'Frekuensi rata-rata penggunaan bed per bangsal berdasarkan pasien keluar.', icon: Bed, tone: 'indigo', category: 'BED' },
+    { label: 'Laporan BOR, LOS & TOI', description: 'Indikator pemanfaatan tempat tidur rawat inap per bulan.', icon: Bed, tone: 'teal', category: 'BED' },
+    { label: 'Monitoring Bed', description: 'Laporan ketersediaan dan penggunaan hari bed.', icon: BedDouble, tone: 'cyan', category: 'BED' },
   ]
   
   const filteredMenus = computed(() => {
@@ -312,6 +313,7 @@ export function useHome(props, emit) {
       'Laporan 10 Penyakit': ['laporan_10_penyakit'],
       'Penggunaan Bed & Frekuensi': ['laporan_penggunaan_bed'],
       'Laporan BOR, LOS & TOI': ['laporan_bor_los_toi'],
+      'Monitoring Bed': ['monitoring_bed'],
     }
     const dibutuhkan = aksesMenu[label] || []
     return dibutuhkan.length === 0 || !dibutuhkan.some((kode) => permissions.includes(kode))
