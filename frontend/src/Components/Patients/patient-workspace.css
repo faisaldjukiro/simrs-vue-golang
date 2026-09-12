@@ -1,0 +1,127 @@
+/* Hanya kerangka ruang kerja; form klinis tetap memakai style modulnya. */
+.patient-workspace-sidebar-tools button {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.patient-navigation-search {
+  margin-top: 18px;
+}
+
+/* Samakan ukuran baca dengan daftar pasien, tanpa mengganti warna input bersama. */
+.patient-navigation-search :deep(.form-input-label) {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.patient-navigation-search :deep(.form-input-element) {
+  font-size: 13px;
+}
+
+.patient-workspace-menu button {
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.patient-workspace-menu button span {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.patient-workspace-menu button.active {
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.patient-workspace-sidebar-tools button:focus-visible,
+.patient-workspace-menu button:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: -2px;
+}
+
+.patient-workspace-menu > p,
+.patient-workspace-menu-state strong,
+.patient-workspace-menu-state p,
+.patient-workspace-access-state p,
+.patient-workspace-placeholder p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.patient-workspace-access-state > span,
+.patient-workspace-placeholder > span {
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.patient-workspace-summary article {
+  padding: 14px;
+}
+
+.patient-workspace-summary span {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.patient-workspace-summary strong {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 761px) {
+  .patient-workspace.collapsed .patient-navigation-search {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .patient-workspace .patient-workspace-sidebar-tools,
+  .patient-workspace.collapsed .patient-workspace-sidebar-tools {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .patient-workspace .patient-workspace-sidebar-tools button:first-child,
+  .patient-workspace.collapsed .patient-workspace-sidebar-tools button:first-child {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+
+  .patient-workspace .patient-workspace-menu,
+  .patient-workspace.collapsed .patient-workspace-menu {
+    align-items: stretch;
+    scrollbar-width: thin;
+  }
+
+  .patient-workspace .patient-workspace-menu button,
+  .patient-workspace.collapsed .patient-workspace-menu button {
+    width: auto;
+    min-width: 160px;
+    max-width: 240px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-items: start;
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .patient-workspace.collapsed .patient-workspace-menu-state strong,
+  .patient-workspace.collapsed .patient-workspace-menu-state p {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .patient-workspace,
+  .patient-workspace-menu button {
+    transition: none;
+  }
+}

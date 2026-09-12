@@ -85,7 +85,7 @@ VALUES
     ('Copy Resep', 'Copy', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 7, TRUE, NOW(), NOW()),
     ('Resep Luar', 'Receipt', JSON_ARRAY('Rawat Inap'), 8, TRUE, NOW(), NOW()),
     ('Verifikasi SBAR', 'ShieldCheck', JSON_ARRAY('Rawat Inap'), 9, TRUE, NOW(), NOW()),
-    ('Rujuk Internal', 'ArrowRightToLine', JSON_ARRAY('Rawat Inap'), 10, TRUE, NOW(), NOW()),
+    ('Rujuk Internal Rawat Inap', 'ArrowRightToLine', JSON_ARRAY('Rawat Inap'), 10, TRUE, NOW(), NOW()),
     ('Surat Konsultasi Ke Poli', 'Send', JSON_ARRAY('Rawat Inap'), 11, TRUE, NOW(), NOW()),
     ('Lembar Konsultasi', 'ClipboardList', JSON_ARRAY('Rawat Inap'), 12, TRUE, NOW(), NOW()),
     ('EWS Ranap', 'Activity', JSON_ARRAY('Rawat Inap'), 13, TRUE, NOW(), NOW()),
@@ -144,6 +144,9 @@ SET kode_sidebar = CONCAT('sidebar_lama_', LPAD(id, 4, '0'));
 
 UPDATE sidebar_pasien SET kode_sidebar = 'cppt_soap'
 WHERE nama_sidebar = 'Cppt/Soap';
+
+UPDATE sidebar_pasien SET kode_sidebar = 'rujukan_internal_ranap'
+WHERE nama_sidebar = 'Rujuk Internal Rawat Inap';
 UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas'
 WHERE nama_sidebar = 'Penanganan Dokter & Petugas';
 UPDATE sidebar_pasien SET kode_sidebar = 'diagnosa'
@@ -205,5 +208,10 @@ WHERE NOT EXISTS (SELECT 1 FROM menu_navigasi WHERE tipe='dashboard' AND label='
 INSERT INTO sidebar_pasien (kode_sidebar,nama_sidebar,ikon,daftar_modul,urutan,aktif,created_at,updated_at)
 SELECT 'ventilator','Ventilator','Wind',JSON_ARRAY('Rawat Inap'),49,TRUE,NOW(),NOW()
 WHERE NOT EXISTS (SELECT 1 FROM sidebar_pasien WHERE kode_sidebar='ventilator');
+
+INSERT INTO sidebar_pasien
+    (kode_sidebar, nama_sidebar, ikon, daftar_modul, urutan, aktif, created_at, updated_at)
+SELECT 'rujukan_internal_poli', 'Rujuk Internal Poli', 'ArrowRightToLine', JSON_ARRAY('Rawat Jalan', 'IGD/UGD'), 10, TRUE, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM sidebar_pasien WHERE kode_sidebar = 'rujukan_internal_poli');
 
 COMMIT;

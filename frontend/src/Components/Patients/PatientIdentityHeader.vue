@@ -92,3 +92,5 @@ const detailUtama = computed(() => [
     </div>
   </header>
 </template>
+
+<style src="./patient-identity.css" scoped></style>

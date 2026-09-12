@@ -1,0 +1,158 @@
+/* Tampilan bersama daftar pasien Rawat Jalan, IGD, dan Rawat Inap. */
+.service-patient-module {
+  min-width: 0;
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+.theme-dark .service-patient-module {
+  --surface: #0f172a;
+  --surface-soft: #1e293b;
+  --line: #334155;
+  --muted: #a7b6c9;
+}
+
+.service-patient-module .patient-module-header > div > span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.service-patient-module .patient-module-header h1 {
+  font-size: 25px;
+}
+
+.theme-dark .service-patient-module .patient-module-header h1 {
+  color: #fff;
+}
+
+.service-table-hint {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.service-patient-module :deep(.patient-list-table) {
+  margin-top: 10px;
+  border-color: var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.service-patient-module :deep(.p-datatable-table) {
+  font-size: 13px;
+}
+
+/* Beri ruang untuk nomor rawat dan jam lengkap pada ukuran teks 13px. */
+.service-patient-module :deep(.p-datatable-thead > tr > th:nth-child(2)),
+.service-patient-module :deep(.p-datatable-tbody > tr > td:nth-child(2)) {
+  width: 170px;
+}
+
+.service-patient-module :deep(.p-datatable-thead > tr > th:nth-child(9)),
+.service-patient-module :deep(.p-datatable-tbody > tr > td:nth-child(9)) {
+  width: 104px;
+}
+
+.service-patient-module :deep(.p-datatable-thead > tr > th) {
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.service-patient-module :deep(.p-datatable-thead > tr > th:first-child .p-datatable-column-header-content) {
+  justify-content: center;
+}
+
+.service-patient-module :deep(.p-datatable-thead > tr > th:nth-child(9) .p-datatable-column-header-content) {
+  justify-content: center;
+}
+
+.service-patient-module :deep(.p-datatable-tbody > tr > td) {
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.service-patient-module :deep(.p-datatable-tbody > tr > td strong),
+.service-patient-module :deep(.p-datatable-tbody > tr > td code) {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.service-patient-module :deep(.p-datatable-tbody > tr > td > span) {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.service-patient-module :deep(.p-datatable-tbody > tr > td:nth-child(4) strong),
+.service-patient-module :deep(.p-datatable-tbody > tr > td:nth-child(5) strong),
+.service-patient-module :deep(.p-datatable-tbody > tr > td:nth-child(6) strong) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.service-patient-module :deep(.patient-status) {
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: normal;
+}
+
+.service-patient-module :deep(.p-datatable-tbody > tr > td > .service-cell-primary) {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.service-patient-module :deep(.p-paginator .p-select-label) {
+  color: var(--text);
+}
+
+.service-patient-link {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.service-patient-link svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+.service-patient-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.service-patient-link:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 3px;
+}
+
+.service-patient-module :deep(.p-datatable-tbody > tr > td > .service-cell-secondary) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

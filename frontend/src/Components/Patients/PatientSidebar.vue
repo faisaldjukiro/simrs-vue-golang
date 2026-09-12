@@ -3,6 +3,7 @@
 import * as LucideIcons from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import PatientIdentityHeader from './PatientIdentityHeader.vue'
+import FormInput from '../Ui/FormInput.vue'
 import CpptPage from '../../Pages/RawatInap/Cppt/CpptPage.vue'
 import PenangananDokterPetugasPage from '../../Pages/Pasien/PenangananDokterPetugas/PenangananDokterPetugasPage.vue'
 import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologi/PermintaanRadiologiPage.vue'
@@ -22,6 +23,7 @@ import CopyResepPage from '../../Pages/Pasien/CopyResep/CopyResepPage.vue'
 import BerkasDigitalPage from '../../Pages/Pasien/BerkasDigital/BerkasDigitalPage.vue'
 import ImplementasiKeperawatanPage from '../../Pages/RawatInap/ImplementasiKeperawatan/ImplementasiKeperawatanPage.vue'
 import VentilatorPage from '../../Pages/RawatInap/Ventilator/VentilatorPage.vue'
+import RujukanInternalPage from '../../Pages/Pasien/RujukanInternal/RujukanInternalPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
@@ -77,10 +79,14 @@ const halamanSidebar = {
   berkas_digital: BerkasDigitalPage,
   implementasi_keperawatan: ImplementasiKeperawatanPage,
   ventilator: VentilatorPage,
+  rujukan_internal_poli: RujukanInternalPage,
+  rujukan_internal_ranap: RujukanInternalPage,
 }
 
 const daftarSidebarAktif = computed(() => {
   const sumberModul = props.sidebar.filter((item) => {
+    if (item.kode === 'rujukan_internal_poli' && !['Rawat Jalan', 'IGD/UGD'].includes(props.moduleName)) return false
+    if (item.kode === 'rujukan_internal_ranap' && props.moduleName !== 'Rawat Inap') return false
     const daftarModul = Array.isArray(item.daftar_modul) ? item.daftar_modul : []
     return item.kode && daftarModul.includes(props.moduleName)
   })
@@ -130,6 +136,7 @@ const propertiHalamanAktif = computed(() => {
     properti.namaModul = props.moduleName
   }
   if (kodeSidebarAktif.value === 'diagnosa') properti.moduleName = props.moduleName
+  if (['rujukan_internal_poli', 'rujukan_internal_ranap'].includes(kodeSidebarAktif.value)) properti.moduleName = props.moduleName
   if (['input_resep', 'copy_resep', 'sidebar_0007'].includes(kodeSidebarAktif.value)) properti.moduleName = props.moduleName
   if (kodeSidebarAktif.value === 'input_resep') properti.copiedResep = copyResepDraft.value
   return properti
@@ -184,34 +191,51 @@ watch(kodeSidebarAktif, (kode) => {
   <section class="patient-workspace" :class="{ collapsed: sidebarCollapsed }">
     <aside class="patient-workspace-sidebar">
       <div class="patient-workspace-sidebar-tools">
-        <button type="button" title="Kembali ke daftar pasien" @click="emit('back')">
+        <button
+          type="button"
+          title="Kembali ke daftar pasien"
+          aria-label="Kembali ke daftar pasien"
+          @click="emit('back')"
+        >
           <ArrowLeft :size="17" />
           <span>Daftar Pasien</span>
         </button>
-        <button type="button" :title="sidebarCollapsed ? 'Besarkan sidebar' : 'Perkecil sidebar'" @click="toggleSidebar">
+        <button
+          type="button"
+          :title="sidebarCollapsed ? 'Besarkan sidebar' : 'Perkecil sidebar'"
+          :aria-label="sidebarCollapsed ? 'Besarkan sidebar' : 'Perkecil sidebar'"
+          :aria-expanded="!sidebarCollapsed"
+          @click="toggleSidebar"
+        >
           <PanelLeftOpen v-if="sidebarCollapsed" :size="18" />
           <PanelLeftClose v-else :size="18" />
         </button>
       </div>
 
-      <label v-if="aksesSidebarTersedia" class="patient-workspace-search">
-        <Search :size="16" />
-        <input v-model="pencarianSidebar" type="search" placeholder="Cari sidebar pasien..." />
-      </label>
+      <FormInput
+        v-if="aksesSidebarTersedia"
+        v-model="pencarianSidebar"
+        class="patient-navigation-search"
+        label="Menu pelayanan"
+        type="search"
+        placeholder="Cari menu pelayanan..."
+      />
 
-      <nav v-if="aksesSidebarTersedia" class="patient-workspace-menu">
+      <nav v-if="aksesSidebarTersedia" class="patient-workspace-menu" aria-label="Menu pelayanan pasien">
         <button
           v-for="item in daftarSidebarTersaring"
           :key="item.kode"
           type="button"
           :class="{ active: kodeSidebarAktif === item.kode }"
           :title="item.nama"
+          :aria-label="item.nama"
+          :aria-current="kodeSidebarAktif === item.kode ? 'page' : undefined"
           @click="kodeSidebarAktif = item.kode"
         >
           <i><component :is="item.iconComponent" :size="17" /></i>
           <span>{{ item.nama }}</span>
         </button>
-        <p v-if="daftarSidebarTersaring.length === 0">Sidebar tidak ditemukan.</p>
+        <p v-if="daftarSidebarTersaring.length === 0" role="status">Menu tidak ditemukan. Coba kata lain.</p>
       </nav>
 
       <div v-else class="patient-workspace-menu-state">
@@ -222,7 +246,7 @@ watch(kodeSidebarAktif, (kode) => {
     </aside>
 
     <main class="patient-workspace-content">
-      <section v-if="!aksesSidebarTersedia" class="patient-workspace-access-state">
+      <section v-if="!aksesSidebarTersedia" class="patient-workspace-access-state" role="status">
         <i><component :is="statusSidebar.ikon" :size="34" /></i>
         <span>Akses Pelayanan Pasien</span>
         <h3>{{ statusSidebar.judul }}</h3>
@@ -236,27 +260,32 @@ watch(kodeSidebarAktif, (kode) => {
           :patient="patient"
         />
 
-      <section v-if="kodeSidebarAktif === 'ringkasan'" class="patient-workspace-summary">
-        <article v-for="item in ringkasan" :key="item[0]">
-          <span>{{ item[0] }}</span>
-          <strong>{{ item[1] || '-' }}</strong>
-        </article>
-      </section>
+        <section v-if="kodeSidebarAktif === 'ringkasan'" class="patient-workspace-summary" aria-label="Ringkasan kunjungan">
+          <article v-for="item in ringkasan" :key="item[0]">
+            <span>{{ item[0] }}</span>
+            <strong>{{ item[1] || '-' }}</strong>
+          </article>
+        </section>
 
-      <component
-        :is="komponenSidebarAktif"
-        v-else-if="komponenSidebarAktif"
-        v-bind="propertiHalamanAktif"
-        @copy-resep="terimaCopyResep"
-      />
+        <component
+          :is="komponenSidebarAktif"
+          v-else-if="komponenSidebarAktif"
+          v-bind="propertiHalamanAktif"
+          @copy-resep="terimaCopyResep"
+        />
 
-      <section v-else class="patient-workspace-placeholder">
-        <component :is="sidebarAktif?.iconComponent || LayoutDashboard" :size="32" />
-        <span>Sidebar Pasien</span>
-        <h3>{{ sidebarAktif?.nama }}</h3>
-        <p>Ruang kerja {{ sidebarAktif?.nama }} untuk pasien ini sudah disiapkan. Form dan prosesnya akan dipindahkan bertahap dari SIMRS lama.</p>
-      </section>
+        <section v-else class="patient-workspace-placeholder">
+          <component :is="sidebarAktif?.iconComponent || LayoutDashboard" :size="32" />
+          <span>Sidebar Pasien</span>
+          <h3>{{ sidebarAktif?.nama }}</h3>
+          <p>
+            Ruang kerja {{ sidebarAktif?.nama }} untuk pasien ini sudah disiapkan.
+            Form dan prosesnya akan dipindahkan bertahap dari SIMRS lama.
+          </p>
+        </section>
       </template>
     </main>
   </section>
 </template>
+
+<style src="./patient-workspace.css" scoped></style>

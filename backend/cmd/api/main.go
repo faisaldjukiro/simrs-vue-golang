@@ -74,6 +74,8 @@ import (
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	"simrs-backend/internal/modules/riwayat_perawatan"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
+	"simrs-backend/internal/modules/rujukan_internal"
+	rujukaninternalhttp "simrs-backend/internal/modules/rujukan_internal/delivery/http"
 	"simrs-backend/internal/modules/triase_igd"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
 	"simrs-backend/internal/modules/ventilator"
@@ -212,6 +214,9 @@ func main() {
 		whatsappConfig.Timeout,
 	))
 	ventilatorHandler := ventilatorhttp.NewHandler(ventilator.NewRepositori(simrsDB))
+	rujukanInternalRepositori := rujukan_internal.NewRepositori(db, simrsDB)
+	rujukanInternalPoliHandler := rujukaninternalhttp.NewHandler(rujukanInternalRepositori, rujukan_internal.Ralan)
+	rujukanInternalRanapHandler := rujukaninternalhttp.NewHandler(rujukanInternalRepositori, rujukan_internal.Ranap)
 
 	router := gin.New()
 	router.Use(gin.Logger(), aktivitas_log.Middleware(aktivitasLogRepositori), gin.Recovery())
@@ -249,6 +254,8 @@ func main() {
 		Resep:                   resepHandler,
 		WhatsAppGateway:         whatsappGatewayHandler,
 		Ventilator:              ventilatorHandler,
+		RujukanInternalPoli:     rujukanInternalPoliHandler,
+		RujukanInternalRanap:    rujukanInternalRanapHandler,
 	})
 	sahrulroutes.Register(router, sahrulroutes.Dependencies{})
 

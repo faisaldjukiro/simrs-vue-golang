@@ -1,0 +1,141 @@
+.rujukan-internal-page {
+  min-width: 0;
+  margin-top: 12px;
+}
+
+.rujukan-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 16px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--surface-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.rujukan-info svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #0d9488;
+}
+
+.rujukan-form fieldset {
+  margin: 0;
+  border: 0;
+  padding: 24px 16px 16px;
+}
+
+.rujukan-edit-status {
+  margin: 0 0 16px;
+  padding: 12px;
+  border-left: 3px solid #0d9488;
+  background: var(--surface-soft);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.rujukan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rujukan-actions .clinical-button {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.rujukan-send {
+  flex-basis: 100%;
+}
+
+.rujukan-source {
+  min-width: 180px;
+  max-width: 240px;
+}
+
+.rujukan-internal-page :deep(.rujukan-confirm) {
+  color: var(--text);
+  /* Token surface global dapat transparan; dialog perlu latar solid. */
+  background: var(--page);
+  border-color: var(--line);
+}
+
+.rujukan-table .clinical-table-main .rujukan-conflict {
+  color: var(--text);
+  border-left: 2px solid #d97706;
+  padding-left: 8px;
+}
+
+.rujukan-confirm-detail {
+  display: grid;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
+.rujukan-confirm-help {
+  margin: 16px 0 0;
+  line-height: 1.7;
+}
+
+.rujukan-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.rujukan-help {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.rujukan-internal-page .clinical-history-card {
+  margin-top: 14px;
+}
+
+.rujukan-table :deep(.p-datatable-table) {
+  min-width: 720px;
+  table-layout: auto;
+}
+
+.rujukan-table :deep(.p-datatable-thead > tr > th) {
+  background: var(--surface-soft);
+  color: var(--text);
+  font-size: 12px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.rujukan-table :deep(.p-datatable-thead > tr > th:first-child .p-datatable-column-header-content) {
+  justify-content: center;
+}
+
+.rujukan-table :deep(.p-datatable-tbody > tr > td),
+.rujukan-table .clinical-table-main strong {
+  font-size: 13px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.rujukan-table .clinical-table-main span {
+  font-size: 12px;
+  white-space: normal;
+}
+
+@media (max-width: 760px) {
+  .rujukan-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .rujukan-internal-page .clinical-section-header,
+  .rujukan-internal-page .clinical-section-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

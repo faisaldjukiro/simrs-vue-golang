@@ -36,6 +36,7 @@ import (
 	resumepasienhttp "simrs-backend/internal/modules/resume_pasien/delivery/http"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
+	rujukaninternalhttp "simrs-backend/internal/modules/rujukan_internal/delivery/http"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
 	ventilatorhttp "simrs-backend/internal/modules/ventilator/delivery/http"
 	whatsappgatewayhttp "simrs-backend/internal/modules/whatsapp_gateway/delivery/http"
@@ -76,6 +77,8 @@ type Dependencies struct {
 	TriaseIGD               *triaseigdhttp.Handler
 	WhatsAppGateway         *whatsappgatewayhttp.Handler
 	Ventilator              *ventilatorhttp.Handler
+	RujukanInternalPoli     *rujukaninternalhttp.Handler
+	RujukanInternalRanap    *rujukaninternalhttp.Handler
 }
 
 // Register attaches Faisal's routes to the shared API router. Developer names
@@ -123,6 +126,12 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	masterVentilatorGroup := protectedAPI.Group("/master-ventilator")
 	masterVentilatorGroup.Use(dependencies.Autentikasi.WajibPermission("master_ventilator"))
 	dependencies.Ventilator.RegisterMaster(masterVentilatorGroup)
+	rujukanPoliGroup := protectedAPI.Group("/rujukan-internal-poli")
+	rujukanPoliGroup.Use(dependencies.Autentikasi.WajibPermission("igd", "tindakan_ralan", "billing_ralan"))
+	dependencies.RujukanInternalPoli.Register(rujukanPoliGroup)
+	rujukanRanapGroup := protectedAPI.Group("/rujukan-internal-ranap")
+	rujukanRanapGroup.Use(dependencies.Autentikasi.WajibPermission("kamar_inap", "daftar_pasien_ranap"))
+	dependencies.RujukanInternalRanap.Register(rujukanRanapGroup)
 	daftarRouteSidebar := []struct {
 		path     string
 		register func(*gin.RouterGroup)

@@ -177,6 +177,12 @@ Aturan:
 
 ## Tabel
 
+Daftar pasien Rawat Jalan, IGD/UGD, dan Rawat Inap memakai stylesheet scoped
+`Components/Tabs/patient-list.css` dan filter bersama `PatientFilters.vue`.
+Isi tabel 13px, header/informasi pendukung 12px, dan nama pasien dapat dibuka
+melalui klik maupun keyboard. Pertahankan kolom khusus masing-masing layanan
+serta perilaku filter `Belum Pulang` saat merapikan tampilannya.
+
 Halaman laporan dan Monitoring Bed memakai stylesheet bersama:
 
 ```text
@@ -252,6 +258,13 @@ sementara. Untuk error backend, tampilkan pesan yang jelas dan pakai bahasa
 Indonesia.
 
 ## Sidebar Pasien
+
+Kartu identitas dan kerangka ruang kerja memakai stylesheet scoped
+`Components/Patients/patient-identity.css` dan `patient-workspace.css`.
+Gunakan teks utama 13px dan label 12px; nama, alamat, serta menu panjang boleh
+turun baris. Pada ponsel, menu bergulir horizontal dan tombol kembali tetap
+utuh meskipun preferensi sidebar desktop sedang diciutkan. Jangan menerapkan
+style kerangka ini pada isi form klinis.
 
 Sidebar pasien menggunakan konfigurasi dari database lokal `sidebar_pasien`.
 Frontend menentukan halaman berdasarkan `kode_sidebar`, bukan `nama_sidebar`.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { LoaderCircle } from '@lucide/vue'
+import { ArrowUpRight, LoaderCircle } from '@lucide/vue'
 import Column from 'primevue/column'
 import PatientFilters from '../Common/PatientFilters.vue'
 import DataTable from '../Ui/DataTable.vue'
@@ -45,12 +45,14 @@ function labelJenisKelamin(kode) {
 </script>
 
 <template>
-  <section class="patient-module">
+  <section class="patient-module" :class="{ 'service-patient-module': bolehFilter }">
     <header class="patient-module-header">
       <div>
         <span>Data Pasien</span>
         <h1>{{ currentTab }}</h1>
-        <p>{{ jumlahDataTampil }} dari {{ jumlahDataTotal }} data ditampilkan</p>
+        <p v-if="bolehFilter && dashboardLoading" role="status">Sedang memuat daftar pasien...</p>
+        <p v-else-if="bolehFilter && dashboardError">Daftar pasien belum dapat ditampilkan.</p>
+        <p v-else>{{ jumlahDataTampil }} dari {{ jumlahDataTotal }} data ditampilkan</p>
       </div>
     </header>
 
@@ -68,7 +70,10 @@ function labelJenisKelamin(kode) {
       @terapkan="emit('apply-filters', $event)"
     />
 
-    <div v-if="dashboardError" class="patient-error">{{ dashboardError }}</div>
+    <p v-if="bolehFilter && !dashboardLoading && !dashboardError" class="service-table-hint">
+      Pilih nama atau baris pasien untuk membuka pelayanan. Geser tabel untuk melihat kolom lainnya.
+    </p>
+    <div v-if="dashboardError" class="patient-error" role="alert">{{ dashboardError }}</div>
     <div v-else-if="dashboardLoading" class="patient-loading-panel">
       <LoaderCircle class="spin" :size="28" />
       <strong>Sedang menarik data {{ currentTab }}...</strong>
@@ -111,7 +116,17 @@ function labelJenisKelamin(kode) {
 
         <Column header="Nama Pasien">
           <template #body="{ data: patient }">
-            <strong>{{ patient.nama_pasien || `RM ${patient.no_rekam_medis}` }}</strong>
+            <button
+              type="button"
+              class="service-patient-link"
+              :aria-label="`Buka pelayanan ${patient.nama_pasien || 'pasien'}, RM ${patient.no_rekam_medis}`"
+              @click.stop="emit('select-patient', patient)"
+              @keydown.enter.stop
+              @keydown.space.stop
+            >
+              {{ patient.nama_pasien || `RM ${patient.no_rekam_medis}` }}
+              <ArrowUpRight :size="14" aria-hidden="true" />
+            </button>
             <span>
               {{ patient.umur || '-' }}
               <template v-if="labelJenisKelamin(patient.jenis_kelamin)"> - {{ labelJenisKelamin(patient.jenis_kelamin) }}</template>
@@ -122,12 +137,14 @@ function labelJenisKelamin(kode) {
         <Column header="Kamar/Ruangan">
           <template #body="{ data: patient }">
             <strong>{{ patient.kamar || '-' }}</strong>
-            <span v-if="patient.diagnosa_awal">{{ patient.diagnosa_awal }}</span>
+            <span v-if="patient.diagnosa_awal" class="service-cell-secondary">{{ patient.diagnosa_awal }}</span>
           </template>
         </Column>
 
         <Column header="DPJP">
-          <template #body="{ data: patient }"><strong>{{ patient.dokter || '-' }}</strong></template>
+          <template #body="{ data: patient }">
+            <span class="service-cell-primary">{{ patient.dokter || '-' }}</span>
+          </template>
         </Column>
 
         <Column header="Status Pulang">
@@ -180,7 +197,7 @@ function labelJenisKelamin(kode) {
           </template>
         </Column>
 
-        <Column header="No. CM">
+        <Column :header="bolehFilter ? 'No. RM' : 'No. CM'">
           <template #body="{ data: patient }">
             <strong><code>{{ patient.no_rekam_medis }}</code></strong>
           </template>
@@ -188,17 +205,35 @@ function labelJenisKelamin(kode) {
 
         <Column header="Nama Pasien">
           <template #body="{ data: patient }">
-            <strong>{{ patient.nama_pasien || `RM ${patient.no_rekam_medis}` }}</strong>
+            <button
+              v-if="bolehFilter"
+              type="button"
+              class="service-patient-link"
+              :aria-label="`Buka pelayanan ${patient.nama_pasien || 'pasien'}, RM ${patient.no_rekam_medis}`"
+              @click.stop="emit('select-patient', patient)"
+              @keydown.enter.stop
+              @keydown.space.stop
+            >
+              {{ patient.nama_pasien || `RM ${patient.no_rekam_medis}` }}
+              <ArrowUpRight :size="14" aria-hidden="true" />
+            </button>
+            <strong v-else>{{ patient.nama_pasien || `RM ${patient.no_rekam_medis}` }}</strong>
             <span>{{ patient.umur || '-' }}</span>
           </template>
         </Column>
 
         <Column header="Nama Dokter">
-          <template #body="{ data: patient }"><strong>{{ patient.dokter || '-' }}</strong></template>
+          <template #body="{ data: patient }">
+            <span v-if="bolehFilter" class="service-cell-primary">{{ patient.dokter || '-' }}</span>
+            <strong v-else>{{ patient.dokter || '-' }}</strong>
+          </template>
         </Column>
 
         <Column header="Poliklinik">
-          <template #body="{ data: patient }"><strong>{{ patient.poliklinik || '-' }}</strong></template>
+          <template #body="{ data: patient }">
+            <span v-if="bolehFilter" class="service-cell-primary">{{ patient.poliklinik || '-' }}</span>
+            <strong v-else>{{ patient.poliklinik || '-' }}</strong>
+          </template>
         </Column>
 
         <Column header="Status">
@@ -242,3 +277,5 @@ function labelJenisKelamin(kode) {
     </DataTable>
   </section>
 </template>
+
+<style src="/src/Components/Tabs/patient-list.css" scoped></style>

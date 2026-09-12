@@ -1,0 +1,118 @@
+.patient-identity-header,
+:global(.dashboard-app.theme-light) .patient-identity-header {
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.patient-identity-header::after {
+  display: none;
+}
+
+.patient-identity-heading {
+  gap: 12px;
+}
+
+.patient-identity-heading h2 {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.patient-identity-heading p {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.patient-identity-badges span,
+.patient-identity-badges small {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+
+.patient-identity-status {
+  max-width: 160px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.patient-identity-summary span {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.patient-identity-summary svg,
+.patient-identity-grid svg {
+  flex-shrink: 0;
+}
+
+.patient-identity-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.patient-identity-grid article,
+.patient-identity-contact article {
+  padding: 12px;
+}
+
+.patient-identity-grid article span,
+.patient-identity-contact span {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.patient-identity-grid article strong,
+.patient-identity-contact strong {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.patient-identity-contact {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.patient-identity-contact strong {
+  font-weight: 400;
+}
+
+@media (max-width: 760px) {
+  .patient-identity-header {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .patient-identity-heading {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .patient-identity-heading h2 {
+    font-size: 20px;
+  }
+
+  .patient-identity-status {
+    max-width: 100%;
+  }
+
+  .patient-identity-contact {
+    grid-template-columns: 1fr;
+  }
+}
