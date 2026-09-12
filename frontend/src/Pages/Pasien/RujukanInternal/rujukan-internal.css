@@ -44,13 +44,12 @@
   gap: 8px;
 }
 
-.rujukan-actions .clinical-button {
-  padding: 8px 10px;
-  font-size: 12px;
-}
-
 .rujukan-send {
   flex-basis: 100%;
+}
+
+.rujukan-internal-page :deep(.rujukan-confirm .p-dialog-footer) {
+  flex-wrap: wrap;
 }
 
 .rujukan-source {

@@ -25,6 +25,8 @@ defineProps({
 .table-search {
   display: flex;
   width: min(380px, 42vw);
+  min-width: 0;
+  max-width: 100%;
   height: 42px;
   align-items: center;
   gap: 9px;
@@ -36,7 +38,7 @@ defineProps({
 }
 
 .table-search input {
-  width: 100%;
+  flex: 1;
   min-width: 0;
   height: 100%;
   border: 0;
@@ -47,6 +49,10 @@ defineProps({
   font-weight: 650;
 }
 
+.table-search > svg {
+  flex-shrink: 0;
+}
+
 .table-search input::placeholder {
   color: var(--muted);
   opacity: .85;
@@ -54,6 +60,7 @@ defineProps({
 
 .table-search-count {
   flex: 0 0 auto;
+  white-space: nowrap;
   border-radius: 999px;
   padding: 4px 7px;
   color: #0d9488;

@@ -158,12 +158,25 @@ const {
         <Column header="Aksi" style="min-width:210px;width:210px">
           <template #body="{ data }">
             <div class="rujukan-actions">
-              <button type="button" class="clinical-button secondary" :disabled="terkunci" @click="edit(data)">
-                <Pencil :size="14" /> Edit
-              </button>
-              <button type="button" class="clinical-button secondary" :disabled="terkunci" @click="mintaKonfirmasi('hapus', data)">
-                <Trash2 :size="14" /> Hapus
-              </button>
+              <div class="clinical-table-actions">
+                <button
+                  type="button"
+                  title="Edit rujukan"
+                  :disabled="terkunci"
+                  @click="edit(data)"
+                >
+                  <Pencil :size="14" /> Edit
+                </button>
+                <button
+                  type="button"
+                  class="danger"
+                  title="Hapus rujukan"
+                  :disabled="terkunci"
+                  @click="mintaKonfirmasi('hapus', data)"
+                >
+                  <Trash2 :size="14" /> Hapus
+                </button>
+              </div>
               <button
                 v-if="data.sumber === 'SIRAPI'"
                 type="button"
@@ -214,7 +227,13 @@ const {
         <button type="button" class="clinical-button secondary" :disabled="saving" autofocus @click="konfirmasi = null">
           Batal
         </button>
-        <button type="button" class="clinical-button primary" :disabled="saving || terkunci" @click="jalankanAksi">
+        <button
+          type="button"
+          class="clinical-button"
+          :class="konfirmasi?.aksi === 'hapus' ? 'danger' : 'primary'"
+          :disabled="saving || terkunci"
+          @click="jalankanAksi"
+        >
           <LoaderCircle v-if="saving" class="spin" :size="15" />
           {{ saving ? 'Memproses...' : konfirmasi?.aksi === 'hapus' ? 'Ya, Hapus Rujukan' : 'Ya, Kirim ke Khanza' }}
         </button>
