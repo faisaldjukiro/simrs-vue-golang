@@ -161,7 +161,38 @@ Aturan:
 - Pertahankan file `*Page.vue` sebagai entry point di dalam folder fitur dan
   perbarui path import pemetaan `kode_sidebar` saat folder dipindahkan.
 
+## Beranda dan Navigasi
+
+- Beranda memakai `Components/Tabs/beranda.css`; navigasi memakai stylesheet
+  scoped di `Components/Layout`. Batasi token dark mode pada wrapper komponen,
+  jangan mengubah token seluruh aplikasi dari stylesheet fitur.
+- Kartu statistik menampilkan label, angka, dan petunjuk akses. Saat loading,
+  gagal memuat, atau belum login, jangan menampilkan angka nol seolah data valid.
+- Menu tanpa akses tetap terlihat dengan tombol disabled, ikon kunci, dan teks
+  akses terbatas. Hindari opacity terlalu rendah yang membuat label tidak terbaca.
+- Pencarian menu menggunakan `FormInput.vue` dan mencakup nama, deskripsi, serta
+  kategori. Dialog menu mendukung fokus keyboard, tombol Esc, dan pengembalian fokus.
+- Pada layar kecil, navigasi utama boleh bergulir horizontal di dalam kontainernya;
+  halaman secara keseluruhan tidak boleh melebar.
+
 ## Tabel
+
+Halaman laporan dan Monitoring Bed memakai stylesheet bersama:
+
+```text
+frontend/src/Components/Ui/report.css
+```
+
+Import dengan `<style src="..." scoped>` pada halaman. CSS fitur hanya mengatur
+layout khusus; jangan menyalin warna, tipografi, atau alignment tabel bersama.
+Gunakan isi tabel 13px, informasi pendukung dan header 12px, serta header tanpa
+gradient. Lebar tabel mengikuti kolom; jangan memaksa seluruh laporan menjadi
+1500px. Untuk laporan yang benar-benar lebar, pakai minimum per kolom atau
+`--report-table-min-width`. Kolom angka memakai `right-align-header` dan
+`right-align-body`; kolom nomor rata tengah.
+
+Grafik opsional dibuka melalui tombol “Lihat Grafik” / “Tutup Grafik” dengan
+`aria-expanded`, supaya tabel tetap mudah dijangkau saat halaman dibuka.
 
 Tabel SIRAPI harus:
 

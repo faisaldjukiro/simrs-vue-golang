@@ -111,6 +111,8 @@ const {
     </div>
     <div class="visit-report-tools">
       <span>{{ data.length }} baris ditampilkan</span><button class="chart-button" :class="{ active: grafikVisible }"
+        :aria-expanded="grafikVisible"
+        aria-controls="grafik-kunjungan-ralan"
         @click="grafikVisible = !grafikVisible">
         <X v-if="grafikVisible" :size="15" />
         <BarChart3 v-else :size="15" />{{
@@ -122,7 +124,7 @@ const {
         <Printer :size="15" /> Cetak
       </button>
     </div>
-    <section v-if="grafikVisible" class="visit-analytics">
+    <section v-if="grafikVisible" id="grafik-kunjungan-ralan" class="visit-analytics">
       <header>
         <div>
           <span>Visualisasi Data</span>
@@ -269,4 +271,4 @@ const {
     </DataTable>
   </section>
 </template>
-<style src="./kunjungan-ralan.css" scoped></style>
+<style src="../../../Components/Ui/report.css" scoped></style>

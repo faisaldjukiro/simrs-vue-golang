@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BedDouble, Download, Filter, Printer } from "@lucide/vue";
+import { BarChart3, BedDouble, Download, Filter, Printer, X } from "@lucide/vue";
 import Column from "primevue/column";
 import DataTable from "../../../Components/Ui/DataTable.vue";
 import FormInput from "../../../Components/Ui/FormInput.vue";
@@ -51,7 +51,19 @@ const x = usePenggunaanBed(props);
       <span>
         {{ x.dataTersaring.value.length }} dari {{ x.data.value.length }} bangsal
       </span>
-      <button @click="x.excel">
+      <button
+        type="button"
+        class="chart-button"
+        :class="{ active: x.grafikVisible.value }"
+        :aria-expanded="x.grafikVisible.value"
+        aria-controls="grafik-penggunaan-bed"
+        @click="x.grafikVisible.value = !x.grafikVisible.value"
+      >
+        <X v-if="x.grafikVisible.value" :size="16" />
+        <BarChart3 v-else :size="16" />
+        {{ x.grafikVisible.value ? "Tutup Grafik" : "Lihat Grafik" }}
+      </button>
+      <button :disabled="x.loading.value || !x.data.value.length" @click="x.excel">
         <Download :size="15" />
         Excel
       </button>
@@ -60,7 +72,11 @@ const x = usePenggunaanBed(props);
         Cetak
       </button>
     </div>
-    <section class="visit-analytics">
+    <section
+      v-if="x.grafikVisible.value"
+      id="grafik-penggunaan-bed"
+      class="visit-analytics"
+    >
       <header>
         <div>
           <span>Visualisasi</span>
@@ -70,7 +86,7 @@ const x = usePenggunaanBed(props);
         <BedDouble />
       </header>
       <article class="visit-chart-card bed-chart">
-        <div class="horizontal-chart">
+        <div v-if="x.grafik.value.length" class="horizontal-chart">
           <div v-for="i in x.grafik.value" :key="i.kode_bangsal">
             <label>
               <span>{{ i.nama_bangsal }}</span>
@@ -81,6 +97,7 @@ const x = usePenggunaanBed(props);
             </i>
           </div>
         </div>
+        <em v-else>Belum ada data untuk divisualisasikan.</em>
       </article>
     </section>
     <div v-if="x.error.value" class="patient-error">{{ x.error.value }}</div>
@@ -107,5 +124,5 @@ const x = usePenggunaanBed(props);
     </DataTable>
   </section>
 </template>
-<style src="../KunjunganRalan/kunjungan-ralan.css" scoped></style>
+<style src="../../../Components/Ui/report.css" scoped></style>
 <style src="./penggunaan-bed.css" scoped></style>

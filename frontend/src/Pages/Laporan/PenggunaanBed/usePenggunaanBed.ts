@@ -19,6 +19,7 @@ export function usePenggunaanBed(props: { token: string }) {
   });
   const bangsal = ref<any>({});
   const pencarian = ref("");
+  const grafikVisible = ref(false);
   const notifikasi = useNotifikasi();
   const dataTersaring = computed(() => {
     const kataKunci = pencarian.value.trim().toLowerCase();
@@ -84,6 +85,7 @@ export function usePenggunaanBed(props: { token: string }) {
     pencarian,
     dataTersaring,
     grafik,
+    grafikVisible,
     muat,
     excel,
     cariBangsal: (q: string) => cariBangsalPenggunaanBed(props.token, q),

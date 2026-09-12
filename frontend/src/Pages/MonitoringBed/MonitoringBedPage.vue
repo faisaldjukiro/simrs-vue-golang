@@ -248,5 +248,5 @@ const opsiStatus = [
   </section>
 </template>
 
-<style src="../Laporan/KunjunganRalan/kunjungan-ralan.css" scoped></style>
+<style src="../../Components/Ui/report.css" scoped></style>
 <style src="./monitoring-bed.css" scoped></style>

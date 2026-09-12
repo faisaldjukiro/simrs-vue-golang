@@ -82,17 +82,23 @@ const x = reactive(useKunjunganRanap(props));
             </article>
         </div>
         <div class="visit-report-tools">
-            <span>{{ x.data.length }} baris</span><button class="chart-button"
+            <span>{{ x.data.length }} baris</span>
+            <button
+                class="chart-button"
+                :class="{ active: x.grafikVisible }"
+                :aria-expanded="x.grafikVisible"
+                aria-controls="grafik-kunjungan-ranap"
                 @click="x.grafikVisible = !x.grafikVisible">
                 <X v-if="x.grafikVisible" :size="15" />
-                <BarChart3 v-else :size="15" /> Grafik
+                <BarChart3 v-else :size="15" />
+                {{ x.grafikVisible ? "Tutup Grafik" : "Lihat Grafik" }}
             </button><button @click="x.excel">
                 <Download :size="15" /> Excel
             </button><button @click="x.cetak">
                 <Printer :size="15" /> Cetak
             </button>
         </div>
-        <section v-if="x.grafikVisible" class="visit-analytics">
+        <section v-if="x.grafikVisible" id="grafik-kunjungan-ranap" class="visit-analytics">
             <header>
                 <div>
                     <span>Visualisasi</span>
@@ -220,4 +226,4 @@ const x = reactive(useKunjunganRanap(props));
         </DataTable>
     </section>
 </template>
-<style src="../KunjunganRalan/kunjungan-ralan.css" scoped></style>
+<style src="../../../Components/Ui/report.css" scoped></style>

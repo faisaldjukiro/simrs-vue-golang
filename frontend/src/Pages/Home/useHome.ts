@@ -173,7 +173,9 @@ export function useHome(props, emit) {
   const filteredMenus = computed(() => {
     const keyword = menuSearch.value.trim().toLowerCase()
     if (!keyword) return dashboardMenus
-    return dashboardMenus.filter((menu) => `${menu.label} ${menu.description}`.toLowerCase().includes(keyword))
+    return dashboardMenus.filter((menu) =>
+      `${menu.label} ${menu.description} ${menu.category}`.toLowerCase().includes(keyword),
+    )
   })
   
   const quickStats = computed(() => [

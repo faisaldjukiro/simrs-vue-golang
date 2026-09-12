@@ -1,0 +1,112 @@
+.sirapi-ribbon {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  scrollbar-width: thin;
+}
+
+.sirapi-ribbon-item {
+  position: relative;
+  display: flex;
+  flex: 0 0 92px;
+  min-height: 62px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms;
+}
+
+.sirapi-ribbon-item span {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sirapi-ribbon-item:not(:disabled):hover {
+  border-color: #0d9488;
+  background: color-mix(in srgb, #0d9488 9%, var(--surface));
+}
+
+.sirapi-ribbon-item.active {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+
+.sirapi-ribbon-item.active:not(:disabled):hover {
+  background: #115e59;
+}
+
+.sirapi-ribbon-item.active svg {
+  color: inherit;
+}
+
+.sirapi-ribbon-item.logout {
+  margin-left: 4px;
+  color: #be123c;
+  background: color-mix(in srgb, #e11d48 5%, var(--surface));
+}
+
+.sirapi-ribbon-item:disabled {
+  border-style: dashed;
+  color: var(--muted);
+  background: var(--surface-soft);
+  cursor: not-allowed;
+}
+
+.sirapi-ribbon-item:disabled svg {
+  color: var(--muted);
+}
+
+.ribbon-lock {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+}
+
+.sirapi-ribbon-item:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 3px;
+}
+
+.theme-dark .sirapi-ribbon {
+  --surface: #0f172a;
+  --surface-soft: #1e293b;
+  --line: #334155;
+  --muted: #a7b6c9;
+}
+
+.theme-dark .sirapi-ribbon-item.logout {
+  color: #fda4af;
+}
+
+@media (max-width: 600px) {
+  .sirapi-ribbon {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .sirapi-ribbon-item {
+    flex-basis: 90px;
+    min-height: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sirapi-ribbon-item {
+    transition: none;
+  }
+}

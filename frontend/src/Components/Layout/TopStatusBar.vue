@@ -13,7 +13,7 @@ defineEmits(['toggle-theme'])
 </script>
 
 <template>
-  <nav class="status-bar">
+  <header class="status-bar shell-status">
     <div class="date-time">
       <CalendarClock :size="16" />
       <span>{{ formattedDate }}</span>
@@ -29,11 +29,83 @@ defineEmits(['toggle-theme'])
     <div class="hospital-status wide-only"><i></i> RS Prof. Dr. H. Aloei Saboe</div>
     <div class="status-actions">
       <span class="online-badge"><UsersRound :size="15" /> {{ onlineCount }} Online</span>
-      <button type="button" @click="$emit('toggle-theme')">
+      <button
+        type="button"
+        :aria-label="isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'"
+        :title="isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'"
+        @click="$emit('toggle-theme')"
+      >
         <Sun v-if="isDark" :size="15" />
         <Moon v-else :size="15" />
-        {{ isDark ? 'Light' : 'Dark' }}
+        <span>{{ isDark ? 'Mode terang' : 'Mode gelap' }}</span>
       </button>
     </div>
-  </nav>
+  </header>
 </template>
+
+<style scoped>
+.shell-status {
+  height: auto;
+  min-height: 46px;
+  padding: 7px 24px;
+}
+
+.status-user b {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.status-actions button {
+  min-height: 32px;
+}
+
+.status-actions button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+@media (max-width: 1100px) {
+  .wide-only {
+    display: none;
+  }
+
+  .status-user code {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .shell-status {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .date-time {
+    flex-wrap: wrap;
+    gap: 3px 8px;
+    font-size: 11px;
+  }
+
+  .date-time > svg {
+    display: none;
+  }
+
+  .date-time strong {
+    padding: 3px 6px;
+    letter-spacing: normal;
+  }
+
+  .status-actions button {
+    width: 34px;
+    height: 34px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .status-actions button span {
+    display: none;
+  }
+}
+</style>

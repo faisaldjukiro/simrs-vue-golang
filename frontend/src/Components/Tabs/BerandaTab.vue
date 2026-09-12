@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
-import { CheckCircle2, Heart, MapPin, Server } from '@lucide/vue'
+import { ArrowRight, CheckCircle2, CircleAlert, LayoutGrid, LoaderCircle, LockKeyhole, MapPin, Server } from '@lucide/vue'
 
 defineProps({
   dashboardLoading: Boolean,
@@ -15,44 +15,113 @@ const emit = defineEmits(['select-tab'])
 </script>
 
 <template>
-  <section class="dashboard-grid">
-    <div class="dashboard-left">
-      <article class="hero-card">
-        <img src="/img/benner.png" alt="RS Prof. Dr. H. Aloei Saboe" />
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-          <span class="simrs-label"><Heart :size="14" /> Sistem Informasi Rumah Sakit Pelayanan Terintegrasi</span>
-          <div class="hero-title">
+  <section class="beranda" aria-label="Beranda SIRAPI">
+    <header class="beranda-heading">
+      <div>
+        <h1>Beranda SIRAPI</h1>
+        <p>Ringkasan layanan dan koneksi dalam satu tampilan.</p>
+      </div>
+      <button type="button" class="beranda-menu" @click="emit('select-tab', 'Menu')">
+        <LayoutGrid :size="18" />
+        Jelajahi menu
+        <ArrowRight :size="16" />
+      </button>
+    </header>
+
+    <div class="beranda-overview">
+      <article class="beranda-hero">
+        <img class="beranda-photo" src="/img/benner.png" alt="Gedung RS Prof. Dr. H. Aloei Saboe" />
+        <div class="beranda-hero-content">
+          <div class="beranda-brand">
             <img src="/img/icon_rsas.png" alt="Logo RSAS" />
-            <h1>SIRAPI</h1>
+            <div>
+              <span class="beranda-eyebrow">Sistem Informasi Rumah Sakit Pelayanan Terintegrasi</span>
+              <h2>RS Prof. Dr. H. Aloei Saboe</h2>
+            </div>
           </div>
-          <p class="location"><MapPin :size="16" /> PROF. DR. H. ALOEI SABOE GORONTALO</p>
-          <p class="hero-description">SIRAPI adalah Sistem Informasi Rumah Sakit Pelayanan Terintegrasi untuk administrasi medis dan pelayanan digital. Membantu koordinasi antardepartemen secara cepat, responsif, dan aman.</p>
-          <div class="connection-info" :class="{ connection_error: dashboardError }">
-            <CheckCircle2 :size="20" />
-            {{ dashboardLoading ? 'Memeriksa koneksi database SIMRS lama...' : dashboardError || 'Database SIMRS lama terhubung dan siap digunakan.' }}
+          <p class="beranda-location">
+            <MapPin :size="15" /> Kota Gorontalo
+          </p>
+          <p class="beranda-description">
+            Mendukung administrasi medis dan pelayanan digital, serta koordinasi
+            antardepartemen yang cepat, responsif, dan aman.
+          </p>
+          <div
+            class="beranda-connection"
+            :class="{ 'is-error': dashboardError, 'is-pending': dashboardLoading || !isAuthenticated }"
+            role="status"
+          >
+            <LoaderCircle v-if="dashboardLoading" :size="18" class="beranda-spinner" />
+            <LockKeyhole v-else-if="!isAuthenticated" :size="18" />
+            <CircleAlert v-else-if="dashboardError" :size="18" />
+            <CheckCircle2 v-else :size="18" />
+            <span>{{
+              !isAuthenticated
+                ? 'Silakan login untuk melihat data pelayanan.'
+                : dashboardLoading
+                  ? 'Memeriksa koneksi SIMRS...'
+                  : dashboardError || 'Database SIMRS terhubung dan siap digunakan.'
+            }}</span>
           </div>
         </div>
       </article>
 
-      <div class="quick-stats">
-        <button v-for="stat in quickStats" :key="stat.label" type="button" :disabled="isMenuDisabled(stat.tab)" :title="isMenuDisabled(stat.tab) ? 'Anda tidak memiliki akses ke modul ini' : stat.label" @click="emit('select-tab', stat.tab)">
-          <div><strong>{{ stat.value }}</strong><span :class="`tone-bg-${stat.tone}`"><component :is="stat.icon" :size="20" /></span></div>
-          <p>{{ stat.label }}</p>
-        </button>
-      </div>
-    </div>
-
-    <aside class="monitor-card">
-      <div>
-        <header><div><h2>Koneksi</h2></div><i><Server :size="22" /></i></header>
-        <div class="service-list">
-          <div v-for="status in serviceStatuses" :key="status.label">
+      <aside class="beranda-services" aria-labelledby="beranda-koneksi">
+        <header>
+          <div>
+            <h2 id="beranda-koneksi">Status koneksi</h2>
+            <p>Ketersediaan layanan terintegrasi</p>
+          </div>
+          <Server :size="21" />
+        </header>
+        <div class="beranda-service-list" aria-live="polite">
+          <div v-for="status in serviceStatuses" :key="status.label" class="beranda-service">
             <span>{{ status.label }}</span>
-            <strong :class="status.tone"><i></i>{{ status.value }}</strong>
+            <strong :class="status.tone">
+              <i aria-hidden="true"></i>
+              {{ status.value }}
+            </strong>
           </div>
         </div>
+      </aside>
+    </div>
+
+    <section class="beranda-summary" aria-labelledby="beranda-ringkasan" :aria-busy="dashboardLoading">
+      <header>
+        <h2 id="beranda-ringkasan">Ringkasan pelayanan</h2>
+      </header>
+      <div class="beranda-stats">
+        <button
+          v-for="stat in quickStats"
+          :key="stat.label"
+          type="button"
+          :disabled="isMenuDisabled(stat.tab)"
+          :title="isMenuDisabled(stat.tab) ? 'Anda tidak memiliki akses ke modul ini' : `Buka ${stat.tab}`"
+          @click="emit('select-tab', stat.tab)"
+        >
+          <span class="beranda-stat-heading">
+            <span>{{ stat.label }}</span>
+            <component :is="stat.icon" :size="20" />
+          </span>
+          <strong>{{
+            dashboardLoading
+              ? '…'
+              : dashboardError || !isAuthenticated
+                ? '—'
+                : Number(stat.value).toLocaleString('id-ID')
+          }}</strong>
+          <span class="beranda-stat-link">
+            <template v-if="isMenuDisabled(stat.tab)">
+              <LockKeyhole :size="13" /> Akses terbatas
+            </template>
+            <template v-else>
+              Buka layanan <ArrowRight :size="14" />
+            </template>
+          </span>
+        </button>
       </div>
-    </aside>
+    </section>
   </section>
 </template>
+
+<style src="./beranda.css" scoped></style>

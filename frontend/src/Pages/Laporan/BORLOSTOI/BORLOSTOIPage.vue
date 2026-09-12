@@ -120,5 +120,5 @@ const x = useBORLOSTOI(props);
   </section>
 </template>
 
-<style src="../KunjunganRalan/kunjungan-ralan.css" scoped></style>
+<style src="../../../Components/Ui/report.css" scoped></style>
 <style src="./bor-los-toi.css" scoped></style>

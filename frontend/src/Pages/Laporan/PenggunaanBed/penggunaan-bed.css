@@ -1,49 +1,9 @@
 .bed-filter {
   grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
 }
+
 .bed-chart {
   margin-top: 13px;
-}
-.bed-report .visit-analytics {
-  margin-top: 12px;
-}
-
-.bed-usage-table {
-  margin-top: 0;
-}
-
-.bed-usage-table :deep(.center-align-header) {
-  text-align: center !important;
-}
-.bed-usage-table :deep(.center-align-header .p-column-header-content),
-.bed-usage-table :deep(.center-align-header .p-datatable-column-header-content) {
-  justify-content: center !important;
-}
-.bed-usage-table :deep(.center-align-body) {
-  text-align: center !important;
-}
-
-.bed-usage-table :deep(.right-align-header) {
-  text-align: right !important;
-}
-.bed-usage-table :deep(.right-align-header .p-column-header-content),
-.bed-usage-table :deep(.right-align-header .p-datatable-column-header-content) {
-  justify-content: flex-end !important;
-}
-.bed-usage-table :deep(.right-align-body) {
-  text-align: right !important;
-}
-
-.bed-usage-table :deep(.right-align-body .bed-number) {
-  display: block;
-  width: 100%;
-  text-align: right;
-}
-
-.bed-usage-table :deep(.p-datatable-tbody > tr > td) {
-  font-size: 12px;
-  font-weight: 550;
-  line-height: 1.45;
 }
 
 .bed-number {
@@ -51,24 +11,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-.bed-metric {
-  display: inline-flex;
-  min-width: 64px;
-  justify-content: flex-end;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: color-mix(in srgb, #0d9488 12%, transparent);
-  color: #0d9488;
-  font-weight: 750;
-  font-variant-numeric: tabular-nums;
+@media (max-width: 1000px) {
+  .bed-filter {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-:global(.theme-dark) .bed-report .horizontal-chart u,
-:global(.sirapi-dark) .bed-report .horizontal-chart u {
-  background: #14b8a6;
-}
-
-@media (max-width: 800px) {
+@media (max-width: 600px) {
   .bed-filter {
     grid-template-columns: 1fr;
   }

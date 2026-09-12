@@ -97,7 +97,13 @@ const {
 
     <div class="visit-report-tools">
       <span>{{ data.length }} penyakit ditampilkan</span>
-      <button class="chart-button" @click="grafikVisible = !grafikVisible">
+      <button
+        class="chart-button"
+        :class="{ active: grafikVisible }"
+        :aria-expanded="grafikVisible"
+        aria-controls="grafik-sepuluh-penyakit"
+        @click="grafikVisible = !grafikVisible"
+      >
         <X v-if="grafikVisible" :size="15" />
         <BarChart3 v-else :size="15" />
         {{ grafikVisible ? "Tutup Grafik" : "Lihat Grafik" }}
@@ -106,7 +112,7 @@ const {
       <button @click="cetak"><Printer :size="15" /> Cetak</button>
     </div>
 
-    <section v-if="grafikVisible" class="visit-analytics">
+    <section v-if="grafikVisible" id="grafik-sepuluh-penyakit" class="visit-analytics">
       <header>
         <div>
           <span>Visualisasi Data</span>
@@ -143,17 +149,47 @@ const {
       </Column>
       <Column field="kode" header="Kode" style="min-width: 100px" />
       <Column field="nama" header="Nama Penyakit" style="min-width: 360px" />
-      <Column field="diagnosa_lain" header="Diagnosa Lain" />
-      <Column field="laki_hidup" header="Lk2 (Hidup)" />
-      <Column field="perempuan_hidup" header="Pr (Hidup)" />
-      <Column field="laki_meninggal" header="Lk2 (Mati)" />
-      <Column field="perempuan_meninggal" header="Pr (Mati)" />
-      <Column field="jumlah" header="Jumlah">
+      <Column
+        field="diagnosa_lain"
+        header="Diagnosa Lain"
+        header-class="right-align-header"
+        body-class="right-align-body"
+      />
+      <Column
+        field="laki_hidup"
+        header="Lk2 (Hidup)"
+        header-class="right-align-header"
+        body-class="right-align-body"
+      />
+      <Column
+        field="perempuan_hidup"
+        header="Pr (Hidup)"
+        header-class="right-align-header"
+        body-class="right-align-body"
+      />
+      <Column
+        field="laki_meninggal"
+        header="Lk2 (Mati)"
+        header-class="right-align-header"
+        body-class="right-align-body"
+      />
+      <Column
+        field="perempuan_meninggal"
+        header="Pr (Mati)"
+        header-class="right-align-header"
+        body-class="right-align-body"
+      />
+      <Column
+        field="jumlah"
+        header="Jumlah"
+        header-class="right-align-header"
+        body-class="right-align-body"
+      >
         <template #body="{ data: item }"><strong>{{ item.jumlah }}</strong></template>
       </Column>
     </DataTable>
   </section>
 </template>
 
-<style src="../KunjunganRalan/kunjungan-ralan.css" scoped></style>
+<style src="../../../Components/Ui/report.css" scoped></style>
 <style src="./sepuluh-penyakit.css" scoped></style>

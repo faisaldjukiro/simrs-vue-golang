@@ -3,48 +3,12 @@
   align-items: end;
 }
 
-/* Keep the shared report layout, with a quieter header for monitoring. */
+.monitoring-bed-table {
+  --report-table-min-width: 1280px;
+}
+
 .monitoring-bed-table :deep(.p-datatable-table) {
-  min-width: 1280px;
   table-layout: fixed !important;
-}
-
-.monitoring-bed-table :deep(.p-datatable-tbody > tr > td) {
-  height: 68px !important;
-  padding: 12px 16px !important;
-  font-size: 13px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-.monitoring-bed .monitoring-bed-table :deep(.p-datatable-thead > tr > th) {
-  padding: 13px 16px !important;
-  background: var(--surface-soft) !important;
-  color: var(--text) !important;
-  border-bottom: 1px solid var(--line) !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.02em !important;
-}
-
-.monitoring-bed .monitoring-bed-table :deep(.p-datatable-tbody > tr) {
-  background: var(--surface) !important;
-}
-
-.monitoring-bed .monitoring-bed-table :deep(.p-datatable-tbody > tr:nth-child(even)) {
-  background: color-mix(in srgb, var(--text) 3%, var(--surface)) !important;
-}
-
-.monitoring-bed .monitoring-bed-table :deep(.p-datatable-tbody > tr:hover) {
-  background: color-mix(in srgb, #0d9488 9%, var(--surface)) !important;
-}
-
-.monitoring-bed-table :deep(.monitoring-center) {
-  text-align: center !important;
-}
-
-.monitoring-bed-table :deep(.monitoring-center .p-datatable-column-header-content) {
-  justify-content: center;
 }
 
 .bed-cell-stack {
