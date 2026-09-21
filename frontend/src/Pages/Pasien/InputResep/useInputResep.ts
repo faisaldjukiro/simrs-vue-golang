@@ -24,6 +24,7 @@ export function useInputResep(props) {
   const form = reactive({ no_resep: '', tgl_peresepan: today(), jam: now(), no_rawat: props.patient?.no_rawat || '', kd_dokter: '', status: 'ralan', kd_bangsal: '', nm_bangsal: '', judul: '' })
   const items = ref([])
   const racikan = ref([])
+  const editingRacikanIndex = ref(null)
   const racikDraft = reactive({ nama_racik: '', kd_racik: '', jml_dr: 1, aturan_pakai: '', keterangan: '', detail: [] })
   const racikMedicine = ref({})
   
@@ -107,7 +108,7 @@ export function useInputResep(props) {
   function namaMetodeRacik(kdRacik){
     return methods.value.find(item => item.kd_racik === kdRacik)?.nm_racik || kdRacik || ''
   }
-  const noRacikDraft = computed(() => String(racikan.value.length + 1))
+  const noRacikDraft = computed(() => String((editingRacikanIndex.value ?? racikan.value.length) + 1))
   
   const totalObat = computed(() => items.value.reduce((s,i)=>s+Number(i.jml||0)*Number(i.harga||0),0))
   const totalRacikan = computed(() => racikan.value.reduce((sum,r)=>sum+(r.detail||[]).reduce((s,i)=>s+Number(i.jml||0)*Number(i.harga||0),0),0))
@@ -117,12 +118,19 @@ export function useInputResep(props) {
   const cariDokter = q => resepCariDokter(props.token,q)
   const cariDepo = q => resepCariDepo(props.token,q)
   const cariObat = q => resepCariObat(props.token,{q,kd_bangsal:form.kd_bangsal,kelas:props.patient?.kelas||''})
+
+  function resetDraftRacikan(){
+    Object.assign(racikDraft,{nama_racik:'',kd_racik:'',jml_dr:1,aturan_pakai:'',keterangan:'',detail:[]})
+    racikMedicine.value={}
+  }
   
   async function reset(){
     formVisible.value = true
     Object.assign(form,{no_resep:'',tgl_peresepan:today(),jam:now(),no_rawat:props.patient?.no_rawat||'',kd_dokter:doctor.value?.kd_dokter||'',status:statusRawat(),judul:''})
     items.value = []
     racikan.value = []
+    editingRacikanIndex.value = null
+    resetDraftRacikan()
     hasilObat.value = []
     keywordObat.value = ''
     Object.keys(pilihanObat).forEach(k=>delete pilihanObat[k])
@@ -193,6 +201,8 @@ export function useInputResep(props) {
     Object.keys(pilihanObat).forEach(k=>delete pilihanObat[k])
     items.value.forEach(item=>{if(item.kode_brng) pilihanObat[item.kode_brng] = {...item}})
     racikan.value = (copy.racikan || []).map(normalisasiRacikanCopy)
+    editingRacikanIndex.value = null
+    resetDraftRacikan()
     hasilObat.value = []
     keywordObat.value = ''
     notifikasi.sukses('Resep hasil copy sudah tampil di form. Silakan cek lalu simpan.')
@@ -292,8 +302,41 @@ export function useInputResep(props) {
   }
   function addRacik(){
     if(!racikDraft.nama_racik||!racikDraft.kd_racik||!racikDraft.detail.length){notifikasi.gagal('Nama, metode, dan obat racikan wajib diisi');return}
-    racikan.value.push({...racikDraft,no_racik:noRacikDraft.value,nm_racik:namaMetodeRacik(racikDraft.kd_racik),detail:racikDraft.detail.map(item => ({...item}))})
-    Object.assign(racikDraft,{nama_racik:'',kd_racik:'',jml_dr:1,aturan_pakai:'',keterangan:'',detail:[]})
+    const data = {...racikDraft,no_racik:noRacikDraft.value,nm_racik:namaMetodeRacik(racikDraft.kd_racik),detail:racikDraft.detail.map(item => ({...item}))}
+    if(editingRacikanIndex.value === null){
+      racikan.value.push(data)
+      notifikasi.sukses('Racikan berhasil ditambahkan')
+    }else{
+      racikan.value.splice(editingRacikanIndex.value,1,data)
+      notifikasi.sukses('Perubahan racikan berhasil disimpan')
+    }
+    editingRacikanIndex.value = null
+    resetDraftRacikan()
+  }
+  function editRacikan(index){
+    const sumber = racikan.value[index]
+    if(!sumber || locked.value)return
+    editingRacikanIndex.value = index
+    Object.assign(racikDraft,{
+      nama_racik:sumber.nama_racik||'',
+      kd_racik:sumber.kd_racik||'',
+      jml_dr:angka(sumber.jml_dr,1),
+      aturan_pakai:sumber.aturan_pakai||'',
+      keterangan:sumber.keterangan||'',
+      detail:(sumber.detail||[]).map(item=>normalisasiDetailRacik({...item})),
+    })
+    racikMedicine.value={}
+    requestAnimationFrame(()=>document.querySelector('.racik-header-table')?.scrollIntoView({behavior:'smooth',block:'center'}))
+  }
+  function batalEditRacikan(){
+    editingRacikanIndex.value = null
+    resetDraftRacikan()
+  }
+  function hapusRacikan(index){
+    if(locked.value)return
+    if(editingRacikanIndex.value !== null)batalEditRacikan()
+    racikan.value.splice(index,1)
+    racikan.value.forEach((item,urutan)=>{item.no_racik=String(urutan+1)})
   }
   async function editRecipe(row){
     if(locked.value)return
@@ -307,6 +350,8 @@ export function useInputResep(props) {
     Object.keys(pilihanObat).forEach(k=>delete pilihanObat[k])
     items.value.forEach(item=>{if(item.kode_brng) pilihanObat[item.kode_brng] = {...item}})
     racikan.value=(d.racikan||[]).map(r=>({...r,jml_dr:angka(r.jml_dr,1),detail:(r.detail||[]).map(normalisasiDetailRacik)}))
+    editingRacikanIndex.value=null
+    resetDraftRacikan()
     editing.value=true
     formVisible.value=true
     tab.value='resep'
@@ -314,6 +359,7 @@ export function useInputResep(props) {
   }
   async function save(){
     if(locked.value)return
+    if(editingRacikanIndex.value !== null){notifikasi.peringatan('Simpan atau batalkan perubahan racikan terlebih dahulu');return}
     if(!form.kd_dokter){notifikasi.gagal('Dokter peresep wajib dipilih');return}
     if(!items.value.length&&!racikan.value.length){notifikasi.gagal('Tambahkan obat atau racikan');return}
     saving.value=true
@@ -364,6 +410,7 @@ export function useInputResep(props) {
     form,
     items,
     racikan,
+    editingRacikanIndex,
     racikDraft,
     racikMedicine,
     rupiah,
@@ -387,6 +434,9 @@ export function useInputResep(props) {
     hitungSemuaDetailRacik,
     addRacikMedicine,
     addRacik,
+    editRacikan,
+    batalEditRacikan,
+    hapusRacikan,
     editRecipe,
     save,
     remove,

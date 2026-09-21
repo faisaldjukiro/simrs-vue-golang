@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
-import { ChevronDown, ChevronUp, ClipboardPlus, FlaskConical, Plus, Save, Trash2 } from "@lucide/vue"
+import { ChevronDown, ChevronUp, ClipboardPlus, FlaskConical, Pencil, Plus, Save, Trash2, X } from "@lucide/vue"
 import FormInput from "../../../Components/Ui/FormInput.vue"
 import InputPencarian from "../../../Components/Ui/InputPencarian.vue"
 import Select from "../../../Components/Ui/Select.vue"
@@ -29,6 +29,7 @@ const {
   form,
   items,
   racikan,
+  editingRacikanIndex,
   racikDraft,
   racikMedicine,
   rupiah,
@@ -52,6 +53,9 @@ const {
   hitungSemuaDetailRacik,
   addRacikMedicine,
   addRacik,
+  editRacikan,
+  batalEditRacikan,
+  hapusRacikan,
   editRecipe,
   save,
   remove,
@@ -153,6 +157,40 @@ const {
         </section>
 
         <section v-show="tab === 'racikan'" class="recipe-tab-panel">
+          <div class="racik-master-section">
+            <div class="racik-master-heading">
+              <div>
+                <strong>Daftar Racikan</strong>
+                <small>Pilih Edit untuk mengubah header atau daftar obat racikan.</small>
+              </div>
+              <span>{{ racikan.length }} racikan</span>
+            </div>
+            <div v-if="racikan.length" class="racik-khanza-table racik-list-table">
+              <div class="racik-list-row racik-header-head">
+                <span>No</span>
+                <span>Nama Racikan</span>
+                <span>Metode Racik</span>
+                <span>Jml. Racik</span>
+                <span>Aturan Pakai</span>
+                <span>Jumlah Obat</span>
+                <span>Aksi</span>
+              </div>
+              <div v-for="(r,i) in racikan" :key="`${r.no_racik || i}-${r.nama_racik}`" class="racik-list-row" :class="{editing:editingRacikanIndex === i}">
+                <span>{{ r.no_racik || i + 1 }}</span>
+                <strong>{{ r.nama_racik }}</strong>
+                <span>{{ r.nm_racik || r.kd_racik || '-' }}</span>
+                <span>{{ r.jml_dr || 1 }}</span>
+                <span>{{ r.aturan_pakai || '-' }}</span>
+                <span><b>{{ r.detail?.length || 0 }} obat</b><small v-if="editingRacikanIndex === i">Sedang diedit</small></span>
+                <div class="racik-list-actions">
+                  <button type="button" class="racik-list-action" :disabled="locked" @click="editRacikan(i)"><Pencil :size="14"/> Edit</button>
+                  <button type="button" class="icon-button danger" title="Hapus racikan" :disabled="locked" @click="hapusRacikan(i)"><Trash2 :size="15"/></button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="racik-list-empty">Belum ada racikan tersimpan. Isi form racikan di bawah ini.</div>
+          </div>
+
           <div class="racik-khanza-table racik-header-table">
             <div class="racik-header-row racik-header-head">
               <span>No</span>
@@ -230,13 +268,13 @@ const {
 
           <div class="recipe-racik-actions">
             <small>{{ methods.length ? `${methods.length} metode racik tersedia` : 'Metode racik belum termuat dari SIMRS Khanza' }}</small>
-            <button type="button" class="recipe-action-button" :disabled="locked" @click="addRacik"><Plus :size="15"/> Tambah Racikan</button>
-          </div>
-          <div v-if="racikan.length" class="racik-saved-list">
-            <div v-for="(r,i) in racikan" :key="i" class="racik-saved">
-              <b>{{ r.no_racik || i + 1 }}. {{ r.nama_racik }}</b>
-              <small>{{ r.nm_racik || r.kd_racik }} - {{ r.detail?.length || 0 }} obat - {{ r.aturan_pakai || '-' }}</small>
-              <button type="button" class="icon-button danger" :disabled="locked" @click="racikan.splice(i,1)"><Trash2 :size="15"/></button>
+            <div class="recipe-racik-action-buttons">
+              <button v-if="editingRacikanIndex !== null" type="button" class="recipe-action-button secondary" :disabled="locked" @click="batalEditRacikan"><X :size="15"/> Batal Edit</button>
+              <button type="button" class="recipe-action-button" :disabled="locked" @click="addRacik">
+                <Save v-if="editingRacikanIndex !== null" :size="15"/>
+                <Plus v-else :size="15"/>
+                {{ editingRacikanIndex !== null ? 'Simpan Perubahan' : 'Tambah Racikan' }}
+              </button>
             </div>
           </div>
         </section>
