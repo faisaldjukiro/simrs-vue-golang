@@ -1,0 +1,11 @@
+.laboratory-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.laboratory-category-tabs .clinical-button {
+  white-space: normal;
+  text-align: left;
+}

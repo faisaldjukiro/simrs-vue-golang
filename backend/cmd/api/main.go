@@ -180,7 +180,7 @@ func main() {
 	penangananHandler := penanganandokterpetugashttp.NewHandler(penanganan_dokter_petugas.NewLayanan(penangananRepositori))
 	permintaanRadiologiRepositori := permintaan_radiologi.NewRepositori(simrsDB)
 	permintaanRadiologiHandler := permintaanradiologihttp.NewHandler(permintaan_radiologi.NewLayanan(permintaanRadiologiRepositori))
-	permintaanLaboratoriumRepositori := permintaan_laboratorium.NewRepositori(simrsDB)
+	permintaanLaboratoriumRepositori := permintaan_laboratorium.NewRepositori(simrsDB, config.LaboratoriumBillingParsial())
 	permintaanLaboratoriumHandler := permintaanlaboratoriumhttp.NewHandler(permintaan_laboratorium.NewLayanan(permintaanLaboratoriumRepositori))
 	berkasDigitalRepositori := berkas_digital.NewRepositori(simrsDB, config.SIMRSWebBaseURL())
 	berkasDigitalHandler := berkasdigitalhttp.NewHandler(

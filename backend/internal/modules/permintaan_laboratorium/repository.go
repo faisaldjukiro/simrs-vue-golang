@@ -48,6 +48,8 @@ type Pemeriksaan struct {
 }
 
 type Permintaan struct {
+	Kategori          string        `json:"kategori"`
+	Spesimen          SpesimenPA    `json:"spesimen"`
 	Nomor             string        `json:"nomor"`
 	NoRawat           string        `json:"no_rawat"`
 	Tanggal           string        `json:"tanggal"`
@@ -84,6 +86,8 @@ type PilihanPemeriksaan struct {
 }
 
 type Input struct {
+	Kategori          string               `json:"kategori"`
+	Spesimen          SpesimenPA           `json:"spesimen"`
 	NoRawat           string               `json:"no_rawat"`
 	Tanggal           string               `json:"tanggal"`
 	Jam               string               `json:"jam"`
@@ -94,18 +98,30 @@ type Input struct {
 }
 
 type lingkupTarif struct {
-	KodeCaraBayar string
-	Kelas         string
-	StatusRawat   string
+	FilterCaraBayar bool
+	FilterKelas     bool
+	KodeCaraBayar   string
+	Kelas           string
+	StatusRawat     string
 }
 
 type queryer interface {
 	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 
-type Repositori struct{ simrsDB *sql.DB }
+type Repositori struct {
+	simrsDB        *sql.DB
+	kategori       string
+	billingParsial bool
+}
 
-func NewRepositori(simrsDB *sql.DB) *Repositori { return &Repositori{simrsDB: simrsDB} }
+func NewRepositori(simrsDB *sql.DB, billingParsial ...bool) *Repositori {
+	r := &Repositori{simrsDB: simrsDB, kategori: "PK"}
+	if len(billingParsial) > 0 {
+		r.billingParsial = billingParsial[0]
+	}
+	return r
+}
 
 func (r *Repositori) Data(ctx context.Context, noRawat string) (Data, error) {
 	lingkup, err := r.lingkup(ctx, r.simrsDB, noRawat)
@@ -120,6 +136,17 @@ func (r *Repositori) Data(ctx context.Context, noRawat string) (Data, error) {
 	if err != nil {
 		return Data{}, err
 	}
+	if terkunci {
+		for i := range permintaan {
+			permintaan[i].DapatDiubah = false
+			permintaan[i].DapatDihapus = false
+		}
+	}
+	// Pengecualian parsial pada dialog lama hanya untuk permintaan baru.
+	terkunci, err = r.billingTerkunci(ctx, r.simrsDB, noRawat, true)
+	if err != nil {
+		return Data{}, err
+	}
 	hasil := Data{Permintaan: permintaan, BillingTerkunci: terkunci, StatusRawat: lingkup.StatusRawat, KodeCaraBayar: lingkup.KodeCaraBayar, KelasPasien: lingkup.Kelas}
 	if dokter, err := r.dokterPerujuk(ctx, noRawat); err == nil {
 		hasil.DokterPerujuk = &dokter
@@ -130,7 +157,7 @@ func (r *Repositori) Data(ctx context.Context, noRawat string) (Data, error) {
 }
 
 func (r *Repositori) daftar(ctx context.Context, noRawat string) ([]Permintaan, error) {
-	rows, err := r.simrsDB.QueryContext(ctx, `
+	rows, err := r.simrsDB.QueryContext(ctx, r.sqlKategori(`
 		SELECT pl.noorder,pl.no_rawat,DATE_FORMAT(pl.tgl_permintaan,'%Y-%m-%d'),TIME_FORMAT(pl.jam_permintaan,'%H:%i:%s'),
 			IF(pl.tgl_sampel='0000-00-00','',DATE_FORMAT(pl.tgl_sampel,'%Y-%m-%d')),
 			IF(pl.jam_sampel='00:00:00','',TIME_FORMAT(pl.jam_sampel,'%H:%i:%s')),
@@ -144,7 +171,7 @@ func (r *Repositori) daftar(ctx context.Context, noRawat string) ([]Permintaan, 
 		INNER JOIN jns_perawatan_lab j ON j.kd_jenis_prw=ppl.kd_jenis_prw
 		WHERE pl.no_rawat=?
 		ORDER BY pl.tgl_permintaan DESC,pl.jam_permintaan DESC,j.nm_perawatan
-	`, noRawat)
+	`), noRawat)
 	if err != nil {
 		return nil, fmt.Errorf("baca permintaan laboratorium: %w", err)
 	}
@@ -163,6 +190,13 @@ func (r *Repositori) daftar(ctx context.Context, noRawat string) ([]Permintaan, 
 		}
 		posisi, ada := indeks[p.Nomor]
 		if !ada {
+			p.Kategori = r.kategori
+			if r.kategori == "PA" {
+				p.Spesimen, err = r.bacaSpesimen(ctx, p.Nomor)
+				if err != nil {
+					return nil, err
+				}
+			}
 			p.Pemeriksaan = make([]Pemeriksaan, 0)
 			daftar = append(daftar, p)
 			posisi = len(daftar) - 1
@@ -181,14 +215,17 @@ func (r *Repositori) daftar(ctx context.Context, noRawat string) ([]Permintaan, 
 }
 
 func (r *Repositori) detail(ctx context.Context, nomor, kode string) ([]DetailPemeriksaan, error) {
-	rows, err := r.simrsDB.QueryContext(ctx, `
+	if r.kategori == "PA" {
+		return []DetailPemeriksaan{}, nil
+	}
+	rows, err := r.simrsDB.QueryContext(ctx, r.sqlKategori(`
 		SELECT t.id_template,t.Pemeriksaan,t.satuan,
 			CONCAT_WS(', ',NULLIF(CONCAT('LD: ',t.nilai_rujukan_ld),'LD: '),NULLIF(CONCAT('LA: ',t.nilai_rujukan_la),'LA: '),NULLIF(CONCAT('PD: ',t.nilai_rujukan_pd),'PD: '),NULLIF(CONCAT('PA: ',t.nilai_rujukan_pa),'PA: ')),
 			COALESCE(t.biaya_item,0),COALESCE(d.stts_bayar,'Belum')
 		FROM permintaan_detail_permintaan_lab d
 		INNER JOIN template_laboratorium t ON t.id_template=d.id_template
 		WHERE d.noorder=? AND d.kd_jenis_prw=? ORDER BY COALESCE(t.urut,9999),t.Pemeriksaan
-	`, nomor, kode)
+	`), nomor, kode)
 	if err != nil {
 		return nil, fmt.Errorf("baca detail permintaan laboratorium: %w", err)
 	}
@@ -229,13 +266,20 @@ func (r *Repositori) CariDokter(ctx context.Context, kata string) ([]Dokter, err
 }
 
 func (r *Repositori) CariTindakan(ctx context.Context, noRawat, kata string) ([]Tindakan, error) {
+	lingkup, err := r.lingkup(ctx, r.simrsDB, noRawat)
+	if err != nil {
+		return nil, err
+	}
 	seperti := "%" + strings.TrimSpace(kata) + "%"
 	rows, err := r.simrsDB.QueryContext(ctx, `
 		SELECT j.kd_jenis_prw,COALESCE(j.nm_perawatan,''),j.kd_pj,j.kelas,COALESCE(j.total_byr,0),COUNT(t.id_template)
 		FROM jns_perawatan_lab j LEFT JOIN template_laboratorium t ON t.kd_jenis_prw=j.kd_jenis_prw
-		WHERE j.status='1' AND (j.kd_jenis_prw LIKE ? OR j.nm_perawatan LIKE ?)
+		WHERE j.status='1' AND j.kategori=?
+			AND (?=0 OR j.kd_pj=? OR j.kd_pj='-')
+			AND (?=0 OR j.kelas=? OR j.kelas='-')
+			AND (j.kd_jenis_prw LIKE ? OR j.nm_perawatan LIKE ?)
 		GROUP BY j.kd_jenis_prw,j.nm_perawatan,j.kd_pj,j.kelas,j.total_byr ORDER BY j.nm_perawatan LIMIT 50
-	`, seperti, seperti)
+	`, r.kategori, lingkup.FilterCaraBayar, lingkup.KodeCaraBayar, lingkup.FilterKelas, lingkup.Kelas, seperti, seperti)
 	if err != nil {
 		return nil, fmt.Errorf("cari tindakan laboratorium: %w", err)
 	}
@@ -258,6 +302,9 @@ func (r *Repositori) DetailTindakan(ctx context.Context, noRawat, kode string) (
 	}
 	if _, err := r.tindakan(ctx, r.simrsDB, lingkup, kode); err != nil {
 		return nil, err
+	}
+	if r.kategori == "PA" {
+		return []DetailPemeriksaan{}, nil
 	}
 	rows, err := r.simrsDB.QueryContext(ctx, `
 		SELECT id_template,Pemeriksaan,satuan,
@@ -302,7 +349,7 @@ func (r *Repositori) simpanSekali(ctx context.Context, input Input) (string, err
 		return "", err
 	}
 	defer tx.Rollback()
-	if terkunci, err := r.billingTerkunci(ctx, tx, input.NoRawat); err != nil {
+	if terkunci, err := r.billingTerkunci(ctx, tx, input.NoRawat, true); err != nil {
 		return "", err
 	} else if terkunci {
 		return "", ErrBillingTerkunci
@@ -315,14 +362,26 @@ func (r *Repositori) simpanSekali(ctx context.Context, input Input) (string, err
 	if err != nil {
 		return "", err
 	}
-	if _, err = tx.ExecContext(ctx, `INSERT INTO permintaan_lab (noorder,no_rawat,tgl_permintaan,jam_permintaan,tgl_sampel,jam_sampel,tgl_hasil,jam_hasil,dokter_perujuk,status,informasi_tambahan,diagnosa_klinis) VALUES (?,?,?,?,'0000-00-00','00:00:00','0000-00-00','00:00:00',?,?,?,?)`, nomor, input.NoRawat, input.Tanggal, input.Jam, input.KodeDokter, lingkup.StatusRawat, input.InformasiTambahan, input.DiagnosisKlinis); err != nil {
+	kolomPA, nilaiPA := "", ""
+	args := []any{nomor, input.NoRawat, input.Tanggal, input.Jam, input.KodeDokter, lingkup.StatusRawat, input.InformasiTambahan, input.DiagnosisKlinis}
+	if r.kategori == "PA" {
+		kolomPA = ",pengambilan_bahan,diperoleh_dengan,lokasi_jaringan,diawetkan_dengan,pernah_dilakukan_di,tanggal_pa_sebelumnya,nomor_pa_sebelumnya,diagnosa_pa_sebelumnya"
+		nilaiPA = ",?,?,?,?,?,?,?,?"
+		p := input.Spesimen
+		tanggalPA := p.TanggalPASebelumnya
+		if p.PernahDilakukanDi == "" {
+			tanggalPA = "0000-00-00"
+		}
+		args = append(args, p.PengambilanBahan, p.DiperolehDengan, p.LokasiJaringan, p.DiawetkanDengan, p.PernahDilakukanDi, tanggalPA, p.NomorPASebelumnya, p.DiagnosaPASebelumnya)
+	}
+	if _, err = tx.ExecContext(ctx, r.sqlKategori(`INSERT INTO permintaan_lab (noorder,no_rawat,tgl_permintaan,jam_permintaan,tgl_sampel,jam_sampel,tgl_hasil,jam_hasil,dokter_perujuk,status,informasi_tambahan,diagnosa_klinis`+kolomPA+`) VALUES (?,?,?,?,'0000-00-00','00:00:00','0000-00-00','00:00:00',?,?,?,?`+nilaiPA+`)`), args...); err != nil {
 		return "", err
 	}
 	for _, pemeriksaan := range input.Pemeriksaan {
 		if _, err := r.tindakan(ctx, tx, lingkup, pemeriksaan.Kode); err != nil {
 			return "", err
 		}
-		if _, err := tx.ExecContext(ctx, `INSERT INTO permintaan_pemeriksaan_lab (noorder,kd_jenis_prw,stts_bayar) VALUES (?,?,'Belum')`, nomor, pemeriksaan.Kode); err != nil {
+		if _, err := tx.ExecContext(ctx, r.sqlKategori(`INSERT INTO permintaan_pemeriksaan_lab (noorder,kd_jenis_prw,stts_bayar) VALUES (?,?,'Belum')`), nomor, pemeriksaan.Kode); err != nil {
 			return "", err
 		}
 		if err := r.simpanDetail(ctx, tx, nomor, pemeriksaan.Kode, pemeriksaan.IDDetail); err != nil {
@@ -347,7 +406,10 @@ func (r *Repositori) Ubah(ctx context.Context, nomor string, input Input) error 
 		return ErrBillingTerkunci
 	}
 	var jumlah, dibayar, diterima int
-	if err := tx.QueryRowContext(ctx, `SELECT COUNT(*),COALESCE(SUM(CASE WHEN ppl.stts_bayar='Sudah' THEN 1 ELSE 0 END),0),COALESCE(MAX(CASE WHEN pl.tgl_sampel<>'0000-00-00' OR pl.jam_sampel<>'00:00:00' OR pl.tgl_hasil<>'0000-00-00' OR pl.jam_hasil<>'00:00:00' THEN 1 ELSE 0 END),0) FROM permintaan_lab pl LEFT JOIN permintaan_pemeriksaan_lab ppl ON ppl.noorder=pl.noorder WHERE pl.noorder=? AND pl.no_rawat=?`, nomor, input.NoRawat).Scan(&jumlah, &dibayar, &diterima); err != nil {
+	if err := r.kunciPermintaan(ctx, tx, input.NoRawat, nomor); err != nil {
+		return err
+	}
+	if err := tx.QueryRowContext(ctx, r.sqlKategori(`SELECT COUNT(*),COALESCE(SUM(CASE WHEN ppl.stts_bayar='Sudah' THEN 1 ELSE 0 END),0),COALESCE(MAX(CASE WHEN pl.tgl_sampel<>'0000-00-00' OR pl.jam_sampel<>'00:00:00' OR pl.tgl_hasil<>'0000-00-00' OR pl.jam_hasil<>'00:00:00' THEN 1 ELSE 0 END),0) FROM permintaan_lab pl LEFT JOIN permintaan_pemeriksaan_lab ppl ON ppl.noorder=pl.noorder WHERE pl.noorder=? AND pl.no_rawat=?`), nomor, input.NoRawat).Scan(&jumlah, &dibayar, &diterima); err != nil {
 		return err
 	}
 	if jumlah == 0 {
@@ -368,17 +430,22 @@ func (r *Repositori) Ubah(ctx context.Context, nomor string, input Input) error 
 			return err
 		}
 	}
-	if _, err := tx.ExecContext(ctx, `UPDATE permintaan_lab SET tgl_permintaan=?,jam_permintaan=?,dokter_perujuk=?,status=?,informasi_tambahan=?,diagnosa_klinis=? WHERE noorder=? AND no_rawat=?`, input.Tanggal, input.Jam, input.KodeDokter, lingkup.StatusRawat, input.InformasiTambahan, input.DiagnosisKlinis, nomor, input.NoRawat); err != nil {
+	if _, err := tx.ExecContext(ctx, r.sqlKategori(`UPDATE permintaan_lab SET tgl_permintaan=?,jam_permintaan=?,dokter_perujuk=?,status=?,informasi_tambahan=?,diagnosa_klinis=? WHERE noorder=? AND no_rawat=?`), input.Tanggal, input.Jam, input.KodeDokter, lingkup.StatusRawat, input.InformasiTambahan, input.DiagnosisKlinis, nomor, input.NoRawat); err != nil {
 		return err
 	}
-	if _, err := tx.ExecContext(ctx, `DELETE FROM permintaan_detail_permintaan_lab WHERE noorder=?`, nomor); err != nil {
+	if err := r.simpanSpesimen(ctx, tx, nomor, input.Spesimen); err != nil {
 		return err
 	}
-	if _, err := tx.ExecContext(ctx, `DELETE FROM permintaan_pemeriksaan_lab WHERE noorder=?`, nomor); err != nil {
+	if r.kategori != "PA" {
+		if _, err := tx.ExecContext(ctx, r.sqlKategori(`DELETE FROM permintaan_detail_permintaan_lab WHERE noorder=?`), nomor); err != nil {
+			return err
+		}
+	}
+	if _, err := tx.ExecContext(ctx, r.sqlKategori(`DELETE FROM permintaan_pemeriksaan_lab WHERE noorder=?`), nomor); err != nil {
 		return err
 	}
 	for _, pemeriksaan := range input.Pemeriksaan {
-		if _, err := tx.ExecContext(ctx, `INSERT INTO permintaan_pemeriksaan_lab (noorder,kd_jenis_prw,stts_bayar) VALUES (?,?,'Belum')`, nomor, pemeriksaan.Kode); err != nil {
+		if _, err := tx.ExecContext(ctx, r.sqlKategori(`INSERT INTO permintaan_pemeriksaan_lab (noorder,kd_jenis_prw,stts_bayar) VALUES (?,?,'Belum')`), nomor, pemeriksaan.Kode); err != nil {
 			return err
 		}
 		if err := r.simpanDetail(ctx, tx, nomor, pemeriksaan.Kode, pemeriksaan.IDDetail); err != nil {
@@ -400,7 +467,10 @@ func (r *Repositori) Hapus(ctx context.Context, noRawat, nomor string) error {
 		return ErrBillingTerkunci
 	}
 	var dibayar, diterima int
-	if err := tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(CASE WHEN ppl.stts_bayar='Sudah' THEN 1 ELSE 0 END),0),COALESCE(MAX(CASE WHEN pl.tgl_sampel<>'0000-00-00' OR pl.jam_sampel<>'00:00:00' OR pl.tgl_hasil<>'0000-00-00' OR pl.jam_hasil<>'00:00:00' THEN 1 ELSE 0 END),0) FROM permintaan_lab pl LEFT JOIN permintaan_pemeriksaan_lab ppl ON ppl.noorder=pl.noorder WHERE pl.noorder=? AND pl.no_rawat=?`, nomor, noRawat).Scan(&dibayar, &diterima); err != nil {
+	if err := r.kunciPermintaan(ctx, tx, noRawat, nomor); err != nil {
+		return err
+	}
+	if err := tx.QueryRowContext(ctx, r.sqlKategori(`SELECT COALESCE(SUM(CASE WHEN ppl.stts_bayar='Sudah' THEN 1 ELSE 0 END),0),COALESCE(MAX(CASE WHEN pl.tgl_sampel<>'0000-00-00' OR pl.jam_sampel<>'00:00:00' OR pl.tgl_hasil<>'0000-00-00' OR pl.jam_hasil<>'00:00:00' THEN 1 ELSE 0 END),0) FROM permintaan_lab pl LEFT JOIN permintaan_pemeriksaan_lab ppl ON ppl.noorder=pl.noorder WHERE pl.noorder=? AND pl.no_rawat=?`), nomor, noRawat).Scan(&dibayar, &diterima); err != nil {
 		return err
 	}
 	if dibayar > 0 {
@@ -409,7 +479,7 @@ func (r *Repositori) Hapus(ctx context.Context, noRawat, nomor string) error {
 	if diterima > 0 {
 		return ErrSudahDiterima
 	}
-	hasil, err := tx.ExecContext(ctx, `DELETE FROM permintaan_lab WHERE noorder=? AND no_rawat=?`, nomor, noRawat)
+	hasil, err := tx.ExecContext(ctx, r.sqlKategori(`DELETE FROM permintaan_lab WHERE noorder=? AND no_rawat=?`), nomor, noRawat)
 	if err != nil {
 		return err
 	}
@@ -424,8 +494,11 @@ func (r *Repositori) Hapus(ctx context.Context, noRawat, nomor string) error {
 }
 
 func (r *Repositori) simpanDetail(ctx context.Context, tx *sql.Tx, nomor, kode string, idDetail []int64) error {
+	if r.kategori == "PA" {
+		return nil
+	}
 	for _, id := range idDetail {
-		hasil, err := tx.ExecContext(ctx, `INSERT INTO permintaan_detail_permintaan_lab (noorder,kd_jenis_prw,id_template,stts_bayar) SELECT ?,kd_jenis_prw,id_template,'Belum' FROM template_laboratorium WHERE kd_jenis_prw=? AND id_template=?`, nomor, kode, id)
+		hasil, err := tx.ExecContext(ctx, r.sqlKategori(`INSERT INTO permintaan_detail_permintaan_lab (noorder,kd_jenis_prw,id_template,stts_bayar) SELECT ?,kd_jenis_prw,id_template,'Belum' FROM template_laboratorium WHERE kd_jenis_prw=? AND id_template=?`), nomor, kode, id)
 		if err != nil {
 			return err
 		}
@@ -442,9 +515,15 @@ func (r *Repositori) simpanDetail(ctx context.Context, tx *sql.Tx, nomor, kode s
 
 func (r *Repositori) tindakan(ctx context.Context, q queryer, lingkup lingkupTarif, kode string) (Tindakan, error) {
 	var item Tindakan
-	err := q.QueryRowContext(ctx, `SELECT kd_jenis_prw,COALESCE(nm_perawatan,''),kd_pj,kelas,COALESCE(total_byr,0) FROM jns_perawatan_lab WHERE kd_jenis_prw=? AND status='1' LIMIT 1`, kode).Scan(&item.Kode, &item.Nama, &item.KodeCaraBayar, &item.Kelas, &item.Total)
+	err := q.QueryRowContext(ctx, `
+		SELECT kd_jenis_prw,COALESCE(nm_perawatan,''),kd_pj,kelas,COALESCE(total_byr,0)
+		FROM jns_perawatan_lab WHERE kd_jenis_prw=? AND status='1' AND kategori=?
+			AND (?=0 OR kd_pj=? OR kd_pj='-')
+			AND (?=0 OR kelas=? OR kelas='-') LIMIT 1`,
+		kode, r.kategori, lingkup.FilterCaraBayar, lingkup.KodeCaraBayar, lingkup.FilterKelas, lingkup.Kelas,
+	).Scan(&item.Kode, &item.Nama, &item.KodeCaraBayar, &item.Kelas, &item.Total)
 	if errors.Is(err, sql.ErrNoRows) {
-		return item, fmt.Errorf("tindakan laboratorium %s tidak tersedia untuk pasien", kode)
+		return item, fmt.Errorf("%w: tindakan laboratorium %s tidak sesuai kategori, penjamin, atau kelas pasien", ErrInputTidakValid, kode)
 	}
 	return item, err
 }
@@ -455,39 +534,59 @@ func (r *Repositori) lingkup(ctx context.Context, q queryer, noRawat string) (li
 	if err := q.QueryRowContext(ctx, `SELECT kd_pj,status_lanjut FROM reg_periksa WHERE no_rawat=? LIMIT 1`, noRawat).Scan(&kodeBayar, &status); err != nil {
 		return hasil, err
 	}
-	hasil.KodeCaraBayar = kodeCaraBayarTarif(kodeBayar)
+	hasil.KodeCaraBayar = kodeBayar
+	caraBayar, kelas := "Yes", "Yes"
+	err := q.QueryRowContext(ctx, `SELECT cara_bayar_lab,kelas_lab FROM set_tarif LIMIT 1`).Scan(&caraBayar, &kelas)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return hasil, fmt.Errorf("baca pengaturan tarif laboratorium: %w", err)
+	}
+	hasil.FilterCaraBayar = strings.EqualFold(caraBayar, "Yes")
+	hasil.FilterKelas = strings.EqualFold(kelas, "Yes")
 	hasil.StatusRawat = strings.ToLower(status)
 	if strings.EqualFold(status, "Ralan") {
 		hasil.Kelas = "Rawat Jalan"
 	} else {
 		noRawatKamar := noRawat
 		var induk string
-		if err := q.QueryRowContext(ctx, `SELECT no_rawat FROM ranap_gabung WHERE no_rawat2=? LIMIT 1`, noRawat).Scan(&induk); err == nil && induk != "" {
+		err := q.QueryRowContext(ctx, `SELECT no_rawat FROM ranap_gabung WHERE no_rawat2=? LIMIT 1`, noRawat).Scan(&induk)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return hasil, err
+		}
+		if induk != "" {
 			noRawatKamar = induk
 		}
-		_ = q.QueryRowContext(ctx, `SELECT k.kelas FROM kamar_inap ki INNER JOIN kamar k ON k.kd_kamar=ki.kd_kamar WHERE ki.no_rawat=? ORDER BY STR_TO_DATE(CONCAT(ki.tgl_masuk,' ',ki.jam_masuk),'%Y-%m-%d %H:%i:%s') DESC LIMIT 1`, noRawatKamar).Scan(&hasil.Kelas)
+		err = q.QueryRowContext(ctx, `SELECT k.kelas FROM kamar_inap ki INNER JOIN kamar k ON k.kd_kamar=ki.kd_kamar WHERE ki.no_rawat=? AND ki.stts_pulang='-' ORDER BY STR_TO_DATE(CONCAT(ki.tgl_masuk,' ',ki.jam_masuk),'%Y-%m-%d %H:%i:%s') DESC LIMIT 1`, noRawatKamar).Scan(&hasil.Kelas)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return hasil, err
+		}
 	}
 	return hasil, nil
 }
 
-func kodeCaraBayarTarif(kode string) string {
-	if strings.EqualFold(strings.TrimSpace(kode), "BPJ") || strings.TrimSpace(kode) == "36" {
-		return "BPJ"
-	}
-	return "A09"
-}
-
 func (r *Repositori) nomorBerikutnya(ctx context.Context, q queryer, tanggal string) (string, error) {
 	var terakhir int
-	if err := q.QueryRowContext(ctx, `SELECT COALESCE(MAX(CONVERT(RIGHT(noorder,4),UNSIGNED)),0) FROM permintaan_lab WHERE tgl_permintaan=?`, tanggal).Scan(&terakhir); err != nil {
+	if err := q.QueryRowContext(ctx, r.sqlKategori(`SELECT COALESCE(MAX(CONVERT(RIGHT(noorder,4),UNSIGNED)),0) FROM permintaan_lab WHERE tgl_permintaan=?`), tanggal).Scan(&terakhir); err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("PK%s%04d", strings.ReplaceAll(tanggal, "-", ""), terakhir+1), nil
+	if terakhir >= 9999 {
+		return "", fmt.Errorf("nomor permintaan %s untuk tanggal ini sudah mencapai batas 9999", r.kategori)
+	}
+	return fmt.Sprintf("%s%s%04d", r.kategori, strings.ReplaceAll(tanggal, "-", ""), terakhir+1), nil
 }
 
-func (r *Repositori) billingTerkunci(ctx context.Context, q queryer, noRawat string) (bool, error) {
+func (r *Repositori) billingTerkunci(ctx context.Context, q queryer, noRawat string, untukSimpan ...bool) (bool, error) {
 	var jumlah int
-	err := q.QueryRowContext(ctx, `SELECT (SELECT COUNT(*) FROM billing WHERE no_rawat=?) + (SELECT COUNT(*) FROM reg_periksa WHERE no_rawat=? AND stts='Batal')`, noRawat, noRawat).Scan(&jumlah)
+	err := q.QueryRowContext(ctx, `SELECT COUNT(*) FROM reg_periksa WHERE no_rawat=? AND stts='Batal'`, noRawat).Scan(&jumlah)
+	if err != nil || jumlah > 0 {
+		return jumlah > 0, err
+	}
+	if r.billingParsial && len(untukSimpan) > 0 && untukSimpan[0] {
+		err = q.QueryRowContext(ctx, `SELECT COUNT(*) FROM set_input_parsial s INNER JOIN reg_periksa rp ON rp.kd_pj=s.kd_pj WHERE rp.no_rawat=?`, noRawat).Scan(&jumlah)
+		if err != nil || jumlah > 0 {
+			return false, err
+		}
+	}
+	err = q.QueryRowContext(ctx, `SELECT COUNT(*) FROM billing WHERE no_rawat=?`, noRawat).Scan(&jumlah)
 	return jumlah > 0, err
 }
 

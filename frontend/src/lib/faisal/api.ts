@@ -379,8 +379,8 @@ export function hapusPermintaanRadiologi(token, noRawat, nomor) {
   return request(`/api/permintaan-radiologi/${encodeURIComponent(nomor)}?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
 
-export function permintaanLaboratoriumData(token, noRawat) {
-  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+export function permintaanLaboratoriumData(token, noRawat, kategori = 'PK') {
+  const query = new URLSearchParams({ no_rawat: noRawat, kategori }).toString()
   return request(`/api/permintaan-laboratorium?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
@@ -389,13 +389,13 @@ export function cariDokterLaboratorium(token, kataKunci) {
   return request(`/api/permintaan-laboratorium/dokter?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
-export function cariTindakanLaboratorium(token, noRawat, kataKunci) {
-  const query = new URLSearchParams({ no_rawat: noRawat, q: kataKunci }).toString()
+export function cariTindakanLaboratorium(token, noRawat, kataKunci, kategori = 'PK') {
+  const query = new URLSearchParams({ no_rawat: noRawat, q: kataKunci, kategori }).toString()
   return request(`/api/permintaan-laboratorium/tindakan?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
-export function detailTindakanLaboratorium(token, noRawat, kode) {
-  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+export function detailTindakanLaboratorium(token, noRawat, kode, kategori = 'PK') {
+  const query = new URLSearchParams({ no_rawat: noRawat, kategori }).toString()
   return request(`/api/permintaan-laboratorium/tindakan/${encodeURIComponent(kode)}/detail?${query}`, { headers: { Authorization: `Bearer ${token}` } })
 }
 
@@ -407,8 +407,8 @@ export function ubahPermintaanLaboratorium(token, nomor, payload) {
   return request(`/api/permintaan-laboratorium/${encodeURIComponent(nomor)}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
 }
 
-export function hapusPermintaanLaboratorium(token, noRawat, nomor) {
-  const query = new URLSearchParams({ no_rawat: noRawat }).toString()
+export function hapusPermintaanLaboratorium(token, noRawat, nomor, kategori = 'PK') {
+  const query = new URLSearchParams({ no_rawat: noRawat, kategori }).toString()
   return request(`/api/permintaan-laboratorium/${encodeURIComponent(nomor)}?${query}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
 }
 

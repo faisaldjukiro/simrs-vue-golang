@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 var ErrInputTidakValid = errors.New("input permintaan laboratorium tidak valid")
@@ -14,12 +15,16 @@ type Layanan struct{ repo *Repositori }
 
 func NewLayanan(repo *Repositori) *Layanan { return &Layanan{repo: repo} }
 
-func (l *Layanan) Data(ctx context.Context, noRawat string) (Data, error) {
+func (l *Layanan) Data(ctx context.Context, noRawat, kategori string) (Data, error) {
 	noRawat = strings.TrimSpace(noRawat)
 	if noRawat == "" {
 		return Data{}, fmt.Errorf("%w: nomor rawat wajib diisi", ErrInputTidakValid)
 	}
-	return l.repo.Data(ctx, noRawat)
+	repo, err := l.repo.untukKategori(kategori)
+	if err != nil {
+		return Data{}, err
+	}
+	return repo.Data(ctx, noRawat)
 }
 
 func (l *Layanan) CariDokter(ctx context.Context, kata string) ([]Dokter, error) {
@@ -29,19 +34,27 @@ func (l *Layanan) CariDokter(ctx context.Context, kata string) ([]Dokter, error)
 	return l.repo.CariDokter(ctx, kata)
 }
 
-func (l *Layanan) CariTindakan(ctx context.Context, noRawat, kata string) ([]Tindakan, error) {
+func (l *Layanan) CariTindakan(ctx context.Context, noRawat, kata, kategori string) ([]Tindakan, error) {
+	repo, err := l.repo.untukKategori(kategori)
+	if err != nil {
+		return nil, err
+	}
 	if strings.TrimSpace(noRawat) == "" || len(strings.TrimSpace(kata)) < 2 {
 		return []Tindakan{}, nil
 	}
-	return l.repo.CariTindakan(ctx, noRawat, kata)
+	return repo.CariTindakan(ctx, noRawat, kata)
 }
 
-func (l *Layanan) DetailTindakan(ctx context.Context, noRawat, kode string) ([]DetailPemeriksaan, error) {
+func (l *Layanan) DetailTindakan(ctx context.Context, noRawat, kode, kategori string) ([]DetailPemeriksaan, error) {
 	noRawat, kode = strings.TrimSpace(noRawat), strings.TrimSpace(kode)
 	if noRawat == "" || kode == "" {
 		return []DetailPemeriksaan{}, fmt.Errorf("%w: nomor rawat dan kode pemeriksaan wajib diisi", ErrInputTidakValid)
 	}
-	return l.repo.DetailTindakan(ctx, noRawat, kode)
+	repo, err := l.repo.untukKategori(kategori)
+	if err != nil {
+		return nil, err
+	}
+	return repo.DetailTindakan(ctx, noRawat, kode)
 }
 
 func (l *Layanan) Simpan(ctx context.Context, input Input) (string, error) {
@@ -49,7 +62,11 @@ func (l *Layanan) Simpan(ctx context.Context, input Input) (string, error) {
 	if err := validasi(input); err != nil {
 		return "", err
 	}
-	return l.repo.Simpan(ctx, input)
+	repo, err := l.repo.untukKategori(input.Kategori)
+	if err != nil {
+		return "", err
+	}
+	return repo.Simpan(ctx, input)
 }
 
 func (l *Layanan) Ubah(ctx context.Context, nomor string, input Input) error {
@@ -61,18 +78,39 @@ func (l *Layanan) Ubah(ctx context.Context, nomor string, input Input) error {
 	if err := validasi(input); err != nil {
 		return err
 	}
-	return l.repo.Ubah(ctx, nomor, input)
+	repo, err := l.repo.untukKategori(input.Kategori)
+	if err != nil {
+		return err
+	}
+	return repo.Ubah(ctx, nomor, input)
 }
 
-func (l *Layanan) Hapus(ctx context.Context, noRawat, nomor string) error {
+func (l *Layanan) Hapus(ctx context.Context, noRawat, nomor, kategori string) error {
 	noRawat, nomor = strings.TrimSpace(noRawat), strings.TrimSpace(nomor)
 	if noRawat == "" || nomor == "" {
 		return fmt.Errorf("%w: nomor rawat dan nomor permintaan wajib diisi", ErrInputTidakValid)
 	}
-	return l.repo.Hapus(ctx, noRawat, nomor)
+	repo, err := l.repo.untukKategori(kategori)
+	if err != nil {
+		return err
+	}
+	return repo.Hapus(ctx, noRawat, nomor)
 }
 
 func bersihkan(input *Input) {
+	input.Kategori = strings.ToUpper(strings.TrimSpace(input.Kategori))
+	if input.Kategori == "" {
+		input.Kategori = "PK"
+	}
+	p := &input.Spesimen
+	p.PengambilanBahan = strings.TrimSpace(p.PengambilanBahan)
+	p.DiperolehDengan = strings.TrimSpace(p.DiperolehDengan)
+	p.LokasiJaringan = strings.TrimSpace(p.LokasiJaringan)
+	p.DiawetkanDengan = strings.TrimSpace(p.DiawetkanDengan)
+	p.PernahDilakukanDi = strings.TrimSpace(p.PernahDilakukanDi)
+	p.TanggalPASebelumnya = strings.TrimSpace(p.TanggalPASebelumnya)
+	p.NomorPASebelumnya = strings.TrimSpace(p.NomorPASebelumnya)
+	p.DiagnosaPASebelumnya = strings.TrimSpace(p.DiagnosaPASebelumnya)
 	input.NoRawat = strings.TrimSpace(input.NoRawat)
 	input.Tanggal = strings.TrimSpace(input.Tanggal)
 	input.Jam = strings.TrimSpace(input.Jam)
@@ -104,13 +142,35 @@ func bersihkan(input *Input) {
 }
 
 func validasi(input Input) error {
+	if _, err := kategoriValid(input.Kategori); err != nil {
+		return err
+	}
+	if input.Kategori == "PA" {
+		p := input.Spesimen
+		if _, err := time.Parse("2006-01-02", p.PengambilanBahan); err != nil {
+			return fmt.Errorf("%w: tanggal pengambilan bahan PA wajib diisi dengan benar", ErrInputTidakValid)
+		}
+		if p.PernahDilakukanDi != "" {
+			if _, err := time.Parse("2006-01-02", p.TanggalPASebelumnya); err != nil {
+				return fmt.Errorf("%w: tanggal PA sebelumnya wajib diisi", ErrInputTidakValid)
+			}
+		}
+		if utf8.RuneCountInString(p.DiperolehDengan) > 40 || utf8.RuneCountInString(p.LokasiJaringan) > 40 || utf8.RuneCountInString(p.DiawetkanDengan) > 40 || utf8.RuneCountInString(p.PernahDilakukanDi) > 100 || utf8.RuneCountInString(p.NomorPASebelumnya) > 20 || utf8.RuneCountInString(p.DiagnosaPASebelumnya) > 100 {
+			return fmt.Errorf("%w: panjang informasi spesimen PA melebihi batas", ErrInputTidakValid)
+		}
+		for _, pemeriksaan := range input.Pemeriksaan {
+			if len(pemeriksaan.IDDetail) > 0 {
+				return fmt.Errorf("%w: pemeriksaan PA tidak memakai detail template PK/MB", ErrInputTidakValid)
+			}
+		}
+	}
 	if input.NoRawat == "" || input.KodeDokter == "" {
 		return fmt.Errorf("%w: nomor rawat dan dokter perujuk wajib diisi", ErrInputTidakValid)
 	}
 	if input.InformasiTambahan == "" || input.DiagnosisKlinis == "" {
 		return fmt.Errorf("%w: informasi tambahan dan diagnosis klinis wajib diisi", ErrInputTidakValid)
 	}
-	if len(input.InformasiTambahan) > 60 || len(input.DiagnosisKlinis) > 80 {
+	if utf8.RuneCountInString(input.InformasiTambahan) > 60 || utf8.RuneCountInString(input.DiagnosisKlinis) > 80 {
 		return fmt.Errorf("%w: informasi tambahan maksimal 60 karakter dan diagnosis klinis maksimal 80 karakter", ErrInputTidakValid)
 	}
 	if len(input.Pemeriksaan) == 0 {

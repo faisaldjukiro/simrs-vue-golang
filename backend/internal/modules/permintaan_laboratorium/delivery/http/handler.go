@@ -23,7 +23,7 @@ func (h *Handler) Register(g *gin.RouterGroup) {
 	g.DELETE("/:nomor", h.Hapus)
 }
 func (h *Handler) DetailTindakan(c *gin.Context) {
-	data, err := h.layanan.DetailTindakan(c.Request.Context(), c.Query("no_rawat"), c.Param("kode"))
+	data, err := h.layanan.DetailTindakan(c.Request.Context(), c.Query("no_rawat"), c.Param("kode"), c.Query("kategori"))
 	if err != nil {
 		h.tanganiError(c, err)
 		return
@@ -32,7 +32,7 @@ func (h *Handler) DetailTindakan(c *gin.Context) {
 }
 
 func (h *Handler) Data(c *gin.Context) {
-	data, err := h.layanan.Data(c.Request.Context(), c.Query("no_rawat"))
+	data, err := h.layanan.Data(c.Request.Context(), c.Query("no_rawat"), c.Query("kategori"))
 	if err != nil {
 		h.tanganiError(c, err)
 		return
@@ -48,7 +48,7 @@ func (h *Handler) CariDokter(c *gin.Context) {
 	httpresponse.Success(c, http.StatusOK, data)
 }
 func (h *Handler) CariTindakan(c *gin.Context) {
-	data, err := h.layanan.CariTindakan(c.Request.Context(), c.Query("no_rawat"), c.Query("q"))
+	data, err := h.layanan.CariTindakan(c.Request.Context(), c.Query("no_rawat"), c.Query("q"), c.Query("kategori"))
 	if err != nil {
 		h.tanganiError(c, err)
 		return
@@ -84,7 +84,7 @@ func (h *Handler) Ubah(c *gin.Context) {
 }
 
 func (h *Handler) Hapus(c *gin.Context) {
-	if err := h.layanan.Hapus(c.Request.Context(), c.Query("no_rawat"), c.Param("nomor")); err != nil {
+	if err := h.layanan.Hapus(c.Request.Context(), c.Query("no_rawat"), c.Param("nomor"), c.Query("kategori")); err != nil {
 		h.tanganiError(c, err)
 		return
 	}

@@ -1,225 +1,296 @@
-// @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
-import { computed, nextTick, reactive, ref, watch } from "vue"
-import { detailTindakanLaboratorium, hapusPermintaanLaboratorium, permintaanLaboratoriumData, simpanPermintaanLaboratorium, ubahPermintaanLaboratorium } from "../../../lib/faisal/api"
-import { useNotifikasi } from "../../../lib/shared/useNotifikasi"
+import { computed, nextTick, reactive, ref, watch } from 'vue'
+import {
+  detailTindakanLaboratorium,
+  hapusPermintaanLaboratorium,
+  permintaanLaboratoriumData,
+  simpanPermintaanLaboratorium,
+  ubahPermintaanLaboratorium,
+} from '../../../lib/faisal/api'
+import { useNotifikasi } from '../../../lib/shared/useNotifikasi'
+import { kategoriLaboratorium } from '../../../types/permintaanLaboratorium'
+import type {
+  DetailLaboratorium,
+  KategoriLaboratorium,
+  PemeriksaanLaboratorium,
+  PermintaanLaboratorium,
+  PropsLaboratorium,
+  SpesimenLaboratorium,
+} from '../../../types/permintaanLaboratorium'
+import { cetakPermintaanLaboratorium } from './cetakPermintaanLaboratorium'
 
-export function usePermintaanLaboratorium(props) {
+export function usePermintaanLaboratorium(props: PropsLaboratorium) {
   const notifikasi = useNotifikasi()
+  const kategori = ref<KategoriLaboratorium>('PK')
   const loading = ref(false)
   const saving = ref(false)
+  const editing = ref(false)
+  const detailLoading = ref(false)
   const deleting = ref(false)
   const error = ref('')
   const formVisible = ref(true)
-  const requests = ref([])
-  const doctor = ref({})
-  const defaultDoctor = ref({})
-  const treatments = ref([])
-  const billingLocked = ref(false)
-  const scope = ref({})
-  const deleteTarget = ref(null)
+  const confirmVisible = ref(false)
+  const requests = ref<PermintaanLaboratorium[]>([])
+  const doctor = ref<{ kode?: string; nama?: string }>({})
+  const defaultDoctor = ref<{ kode?: string; nama?: string }>({})
+  const treatments = ref<PemeriksaanLaboratorium[]>([])
+  const billingLocked = ref(true)
+  const scope = ref({ status: '', kodeCaraBayar: '', kelas: '' })
+  const deleteTarget = ref<PermintaanLaboratorium | null>(null)
   const editingNumber = ref('')
   const kataKunciPermintaan = ref('')
   const form = reactive(emptyForm())
-  const tableRows = computed(() => requests.value.map((item) => ({ ...item, _key: item.nomor })))
+  let versiKonteks = 0
+  let versiMuat = 0
+  const busy = computed(() => loading.value || saving.value || deleting.value || editing.value)
+  const namaKategori = computed(() => kategoriLaboratorium.find((item) => item.value === kategori.value)?.label || kategori.value)
   const tableRowsTampil = computed(() => {
     const keyword = kataKunciPermintaan.value.trim().toLowerCase()
-    if (!keyword) return tableRows.value
-    return tableRows.value.filter((item) => teksPermintaan(item).includes(keyword))
+    return requests.value
+      .filter((item) => !keyword || teksPermintaan(item).includes(keyword))
+      .map((item) => ({ ...item, _key: `${item.kategori}:${item.nomor}` }))
   })
-  
-  function today() {
-    const date = new Date()
-    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+
+  function pesanError(err: unknown) {
+    return err instanceof Error ? err.message : 'Permintaan laboratorium tidak dapat diproses.'
   }
-  function now() { return new Date().toTimeString().slice(0, 8) }
-  function emptyForm() {
+
+  function waktuSekarang() {
+    const parts = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'Asia/Makassar',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+    }).formatToParts(new Date())
+    const nilai = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value || ''
     return {
-      no_rawat: props.patient?.no_rawat || '',
-      tanggal: today(),
-      jam: now(),
-      informasi_tambahan: '',
-      diagnosis_klinis: '',
+      tanggal: `${nilai('year')}-${nilai('month')}-${nilai('day')}`,
+      jam: `${nilai('hour')}:${nilai('minute')}:${nilai('second')}`,
     }
   }
-  function rupiah(value) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0))
+
+  function emptyForm() {
+    const waktu = waktuSekarang()
+    const spesimen: SpesimenLaboratorium = {
+      pengambilan_bahan: waktu.tanggal,
+      diperoleh_dengan: '', lokasi_jaringan: '', diawetkan_dengan: '',
+      pernah_dilakukan_di: '', tanggal_pa_sebelumnya: '',
+      nomor_pa_sebelumnya: '', diagnosa_pa_sebelumnya: '',
+    }
+    return {
+      no_rawat: props.patient.no_rawat || '',
+      ...waktu,
+      informasi_tambahan: '',
+      diagnosis_klinis: '',
+      spesimen,
+    }
   }
-  function formatDate(value) {
+
+  function rupiah(value: number) {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
+    }).format(Number(value || 0))
+  }
+
+  function formatDate(value: string) {
     if (!value) return '-'
     const [year, month, day] = value.split('-')
     return `${day}/${month}/${year}`
   }
-  function teksPermintaan(item) {
-    const pemeriksaan = (item.pemeriksaan || []).flatMap((pemeriksaan) => [
-      pemeriksaan.kode,
-      pemeriksaan.nama,
-      pemeriksaan.kelas,
-      pemeriksaan.total,
-      ...(pemeriksaan.detail || []).flatMap((detail) => [detail.id, detail.nama]),
-    ])
+
+  function teksPermintaan(item: PermintaanLaboratorium) {
     return [
-      item.nomor,
-      item.tanggal,
-      item.jam,
-      item.kode_dokter,
-      item.nama_dokter,
-      item.informasi_tambahan,
-      item.diagnosis_klinis,
-      item.status_pemeriksaan,
-      item.status_bayar,
-      item.total,
-      ...pemeriksaan,
+      item.nomor, item.kategori, item.tanggal, item.jam,
+      item.kode_dokter, item.nama_dokter, item.informasi_tambahan,
+      item.diagnosis_klinis, item.status_pemeriksaan, item.status_bayar,
+      ...Object.values(item.spesimen || {}),
+      ...(item.pemeriksaan || []).flatMap((pemeriksaan) => [
+        pemeriksaan.kode, pemeriksaan.nama, pemeriksaan.kelas,
+        ...(pemeriksaan.detail || []).map((detail) => detail.nama),
+      ]),
     ].join(' ').toLowerCase()
   }
-  function waktuStatus(item) {
+
+  function waktuStatus(item: PermintaanLaboratorium) {
     if (item.status_pemeriksaan === 'Selesai') return `${formatDate(item.tanggal_hasil)} · ${item.jam_hasil || '-'}`
     if (item.status_pemeriksaan === 'Sampel Diterima') return `${formatDate(item.tanggal_sampel)} · ${item.jam_sampel || '-'}`
     return 'Belum diterima petugas'
   }
-  function kelasStatusPemeriksaan(status) {
+
+  function kelasStatusPemeriksaan(status: string) {
     if (status === 'Selesai') return 'completed'
     if (status === 'Sampel Diterima') return 'processing'
     return 'waiting'
   }
-  function kelasStatusBayar(status) {
+
+  function kelasStatusBayar(status: string) {
     if (status === 'Sudah Bayar') return 'paid'
     if (status === 'Sebagian Dibayar') return 'partial'
     return 'unpaid'
   }
+
   function resetForm() {
     Object.assign(form, emptyForm())
     doctor.value = { ...defaultDoctor.value }
     treatments.value = []
     editingNumber.value = ''
+    confirmVisible.value = false
   }
-  async function editRequest(item) {
-    if (billingLocked.value || !item.dapat_diubah) return
-    editingNumber.value = item.nomor
-    Object.assign(form, {
-      no_rawat: item.no_rawat,
-      tanggal: item.tanggal,
-      jam: item.jam,
-      informasi_tambahan: item.informasi_tambahan,
-      diagnosis_klinis: item.diagnosis_klinis,
-    })
-    doctor.value = { kode: item.kode_dokter, nama: item.nama_dokter }
-    const pemeriksaanTersimpan = item.pemeriksaan || []
-    treatments.value = pemeriksaanTersimpan.map((pemeriksaan) => ({
-      ...pemeriksaan,
-      detail_opsi: (pemeriksaan.detail || []).map((detail) => ({ ...detail, dipilih: true })),
-    }))
+
+  function gantiKategori(nilai: KategoriLaboratorium) {
+    if (nilai === kategori.value || busy.value || detailLoading.value) return
+    if ((treatments.value.length || form.informasi_tambahan || form.diagnosis_klinis || editingNumber.value)
+      && !window.confirm('Ganti kategori dan kosongkan form yang belum disimpan?')) return
+    kategori.value = nilai
+  }
+
+  async function editRequest(item: PermintaanLaboratorium) {
+    if (busy.value || billingLocked.value || !item.dapat_diubah) return
+    const versi = versiKonteks
+    editing.value = true
     try {
-      treatments.value = await Promise.all(pemeriksaanTersimpan.map(async (pemeriksaan) => {
-        const detailTersimpan = new Set((pemeriksaan.detail || []).map((detail) => Number(detail.id)))
-        const semuaDetail = await detailTindakanLaboratorium(props.token, props.patient.no_rawat, pemeriksaan.kode)
+      const pilihan = await Promise.all(item.pemeriksaan.map(async (pemeriksaan) => {
+        const tersimpan = new Set(pemeriksaan.detail.map((detail) => Number(detail.id)))
+        const detail: DetailLaboratorium[] = await detailTindakanLaboratorium(
+          props.token, item.no_rawat, pemeriksaan.kode, item.kategori,
+        )
         return {
           ...pemeriksaan,
-          detail_opsi: (Array.isArray(semuaDetail) ? semuaDetail : []).map((detail) => ({
-            ...detail,
-            dipilih: detailTersimpan.has(Number(detail.id)),
-          })),
+          detail_opsi: detail.map((opsi) => ({ ...opsi, dipilih: tersimpan.has(Number(opsi.id)) })),
         }
       }))
+      if (versi !== versiKonteks) return
+      resetForm()
+      editingNumber.value = item.nomor
+      Object.assign(form, {
+        no_rawat: item.no_rawat, tanggal: item.tanggal, jam: item.jam,
+        informasi_tambahan: item.informasi_tambahan,
+        diagnosis_klinis: item.diagnosis_klinis,
+        spesimen: { ...emptyForm().spesimen, ...item.spesimen },
+      })
+      doctor.value = { kode: item.kode_dokter, nama: item.nama_dokter }
+      treatments.value = pilihan
+      formVisible.value = true
+      await nextTick()
+      document.querySelector('.laboratory-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } catch (err) {
-      notifikasi.gagal(`Pilihan detail pemeriksaan tidak dapat dibaca: ${err.message}`)
+      if (versi === versiKonteks) notifikasi.gagal(pesanError(err))
+    } finally {
+      if (versi === versiKonteks) editing.value = false
     }
-    formVisible.value = true
-    nextTick(() => document.querySelector('.laboratory-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
-  
+
   async function loadData() {
+    const versi = ++versiMuat
+    const konteks = versiKonteks
     if (!props.patient.no_rawat) return
     loading.value = true
+    billingLocked.value = true
     error.value = ''
     try {
-      const data = await permintaanLaboratoriumData(props.token, props.patient.no_rawat)
+      const data = await permintaanLaboratoriumData(props.token, props.patient.no_rawat, kategori.value)
+      if (versi !== versiMuat || konteks !== versiKonteks) return
       requests.value = data?.permintaan || []
       billingLocked.value = Boolean(data?.billing_terkunci)
       defaultDoctor.value = data?.dokter_perujuk || {}
       scope.value = { status: data?.status_rawat || '', kodeCaraBayar: data?.kode_cara_bayar || '', kelas: data?.kelas_pasien || '' }
-      if (!doctor.value?.kode) doctor.value = { ...defaultDoctor.value }
+      if (!doctor.value.kode) doctor.value = { ...defaultDoctor.value }
     } catch (err) {
-      error.value = err.message
-      notifikasi.gagal(err.message)
+      if (versi !== versiMuat || konteks !== versiKonteks) return
+      requests.value = []
+      error.value = pesanError(err)
+      notifikasi.gagal(error.value)
     } finally {
-      loading.value = false
+      if (versi === versiMuat && konteks === versiKonteks) loading.value = false
     }
   }
-  
-  async function saveRequest() {
-    if (!doctor.value?.kode || treatments.value.length === 0) {
-      notifikasi.peringatan('Dokter perujuk dan minimal satu pemeriksaan laboratorium wajib dipilih.')
+
+  function saveRequest() {
+    if (busy.value || billingLocked.value || detailLoading.value) return
+    if (!doctor.value.kode || !treatments.value.length) {
+      notifikasi.peringatan('Dokter perujuk dan minimal satu pemeriksaan wajib dipilih.')
       return
+    }
+    confirmVisible.value = true
+  }
+
+  async function confirmSave() {
+    if (busy.value || billingLocked.value || !confirmVisible.value) return
+    const versi = versiKonteks
+    const payload = {
+      ...form,
+      spesimen: { ...form.spesimen },
+      kategori: kategori.value,
+      kode_dokter: doctor.value.kode,
+      pemeriksaan: treatments.value.map((item) => ({
+        kode: item.kode,
+        id_detail: (item.detail_opsi || []).filter((detail) => detail.dipilih).map((detail) => detail.id),
+      })),
     }
     saving.value = true
     try {
-      const payload = {
-        ...form,
-        kode_dokter: doctor.value.kode,
-        pemeriksaan: treatments.value.map((item) => ({
-          kode: item.kode,
-          id_detail: (item.detail_opsi || []).filter((detail) => detail.dipilih).map((detail) => detail.id),
-        })),
-      }
       const response = editingNumber.value
         ? await ubahPermintaanLaboratorium(props.token, editingNumber.value, payload)
         : await simpanPermintaanLaboratorium(props.token, payload)
-      notifikasi.sukses(`${response?.pesan || 'Permintaan laboratorium berhasil disimpan.'} Nomor: ${response?.nomor || editingNumber.value || '-'}`)
+      if (versi !== versiKonteks) return
+      notifikasi.sukses(`${response?.pesan || 'Permintaan berhasil disimpan.'} Nomor: ${response?.nomor || '-'}`)
       resetForm()
       await loadData()
-      formVisible.value = false
+      if (versi === versiKonteks) formVisible.value = false
     } catch (err) {
-      notifikasi.gagal(err.message)
+      if (versi === versiKonteks) notifikasi.gagal(pesanError(err))
     } finally {
-      saving.value = false
+      if (versi === versiKonteks) {
+        saving.value = false
+        confirmVisible.value = false
+      }
     }
   }
-  
+
   async function confirmDelete() {
-    if (!deleteTarget.value) return
+    if (!deleteTarget.value || busy.value || billingLocked.value) return
+    const versi = versiKonteks
+    const target = deleteTarget.value
     deleting.value = true
     try {
-      const response = await hapusPermintaanLaboratorium(props.token, props.patient.no_rawat, deleteTarget.value.nomor)
-      notifikasi.sukses(response?.pesan || 'Permintaan laboratorium berhasil dihapus.')
+      const response = await hapusPermintaanLaboratorium(props.token, target.no_rawat, target.nomor, target.kategori)
+      if (versi !== versiKonteks) return
+      notifikasi.sukses(response?.pesan || 'Permintaan berhasil dihapus.')
       deleteTarget.value = null
       await loadData()
     } catch (err) {
-      notifikasi.gagal(err.message)
+      if (versi === versiKonteks) notifikasi.gagal(pesanError(err))
     } finally {
-      deleting.value = false
+      if (versi === versiKonteks) deleting.value = false
     }
   }
-  
-  watch(() => props.patient.no_rawat, () => {
+
+  function cetak(item: PermintaanLaboratorium) {
+    if (item.no_rawat !== props.patient.no_rawat) return
+    cetakPermintaanLaboratorium(item, props.patient)
+  }
+
+  watch([() => props.patient.no_rawat, kategori], () => {
+    versiKonteks++
     kataKunciPermintaan.value = ''
+    requests.value = []
+    defaultDoctor.value = {}
+    deleteTarget.value = null
+    saving.value = false
+    deleting.value = false
+    editing.value = false
+    detailLoading.value = false
+    loading.value = false
+    billingLocked.value = true
     resetForm()
-    loadData()
+    void loadData()
   }, { immediate: true })
+
   return {
-    loading,
-    saving,
-    deleting,
-    error,
-    formVisible,
-    requests,
-    doctor,
-    treatments,
-    billingLocked,
-    scope,
-    deleteTarget,
-    editingNumber,
-    kataKunciPermintaan,
-    form,
-    tableRowsTampil,
-    rupiah,
-    formatDate,
-    waktuStatus,
-    kelasStatusPemeriksaan,
-    kelasStatusBayar,
-    resetForm,
-    editRequest,
-    loadData,
-    saveRequest,
-    confirmDelete,
+    kategori, kategoriLaboratorium, namaKategori, gantiKategori,
+    loading, saving, deleting, busy, detailLoading, error, formVisible, confirmVisible,
+    requests, doctor, treatments, billingLocked, scope, deleteTarget,
+    editingNumber, kataKunciPermintaan, form, tableRowsTampil,
+    rupiah, formatDate, waktuStatus, kelasStatusPemeriksaan, kelasStatusBayar,
+    resetForm, editRequest, loadData, saveRequest, confirmSave, confirmDelete, cetak,
+    waktuSekarang,
   }
 }
