@@ -190,7 +190,10 @@ export function usePermintaanLaboratorium(props: PropsLaboratorium) {
       if (versi !== versiMuat || konteks !== versiKonteks) return
       requests.value = data?.permintaan || []
       billingLocked.value = Boolean(data?.billing_terkunci)
-      defaultDoctor.value = data?.dokter_perujuk || {}
+      const jadwal = props.jadwalOperasi
+      defaultDoctor.value = jadwal && jadwal.no_rawat === props.patient.no_rawat
+        ? { kode: jadwal.kd_dokter, nama: jadwal.nama_dokter }
+        : data?.dokter_perujuk || {}
       scope.value = { status: data?.status_rawat || '', kodeCaraBayar: data?.kode_cara_bayar || '', kelas: data?.kelas_pasien || '' }
       if (!doctor.value.kode) doctor.value = { ...defaultDoctor.value }
     } catch (err) {

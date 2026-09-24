@@ -37,12 +37,12 @@ const {
         </button>
       </header>
       <p class="pre-info">
-        Catatan baru disimpan di SIRAPI, belum dikirim ke Khanza.
-        Riwayat Khanza hanya dapat dilihat.
+        Checklist baru langsung disimpan ke Khanza.
+        Edit dan hapus langsung berlaku pada sumber data baris yang dipilih.
       </p>
       <form :key="String(patient.no_rawat)" v-show="formVisible" class="pre-form" @submit.prevent="simpan">
         <p v-if="editing" class="pre-info" role="status">
-          Mengedit checklist tanggal {{ editing.tanggal }}.
+          Mengedit checklist {{ editing.sumber }} tanggal {{ editing.tanggal }}.
         </p>
         <FormInput
           v-model="tanggal"
@@ -87,7 +87,7 @@ const {
           </button>
           <button type="submit" class="clinical-button primary" :disabled="saving">
             <Save :size="16" />
-            {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan Checklist' }}
+            {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan ke Khanza' }}
           </button>
         </div>
       </form>
@@ -187,7 +187,8 @@ const {
       :style="{ width: '460px', maxWidth: '95vw' }"
       @update:visible="value => { if (!value && !saving) hapusTarget = null }"
     >
-      <p>Hapus checklist tanggal {{ hapusTarget?.tanggal }} dari daftar aktif SIRAPI?</p>
+      <p>Hapus checklist tanggal {{ hapusTarget?.tanggal }} dari {{ hapusTarget?.sumber }}?</p>
+      <p v-if="hapusTarget?.sumber === 'Khanza'">Data akan dihapus langsung dari Khanza dan tidak dapat dipulihkan melalui halaman ini.</p>
       <template #footer>
         <button class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>
         <button class="clinical-button danger" :disabled="saving" @click="hapus">

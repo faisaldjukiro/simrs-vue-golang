@@ -11,6 +11,7 @@ const props = defineProps({
   patient: { type: Object, required: true },
   moduleName: { type: String, default: 'Rawat Inap' },
   copiedResep: { type: Object, default: null },
+  jadwalOperasi: { type: Object, default: null },
 })
 
 const {

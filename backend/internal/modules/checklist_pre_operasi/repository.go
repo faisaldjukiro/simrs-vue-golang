@@ -11,11 +11,45 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"simrs-backend/internal/shared/khanzamutasi"
+
 	"github.com/go-sql-driver/mysql"
 )
 
 var ErrValidasi = errors.New("validasi checklist")
 var ErrKonflik = errors.New("Data berubah, waktu checklist sudah digunakan, atau akses perubahan tidak tersedia. Muat ulang riwayat.")
+
+func snapshot(input Input) ([]string, []any) {
+	kolom := []string{"no_rawat", "tanggal"}
+	nilai := []any{input.NoRawat, input.Tanggal}
+	for _, b := range BidangForm {
+		kolom = append(kolom, b.Kode)
+		nilai = append(nilai, input.Data[b.Kode])
+	}
+	return kolom, nilai
+}
+
+func (r *Repositori) mutasiKhanza(ctx context.Context, input Input, hapus bool) error {
+	if input.Asli == nil || input.NoRawat == "" || input.Asli.NoRawat != input.NoRawat || input.Asli.Tanggal == "" {
+		return ErrValidasi
+	}
+	for _, b := range BidangForm {
+		if _, ok := input.Asli.Data[b.Kode]; !ok {
+			return ErrValidasi
+		}
+	}
+	kolom, lama := snapshot(*input.Asli)
+	_, baru := snapshot(input)
+	err := khanzamutasi.Jalankan(ctx, r.simrs, "checklist_pre_operasi", kolom, lama, baru, hapus)
+	if errors.Is(err, khanzamutasi.ErrKonflik) {
+		return ErrKonflik
+	}
+	var mysqlErr *mysql.MySQLError
+	if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+		return ErrKonflik
+	}
+	return err
+}
 
 type Bidang struct {
 	Kode, Label string
@@ -52,6 +86,8 @@ var BidangForm = []Bidang{
 }
 
 type Input struct {
+	Sumber  string            `json:"sumber"`
+	Asli    *Input            `json:"asli"`
 	ID      uint64            `json:"id"`
 	Versi   int               `json:"versi"`
 	NoRawat string            `json:"no_rawat"`
@@ -170,13 +206,27 @@ func (r *Repositori) Simpan(ctx context.Context, input Input, user uint64, admin
 	if err := r.lengkapiReferensi(ctx, &input); err != nil {
 		return err
 	}
+	if input.Sumber == "Khanza" {
+		return r.mutasiKhanza(ctx, input, false)
+	}
 	payload, err := json.Marshal(input.Data)
 	if err != nil {
 		return err
 	}
 	var hasil sql.Result
 	if input.ID == 0 {
-		hasil, err = r.lokal.ExecContext(ctx, "INSERT INTO sirapi_checklist_pre_operasi (no_rawat,tanggal,data_checklist,dibuat_oleh) VALUES (?,?,?,?)", input.NoRawat, input.Tanggal, payload, user)
+		// Izin eksplisit user: catatan baru langsung ke tabel Khanza.
+		// Nama kolom dari daftar tetap, bukan input client; sesuai 27 field referensi.
+		kolom := []string{"no_rawat", "tanggal"}
+		args := []any{input.NoRawat, input.Tanggal}
+		for _, bidang := range BidangForm {
+			kolom = append(kolom, bidang.Kode)
+			args = append(args, input.Data[bidang.Kode])
+		}
+		placeholder := strings.TrimSuffix(strings.Repeat("?,", len(kolom)), ",")
+		hasil, err = r.simrs.ExecContext(ctx,
+			"INSERT INTO checklist_pre_operasi ("+strings.Join(kolom, ",")+") VALUES ("+placeholder+")",
+			args...)
 	} else {
 		hasil, err = r.lokal.ExecContext(ctx, "UPDATE sirapi_checklist_pre_operasi SET tanggal=?,data_checklist=?,versi=versi+1,diubah_oleh=? WHERE id=? AND no_rawat=? AND versi=? AND deleted_at IS NULL AND (dibuat_oleh=? OR ?)", input.Tanggal, payload, user, input.ID, input.NoRawat, input.Versi, user, admin)
 	}
@@ -195,6 +245,9 @@ func (r *Repositori) Simpan(ctx context.Context, input Input, user uint64, admin
 }
 
 func (r *Repositori) Hapus(ctx context.Context, input Input, user uint64, admin bool) error {
+	if input.Sumber == "Khanza" {
+		return r.mutasiKhanza(ctx, input, true)
+	}
 	if input.ID == 0 || input.NoRawat == "" || input.Versi < 1 {
 		return fmt.Errorf("%w: pilih catatan yang akan dihapus", ErrValidasi)
 	}
@@ -272,7 +325,7 @@ func (r *Repositori) riwayatLama(ctx context.Context, noRawat string) ([]Catatan
 		if err := rows.Scan(tujuan...); err != nil {
 			return nil, err
 		}
-		item := Catatan{Input: Input{NoRawat: noRawat, Tanggal: values[0], Data: map[string]string{}}, Sumber: "Khanza"}
+		item := Catatan{Input: Input{NoRawat: noRawat, Tanggal: values[0], Data: map[string]string{}}, Sumber: "Khanza", BisaUbah: true}
 		for i, bidang := range BidangForm {
 			item.Data[bidang.Kode] = values[i+1]
 		}

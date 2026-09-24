@@ -1,0 +1,65 @@
+.operasi-workspace,
+.operasi-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.operasi-tab-header {
+  margin: 12px 0 16px;
+}
+
+.operasi-tab-header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+}
+
+.operasi-tab-header p,
+.operasi-tab-help {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.operasi-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 6px 4px 12px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+
+.operasi-konteks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.operasi-tabs .clinical-button:disabled {
+  opacity: 1;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.operasi-tabs small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.operasi-tabs .clinical-button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  font-size: 13px;
+  white-space: nowrap;
+}

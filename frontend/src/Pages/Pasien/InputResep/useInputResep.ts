@@ -21,7 +21,13 @@ export function useInputResep(props) {
   const formVisible = ref(true)
   const tab = ref('resep')
   const copyTerakhir = ref(0)
-  const form = reactive({ no_resep: '', tgl_peresepan: today(), jam: now(), no_rawat: props.patient?.no_rawat || '', kd_dokter: '', status: 'ralan', kd_bangsal: '', nm_bangsal: '', judul: '' })
+  function waktuJadwal() {
+    const jadwal = props.jadwalOperasi
+    return jadwal && jadwal.no_rawat === props.patient?.no_rawat
+      ? { tgl_peresepan: jadwal.tanggal, jam: jadwal.jam_selesai }
+      : { tgl_peresepan: today(), jam: now() }
+  }
+  const form = reactive({ no_resep: '', ...waktuJadwal(), no_rawat: props.patient?.no_rawat || '', kd_dokter: '', status: 'ralan', kd_bangsal: '', nm_bangsal: '', judul: '' })
   const items = ref([])
   const racikan = ref([])
   const editingRacikanIndex = ref(null)
@@ -126,7 +132,7 @@ export function useInputResep(props) {
   
   async function reset(){
     formVisible.value = true
-    Object.assign(form,{no_resep:'',tgl_peresepan:today(),jam:now(),no_rawat:props.patient?.no_rawat||'',kd_dokter:doctor.value?.kd_dokter||'',status:statusRawat(),judul:''})
+    Object.assign(form,{no_resep:'',...waktuJadwal(),no_rawat:props.patient?.no_rawat||'',kd_dokter:doctor.value?.kd_dokter||'',status:statusRawat(),judul:''})
     items.value = []
     racikan.value = []
     editingRacikanIndex.value = null

@@ -1,3 +1,5 @@
+import type { JadwalOperasi } from './jadwalOperasi'
+
 export type KategoriLaboratorium = 'PK' | 'PA' | 'MB'
 
 export interface SpesimenLaboratorium {
@@ -55,6 +57,7 @@ export interface PermintaanLaboratorium {
 
 export interface PropsLaboratorium {
   token: string
+  jadwalOperasi?: JadwalOperasi
   patient: {
     no_rawat?: string
     nama_pasien?: string

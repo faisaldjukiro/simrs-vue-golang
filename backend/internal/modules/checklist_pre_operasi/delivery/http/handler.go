@@ -51,7 +51,7 @@ func tulisError(c *gin.Context, err error) {
 	} else if errors.Is(err, checklist_pre_operasi.ErrKonflik) {
 		httpresponse.Error(c, http.StatusConflict, "CHECKLIST_CONFLICT", err.Error())
 	} else {
-		httpresponse.Error(c, http.StatusInternalServerError, "CHECKLIST_ERROR", "Checklist pre operasi belum dapat diproses. Periksa koneksi dan migration database SIRAPI.")
+		httpresponse.Error(c, http.StatusInternalServerError, "CHECKLIST_ERROR", "Checklist belum dapat diproses. Periksa koneksi/izin database Khanza dan migration SIRAPI. Muat ulang riwayat sebelum mencoba simpan kembali.")
 	}
 }
 
@@ -88,6 +88,15 @@ func bacaInput(c *gin.Context) (checklist_pre_operasi.Input, bool) {
 	}
 	// ID hanya berasal dari URL, tidak boleh disisipkan ke endpoint pembuatan.
 	input.ID = 0
+	input.Sumber = "SIRAPI"
+	if c.Request.Method != http.MethodPost && c.Param("id") == "khanza" {
+		input.Sumber = "Khanza"
+		if input.Asli == nil {
+			tulisError(c, checklist_pre_operasi.ErrValidasi)
+			return input, false
+		}
+		return input, true
+	}
 	if c.Request.Method != http.MethodPost {
 		id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil || id == 0 {
@@ -116,7 +125,11 @@ func (h *Handler) simpan(c *gin.Context) {
 	if c.Request.Method == http.MethodPost {
 		status = http.StatusCreated
 	}
-	httpresponse.Success(c, status, gin.H{"pesan": "Checklist disimpan di SIRAPI", "waktu": time.Now().UTC()})
+	pesan := "Perubahan checklist lokal disimpan di SIRAPI"
+	if input.ID == 0 {
+		pesan = "Checklist pre operasi berhasil disimpan langsung di Khanza"
+	}
+	httpresponse.Success(c, status, gin.H{"pesan": pesan, "waktu": time.Now().UTC()})
 }
 
 func (h *Handler) hapus(c *gin.Context) {
@@ -132,5 +145,9 @@ func (h *Handler) hapus(c *gin.Context) {
 		tulisError(c, err)
 		return
 	}
-	httpresponse.Success(c, http.StatusOK, gin.H{"pesan": "Checklist dihapus dari daftar aktif SIRAPI"})
+	pesan := "Checklist dihapus dari daftar aktif SIRAPI"
+	if input.Sumber == "Khanza" {
+		pesan = "Checklist berhasil dihapus dari Khanza"
+	}
+	httpresponse.Success(c, http.StatusOK, gin.H{"pesan": pesan})
 }

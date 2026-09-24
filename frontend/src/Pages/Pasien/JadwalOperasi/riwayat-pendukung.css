@@ -1,0 +1,73 @@
+.operasi-riwayat-body {
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.operasi-tab-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.operasi-ringkas {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.operasi-detail {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.operasi-detail > div {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 2fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.operasi-detail dt {
+  color: var(--muted);
+}
+
+.operasi-detail dd {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .operasi-input-grid {
+    grid-template-columns: 1fr;
+  }
+  .operasi-detail > div {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+.operasi-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.operasi-input-wide {
+  grid-column: 1 / -1;
+}
+
+.operasi-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}

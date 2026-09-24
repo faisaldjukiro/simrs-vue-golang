@@ -1,6 +1,9 @@
+import type { JadwalOperasi } from './jadwalOperasi'
+
 export interface PropsChecklist {
   token: string
   patient: Record<string, unknown>
+  jadwalOperasi?: JadwalOperasi
 }
 
 export interface CatatanChecklist {
@@ -211,4 +214,3 @@ export const kelompokChecklist = [
   judul: k.judul,
   bidang: k.kode.map(kode => bidangChecklist.find(b => b.kode === kode)!),
 }))
-

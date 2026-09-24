@@ -25,6 +25,7 @@ import ImplementasiKeperawatanPage from '../../Pages/RawatInap/ImplementasiKeper
 import VentilatorPage from '../../Pages/RawatInap/Ventilator/VentilatorPage.vue'
 import RujukanInternalPage from '../../Pages/Pasien/RujukanInternal/RujukanInternalPage.vue'
 import ChecklistPreOperasiPage from '../../Pages/Pasien/ChecklistPreOperasi/ChecklistPreOperasiPage.vue'
+import TabOperasiPage from '../../Pages/Pasien/JadwalOperasi/TabOperasiPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
@@ -63,6 +64,7 @@ function pulihkanSidebarAktif() {
 }
 
 const halamanSidebar = {
+  jadwal_operasi: TabOperasiPage,
   checklist_pre_operasi: ChecklistPreOperasiPage,
   cppt_soap: CpptPage,
   penanganan_dokter_petugas: PenangananDokterPetugasPage,
@@ -133,6 +135,10 @@ const komponenSidebarAktif = computed(() => {
 })
 const propertiHalamanAktif = computed(() => {
   const properti = { token: props.token, patient: props.patient }
+  if (kodeSidebarAktif.value === 'jadwal_operasi') {
+    properti.moduleName = props.moduleName
+    properti.kodeSidebar = daftarSidebarAktif.value.map(item => item.kode)
+  }
   if (['cppt_soap', 'penanganan_dokter_petugas'].includes(kodeSidebarAktif.value)) {
     properti.jenisRawat = props.moduleName === 'Rawat Inap' ? 'ranap' : 'ralan'
     properti.namaModul = props.moduleName

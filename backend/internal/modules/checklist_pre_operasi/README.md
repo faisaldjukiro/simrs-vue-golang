@@ -8,9 +8,16 @@ Referensi: `simrs-lama/src/rekammedis/RMChecklistPreOperasi.java`.
   checklist. Batas SN/CN 25 karakter, tindakan 50, keterangan 20.
 - Pilihan klinis kosong saat membuat catatan: petugas wajib memilih hasil
   konfirmasi. Dokter dan kedua petugas wajib dipilih dari referensi Khanza.
-- Data baru disimpan sebagai snapshot JSON di tabel lokal
-  `sirapi_checklist_pre_operasi`. Tidak menulis ke SIMRS lama.
-- Riwayat Khanza berasal dari `checklist_pre_operasi`, hanya baca. Kegagalan
+- Atas izin eksplisit user, data baru langsung INSERT ke tabel
+  `checklist_pre_operasi` Khanza (27 kolom sesuai referensi).
+  Tidak ada fallback ke penyimpanan lokal bila gagal.
+- Catatan lokal lama di `sirapi_checklist_pre_operasi` tetap dipertahankan.
+  Tidak dikirim massal secara otomatis.
+- Edit/hapus Khanza diaktifkan atas izin user, melalui PUT/DELETE /khanza.
+  Body menyertakan no_rawat dan snapshot asli dari baris yang dipilih.
+  Pencocokan semua kolom mencegah menimpa data yang berubah; baris ambigu ditolak.
+  Hapus Khanza permanen dengan konfirmasi. Akses mengikuti permission modul pasien.
+- Riwayat Khanza berasal dari `checklist_pre_operasi`. Kegagalan
   pembacaan ditampilkan sebagai peringatan, bukan dianggap tidak ada riwayat.
 - Edit/hapus lokal hanya untuk pembuat atau pengguna permission `*`.
   Versi diperiksa untuk mencegah perubahan saling menimpa.

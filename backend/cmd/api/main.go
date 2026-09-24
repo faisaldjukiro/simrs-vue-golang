@@ -47,6 +47,8 @@ import (
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	"simrs-backend/internal/modules/implementasi_keperawatan"
 	implementasikeperawatanhttp "simrs-backend/internal/modules/implementasi_keperawatan/delivery/http"
+	"simrs-backend/internal/modules/jadwal_operasi"
+	jadwaloperasihttp "simrs-backend/internal/modules/jadwal_operasi/delivery/http"
 	"simrs-backend/internal/modules/kelola_menu"
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	"simrs-backend/internal/modules/laporan_10_penyakit"
@@ -251,6 +253,7 @@ func main() {
 		AwalMedisUmum:           awalMedisUmumHandler,
 		AwalMedisRanap:          awalMedisRanapHandler,
 		ChecklistPreOperasi:     checklistpreoperasihttp.NewHandler(checklist_pre_operasi.NewRepositori(db, simrsDB)),
+		JadwalOperasi:           jadwaloperasihttp.NewHandler(jadwal_operasi.NewRepositori(db, simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,

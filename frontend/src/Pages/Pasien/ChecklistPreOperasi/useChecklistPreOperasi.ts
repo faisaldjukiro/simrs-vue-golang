@@ -47,6 +47,13 @@ export function useChecklistPreOperasi(props: PropsChecklist) {
       if (b.jenis) pilihan[b.kode] = {}
     }
     waktuSekarang()
+    const jadwal = props.jadwalOperasi
+    if (jadwal && jadwal.no_rawat === nomorRawat.value) {
+      form.tindakan = jadwal.nama_paket
+      pilihan.kd_dokter_bedah = { kode: jadwal.kd_dokter, nama: jadwal.nama_dokter }
+      // Tanggal pemeriksaan tetap waktu pencatatan, bukan waktu operasi
+      // yang mungkin masih di masa depan. Jawaban klinis tidak diisi otomatis.
+    }
   }
   async function muat() {
     const konteks = generasi
@@ -104,9 +111,10 @@ export function useChecklistPreOperasi(props: PropsChecklist) {
     const konteks = generasi
     saving.value = true
     try {
-      await api(editing.value ? '/' + editing.value.id : '', {
+      const hasil = await api<{ pesan: string }>(editing.value ? '/' + (editing.value.sumber === 'Khanza' ? 'khanza' : editing.value.id) : '', {
         method: editing.value ? 'PUT' : 'POST',
         body: JSON.stringify({
+          asli: editing.value?.sumber === 'Khanza' ? editing.value : undefined,
           no_rawat: nomorRawat.value,
           tanggal: waktu,
           versi: editing.value?.versi || 0,
@@ -114,7 +122,7 @@ export function useChecklistPreOperasi(props: PropsChecklist) {
         }),
       })
       if (konteks !== generasi) return
-      notifikasi.sukses('Checklist pre operasi berhasil disimpan di SIRAPI.')
+      notifikasi.sukses(hasil.pesan)
       reset()
       await muat()
     } catch (e) {
@@ -129,14 +137,14 @@ export function useChecklistPreOperasi(props: PropsChecklist) {
     const konteks = generasi
     saving.value = true
     try {
-      await api('/' + r.id, {
+      const hasil = await api<{ pesan: string }>('/' + (r.sumber === 'Khanza' ? 'khanza' : r.id), {
         method: 'DELETE',
-        body: JSON.stringify({ no_rawat: r.no_rawat, versi: r.versi }),
+        body: JSON.stringify({ no_rawat: r.no_rawat, versi: r.versi, asli: r.sumber === 'Khanza' ? r : undefined }),
       })
       if (konteks !== generasi) return
       hapusTarget.value = null
       if (editing.value?.id === r.id) reset()
-      notifikasi.sukses('Checklist dihapus dari daftar aktif SIRAPI.')
+      notifikasi.sukses(hasil.pesan)
       await muat()
     } catch (e) {
       if (konteks === generasi) notifikasi.gagal(pesan(e))
