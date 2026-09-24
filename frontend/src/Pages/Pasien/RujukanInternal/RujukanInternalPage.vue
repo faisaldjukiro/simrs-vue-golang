@@ -27,51 +27,42 @@ const {
           <h3>{{ judul }}</h3>
           <p>Pilih unit/poliklinik dan dokter yang dituju untuk kunjungan ini.</p>
         </div>
-        <button
-          type="button"
-          class="clinical-button toggle"
-          :aria-expanded="formVisible"
-          @click="formVisible = !formVisible"
-        >
+        <button type="button" class="clinical-button toggle" :aria-expanded="formVisible"
+          @click="formVisible = !formVisible">
           <ChevronUp v-if="formVisible" :size="16" />
           <ChevronDown v-else :size="16" />
-          {{ formVisible ? 'Tutup Form' : 'Buka Form' }}
+          <!-- {{ formVisible ? 'Tutup Form' : 'Buka Form' }} -->
         </button>
       </header>
 
-      <p class="rujukan-info">
+      <!-- <p class="rujukan-info">
         <ArrowRightToLine :size="18" aria-hidden="true" />
         Rujukan baru langsung disimpan di Khanza. Rujukan lokal lama dapat dikirim
         satu per satu melalui tombol Kirim ke Khanza, tanpa menimpa data yang sudah ada.
-      </p>
+      </p> -->
       <p v-if="pesanKunci" class="billing-lock" role="status">{{ pesanKunci }}</p>
 
       <form v-show="formVisible" class="clinical-form form-compact rujukan-form" @submit.prevent="simpan">
         <fieldset :disabled="terkunci">
           <p v-if="editing" class="rujukan-edit-status" role="status">
             Mengedit rujukan {{ editing.sumber }}: {{ editing.nama_poli }} — {{ editing.nama_dokter }}.
-            {{ editing.sumber === 'SIRAPI' ? 'Perubahan tetap lokal sampai dikirim.' : 'Perubahan disimpan langsung di Khanza.' }}
+            <span v-if="editing.sumber === 'SIRAPI'">
+              Perubahan tetap lokal sampai dikirim.
+            </span>
+            <span v-else>
+              Perubahan disimpan langsung di Khanza.
+            </span>
           </p>
           <div class="rujukan-fields" :key="`${patient.no_rawat}-${moduleName}`">
-            <InputPencarian
-              v-model="poli"
-              label="Unit / Poliklinik Tujuan"
-              placeholder="Cari kode atau nama poliklinik..."
-              :search="kata => cariReferensi('poli', kata)"
-              :disabled="terkunci"
-              required
-            />
-            <InputPencarian
-              v-model="dokter"
-              label="Dokter Dituju"
-              placeholder="Cari kode atau nama dokter..."
-              :search="kata => cariReferensi('dokter', kata)"
-              :disabled="terkunci"
-              required
-            />
+            <InputPencarian v-model="poli" label="Unit / Poliklinik Tujuan"
+              placeholder="Cari kode atau nama poliklinik..." :search="kata => cariReferensi('poli', kata)"
+              :disabled="terkunci" required />
+            <InputPencarian v-model="dokter" label="Dokter Dituju" placeholder="Cari kode atau nama dokter..."
+              :search="kata => cariReferensi('dokter', kata)" :disabled="terkunci" required />
             <template v-if="ranap">
               <FormInput v-model="form.tanggal" label="Tanggal Rujukan" type="date" :disabled="terkunci" required />
-              <FormInput v-model="form.jam" label="Jam Rujukan (WITA)" type="time" step="1" :disabled="terkunci" required />
+              <FormInput v-model="form.jam" label="Jam Rujukan (WITA)" type="time" step="1" :disabled="terkunci"
+                required />
             </template>
           </div>
           <p class="rujukan-help">
@@ -81,7 +72,8 @@ const {
           </p>
           <p v-if="errorSimpan" class="patient-error" role="alert">{{ errorSimpan }}</p>
           <footer class="clinical-form-actions">
-            <button v-if="ranap" type="button" class="clinical-button secondary" :disabled="terkunci" @click="waktuSekarang">
+            <button v-if="ranap" type="button" class="clinical-button secondary" :disabled="terkunci"
+              @click="waktuSekarang">
               <RefreshCw :size="15" /> Waktu Sekarang
             </button>
             <button type="button" class="clinical-button secondary" :disabled="terkunci" @click="resetForm">
@@ -105,7 +97,8 @@ const {
           <p v-if="!loading && !error">{{ filteredRows.length }} dari {{ records.length }} rujukan ditampilkan.</p>
         </div>
         <div class="clinical-section-tools">
-          <TableSearch v-model="keyword" placeholder="Cari poli, dokter, atau sumber..." :total="records.length" :filtered="filteredRows.length" />
+          <TableSearch v-model="keyword" placeholder="Cari poli, dokter, atau sumber..." :total="records.length"
+            :filtered="filteredRows.length" />
           <button type="button" class="clinical-button secondary" :disabled="loading || saving" @click="muat">
             <RefreshCw :size="15" /> Muat Ulang
           </button>
@@ -119,29 +112,27 @@ const {
         <strong>{{ error }}</strong>
         <button type="button" class="clinical-button secondary" @click="muat">Coba Lagi</button>
       </div>
-      <DataTable
-        v-else
-        class="rujukan-table"
-        :rows="filteredRows"
-        data-key="_key"
-        empty-message="Tidak ada rujukan internal yang sesuai."
-      >
+      <DataTable v-else class="rujukan-table" :rows="filteredRows" data-key="_key"
+        empty-message="Tidak ada rujukan internal yang sesuai.">
         <Column header="No." style="width:65px;text-align:center">
           <template #body="{ index }">{{ index + 1 }}</template>
         </Column>
         <Column header="Unit / Poliklinik Tujuan" style="min-width:200px">
           <template #body="{ data }">
-            <div class="clinical-table-main"><strong>{{ data.nama_poli || '-' }}</strong><span>{{ data.kd_poli }}</span></div>
+            <div class="clinical-table-main"><strong>{{ data.nama_poli || '-' }}</strong><span>{{ data.kd_poli }}</span>
+            </div>
           </template>
         </Column>
         <Column header="Dokter Dituju" style="min-width:220px">
           <template #body="{ data }">
-            <div class="clinical-table-main"><strong>{{ data.nama_dokter || '-' }}</strong><span>{{ data.kd_dokter }}</span></div>
+            <div class="clinical-table-main"><strong>{{ data.nama_dokter || '-' }}</strong><span>{{ data.kd_dokter
+                }}</span></div>
           </template>
         </Column>
         <Column v-if="ranap" header="Tanggal / Jam" style="min-width:165px">
           <template #body="{ data }">
-            <div class="clinical-table-main"><strong>{{ data.tanggal || '-' }}</strong><span>{{ data.jam || '-' }}</span></div>
+            <div class="clinical-table-main"><strong>{{ data.tanggal || '-' }}</strong><span>{{ data.jam || '-'
+                }}</span></div>
           </template>
         </Column>
         <Column header="Sumber" style="width:200px">
@@ -151,7 +142,8 @@ const {
               <span v-if="data.konflik_khanza" class="rujukan-conflict">
                 Kunci rujukan sudah ada di Khanza, tetapi isinya berbeda. Periksa kedua baris sebelum melanjutkan.
               </span>
-              <span v-else>{{ data.sumber === 'SIRAPI' ? 'Lokal, belum dikirim ke Khanza' : 'Tersimpan di Khanza' }}</span>
+              <span v-else>{{ data.sumber === 'SIRAPI' ? 'Lokal, belum dikirim ke Khanza' : 'Tersimpan di Khanza'
+              }}</span>
             </div>
           </template>
         </Column>
@@ -159,32 +151,18 @@ const {
           <template #body="{ data }">
             <div class="rujukan-actions">
               <div class="clinical-table-actions">
-                <button
-                  type="button"
-                  title="Edit rujukan"
-                  :disabled="terkunci"
-                  @click="edit(data)"
-                >
+                <button type="button" title="Edit rujukan" :disabled="terkunci" @click="edit(data)">
                   <Pencil :size="14" /> Edit
                 </button>
-                <button
-                  type="button"
-                  class="danger"
-                  title="Hapus rujukan"
-                  :disabled="terkunci"
-                  @click="mintaKonfirmasi('hapus', data)"
-                >
+                <button type="button" class="danger" title="Hapus rujukan" :disabled="terkunci"
+                  @click="mintaKonfirmasi('hapus', data)">
                   <Trash2 :size="14" /> Hapus
                 </button>
               </div>
-              <button
-                v-if="data.sumber === 'SIRAPI'"
-                type="button"
-                class="clinical-button primary rujukan-send"
+              <button v-if="data.sumber === 'SIRAPI'" type="button" class="clinical-button primary rujukan-send"
                 :disabled="terkunci || data.konflik_khanza"
                 :title="data.konflik_khanza ? 'Data berbeda dengan Khanza. Periksa dan sesuaikan terlebih dahulu.' : 'Kirim rujukan lokal ini ke Khanza'"
-                @click="mintaKonfirmasi('kirim', data)"
-              >
+                @click="mintaKonfirmasi('kirim', data)">
                 <ArrowRightToLine :size="14" /> Kirim ke Khanza
               </button>
             </div>
@@ -193,17 +171,10 @@ const {
       </DataTable>
     </article>
 
-    <Dialog
-      class="rujukan-confirm"
-      :visible="!!konfirmasi"
-      :header="konfirmasi?.aksi === 'hapus' ? 'Hapus rujukan?' : 'Kirim rujukan ke Khanza?'"
-      modal
-      append-to="self"
-      :closable="!saving"
-      :close-on-escape="!saving"
-      :style="{ width: '480px', maxWidth: 'calc(100vw - 32px)' }"
-      @update:visible="value => { if (!value && !saving) konfirmasi = null }"
-    >
+    <Dialog class="rujukan-confirm" :visible="!!konfirmasi"
+      :header="konfirmasi?.aksi === 'hapus' ? 'Hapus rujukan?' : 'Kirim rujukan ke Khanza?'" modal append-to="self"
+      :closable="!saving" :close-on-escape="!saving" :style="{ width: '480px', maxWidth: 'calc(100vw - 32px)' }"
+      @update:visible="value => { if (!value && !saving) konfirmasi = null }">
       <template v-if="konfirmasi">
         <div class="rujukan-confirm-detail">
           <strong>{{ konfirmasi.row.nama_poli }}</strong>
@@ -214,7 +185,12 @@ const {
         </div>
         <p v-if="konfirmasi.aksi === 'hapus'" class="rujukan-confirm-help">
           Hanya rujukan ini yang akan dihapus dari {{ konfirmasi.row.sumber }}.
-          {{ konfirmasi.row.sumber === 'SIRAPI' ? 'Data di Khanza tidak dihapus.' : 'Penghapusan langsung berlaku di Khanza.' }}
+          <span v-if="konfirmasi.row.sumber === 'SIRAPI'">
+            Data di Khanza tidak dihapus.
+          </span>
+          <span v-else>
+            Penghapusan langsung berlaku di Khanza.
+          </span>
           Tindakan ini tidak dapat dibatalkan.
         </p>
         <p v-else class="rujukan-confirm-help">
@@ -227,13 +203,8 @@ const {
         <button type="button" class="clinical-button secondary" :disabled="saving" autofocus @click="konfirmasi = null">
           Batal
         </button>
-        <button
-          type="button"
-          class="clinical-button"
-          :class="konfirmasi?.aksi === 'hapus' ? 'danger' : 'primary'"
-          :disabled="saving || terkunci"
-          @click="jalankanAksi"
-        >
+        <button type="button" class="clinical-button" :class="konfirmasi?.aksi === 'hapus' ? 'danger' : 'primary'"
+          :disabled="saving || terkunci" @click="jalankanAksi">
           <LoaderCircle v-if="saving" class="spin" :size="15" />
           {{ saving ? 'Memproses...' : konfirmasi?.aksi === 'hapus' ? 'Ya, Hapus Rujukan' : 'Ya, Kirim ke Khanza' }}
         </button>

@@ -10,6 +10,8 @@ import {
   UsersRound,
 } from '@lucide/vue'
 import DataTable from '../Ui/DataTable.vue'
+import FormInput from '../Ui/FormInput.vue'
+import SalinHakAkses from './SalinHakAkses.vue'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import { cariPegawaiUserManagement, tambahUserManagement, ubahAksesUserManagement } from '../../lib/faisal/api'
@@ -24,6 +26,7 @@ const props = defineProps({
 const emit = defineEmits(['saved'])
 
 const pencarian = ref('')
+const pencarianPermission = ref('')
 const modalUserTerbuka = ref(false)
 const modeModal = ref('tambah')
 const userDipilih = ref(null)
@@ -44,6 +47,16 @@ const form = reactive({
 let timerCariPegawai = 0
 const pengguna = computed(() => props.data?.pengguna ?? [])
 const permission = computed(() => props.data?.permission ?? [])
+const permissionTampil = computed(() => {
+  const kata = pencarianPermission.value.trim().toLowerCase()
+  if (!kata) return permission.value
+  return permission.value.filter((item) => [
+    item.kode,
+    item.nama,
+    item.grup,
+    item.kode === '*' ? 'Semua Akses Admin' : '',
+  ].join(' ').toLowerCase().includes(kata))
+})
 const ringkasan = computed(() => props.data?.ringkasan ?? {})
 const modeTambah = computed(() => modeModal.value === 'tambah')
 const judulModal = computed(() => modeTambah.value ? 'Tambah User Baru' : 'Atur Akses User')
@@ -98,6 +111,7 @@ function bukaAturAkses(user) {
 }
 
 function resetForm() {
+  pencarianPermission.value = ''
   form.username = ''
   form.nama = ''
   form.email = ''
@@ -130,6 +144,13 @@ function togglePermission(kode) {
   form.permission = tanpaSemuaAkses.includes(kode)
     ? tanpaSemuaAkses.filter((item) => item !== kode)
     : [...tanpaSemuaAkses, kode]
+}
+
+function terapkanSalinan(kode: string[]) {
+  if (sedangMenyimpan.value) return
+  form.all_access = kode.includes('*')
+  form.permission = [...kode]
+  notifikasi.info('Hak akses disalin ke form. Periksa checklist lalu klik Simpan untuk menyimpan perubahan.')
 }
 
 async function simpanUser() {
@@ -248,40 +269,61 @@ watch(kataKunciPegawai, (nilai) => {
 
       <DataTable
         v-else
+        class="visit-report-table user-access-table"
         :rows="penggunaTampil"
         data-key="id"
         empty-message="User tidak ditemukan."
       >
-        <Column header="User">
+        <Column header="No." style="width: 60px">
+          <template #body="{ index }">{{ index + 1 }}</template>
+        </Column>
+        <Column header="User" style="width: 30%; min-width: 220px">
           <template #body="{ data: user }">
-            <strong>{{ user.nama || user.username }}</strong>
-            <span>{{ user.username }} - {{ user.email }}</span>
+            <div class="user-access-identity">
+              <strong>{{ user.nama || user.username }}</strong>
+              <small>Username: {{ user.username }}</small>
+              <small>{{ user.email || '-' }}</small>
+            </div>
           </template>
         </Column>
 
-        <Column header="Status">
+        <Column header="Status" style="width: 110px; min-width: 100px">
           <template #body="{ data: user }">
-            <span class="patient-status">{{ user.aktif ? 'Aktif' : 'Nonaktif' }}</span>
-            <span>{{ userAdmin(user) ? 'Admin' : 'Petugas' }}</span>
+            <span class="user-access-status" :class="{ active: user.aktif }">
+              {{ user.aktif ? 'Aktif' : 'Nonaktif' }}
+            </span>
           </template>
         </Column>
 
-        <Column header="Permission">
+        <Column header="Hak Akses" style="width: 32%; min-width: 200px">
           <template #body="{ data: user }">
             <strong>{{ labelJumlahPermission(user) }}</strong>
-            <span>{{ (user.permission || []).map(namaPermission).join(', ') || '-' }}</span>
+            <small v-if="userAdmin(user)">Seluruh menu dan pengelolaan user</small>
+            <details v-else-if="user.permission?.length" class="user-access-permissions">
+              <summary>Lihat daftar akses</summary>
+              <ul>
+                <li v-for="kode in user.permission" :key="kode">{{ namaPermission(kode) }}</li>
+              </ul>
+            </details>
+            <small v-else>Belum diberikan hak akses</small>
           </template>
         </Column>
 
-        <Column header="Dibuat">
+        <Column header="Dibuat" style="width: 155px; min-width: 145px">
           <template #body="{ data: user }">
-            <strong><code>{{ user.dibuat_pada || '-' }}</code></strong>
+            <time class="user-access-date">{{ user.dibuat_pada || '-' }}</time>
           </template>
         </Column>
 
-        <Column header="Aksi">
+        <Column header="Aksi" style="width: 130px; min-width: 125px">
           <template #body="{ data: user }">
-            <button type="button" class="table-action-button" @click="bukaAturAkses(user)">
+            <button
+              type="button"
+              class="clinical-button secondary user-access-button"
+              :aria-label="`Atur akses ${user.nama || user.username}`"
+              @click="bukaAturAkses(user)"
+            >
+              <ShieldCheck :size="15" />
               Atur Akses
             </button>
           </template>
@@ -294,6 +336,8 @@ watch(kataKunciPegawai, (nilai) => {
       modal
       :header="judulModal"
       class="user-dialog"
+      :closable="!sedangMenyimpan"
+      :close-on-escape="!sedangMenyimpan"
       :style="{ width: 'min(760px, calc(100vw - 32px))' }"
     >
       <form class="user-form" @submit.prevent="simpanUser">
@@ -352,6 +396,15 @@ watch(kataKunciPegawai, (nilai) => {
           </span>
         </div>
 
+        <SalinHakAkses
+          v-if="modalUserTerbuka"
+          :pengguna="pengguna"
+          :target-id="userDipilih?.id"
+          :permission-saat-ini="form.all_access ? ['*'] : form.permission"
+          :disabled="sedangMenyimpan"
+          @terapkan="terapkanSalinan"
+        />
+
         <label class="user-active-check">
           <input v-model="form.aktif" type="checkbox" />
           <span>User aktif dan bisa login</span>
@@ -379,11 +432,29 @@ watch(kataKunciPegawai, (nilai) => {
             Admin sudah mendapat semua akses. Matikan pilihan admin jika ingin memilih menu satu-satu.
           </p>
 
-          <div class="permission-list">
+          <FormInput
+            v-model="pencarianPermission"
+            label="Cari Hak Akses"
+            type="search"
+            placeholder="Cari nama, kode, atau kelompok akses..."
+            :disabled="sedangMenyimpan"
+            @keydown.enter.prevent
+          />
+          <p class="employee-hint" role="status">
+            {{ permissionTampil.length }} dari {{ permission.length }} hak akses ditampilkan.
+            Pilihan di luar hasil pencarian tetap tersimpan dalam form.
+          </p>
+          <p v-if="!permissionTampil.length" class="employee-hint">
+            Hak akses tidak ditemukan. Coba kata lain atau kosongkan pencarian.
+          </p>
+
+          <div v-else class="permission-list">
             <button
-              v-for="item in permission"
+              v-for="item in permissionTampil"
               :key="item.kode"
               type="button"
+              :aria-pressed="form.permission.includes(item.kode)"
+              :disabled="sedangMenyimpan || (form.all_access && item.kode !== '*')"
               :class="{ selected: form.permission.includes(item.kode), disabled: form.all_access && item.kode !== '*' }"
               @click="togglePermission(item.kode)"
             >
@@ -408,3 +479,6 @@ watch(kataKunciPegawai, (nilai) => {
     </Dialog>
   </section>
 </template>
+
+<style src="@/Components/Ui/report.css" scoped></style>
+<style src="@/Components/Tabs/user-management-table.css" scoped></style>

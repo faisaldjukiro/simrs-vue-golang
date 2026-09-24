@@ -35,6 +35,8 @@ import (
 	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
 	dataklaim "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim"
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
+	"simrs-backend/internal/modules/checklist_pre_operasi"
+	checklistpreoperasihttp "simrs-backend/internal/modules/checklist_pre_operasi/delivery/http"
 	"simrs-backend/internal/modules/cppt"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	"simrs-backend/internal/modules/diagnosa_pasien"
@@ -248,6 +250,7 @@ func main() {
 		AwalKeperawatanIGD:      awalKeperawatanIGDHandler,
 		AwalMedisUmum:           awalMedisUmumHandler,
 		AwalMedisRanap:          awalMedisRanapHandler,
+		ChecklistPreOperasi:     checklistpreoperasihttp.NewHandler(checklist_pre_operasi.NewRepositori(db, simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,

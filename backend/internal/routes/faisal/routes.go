@@ -16,6 +16,7 @@ import (
 	berkasdigitalhttp "simrs-backend/internal/modules/berkas_digital/delivery/http"
 	bpjshttp "simrs-backend/internal/modules/bpjs/delivery/http"
 	dataklaimhttp "simrs-backend/internal/modules/bpjs/vclaim/monitoring/data_klaim/delivery/http"
+	checklistpreoperasihttp "simrs-backend/internal/modules/checklist_pre_operasi/delivery/http"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
 	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
 	ewsranaphttp "simrs-backend/internal/modules/ews_ranap/delivery/http"
@@ -44,6 +45,7 @@ import (
 )
 
 type Dependencies struct {
+	ChecklistPreOperasi     *checklistpreoperasihttp.Handler
 	AktivitasLog            *aktivitasloghttp.Handler
 	Autentikasi             *autentikasihttp.Handler
 	AwalKeperawatanIGD      *awalkeperawatanigdhttp.Handler
@@ -137,6 +139,7 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		register func(*gin.RouterGroup)
 	}{
 		{"/cppt", dependencies.CPPT.Register},
+		{"/checklist-pre-operasi", dependencies.ChecklistPreOperasi.Register},
 		{"/diagnosa-pasien", dependencies.DiagnosaPasien.Register},
 		{"/ews-ranap", dependencies.EWSRanap.Register},
 		{"/implementasi-keperawatan", dependencies.ImplementasiKeperawatan.Register},
@@ -161,8 +164,11 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		group.Use(dependencies.Autentikasi.WajibPermission(aksesPelayananPasien...))
 		routeSidebar.register(group)
 	}
-	protectedAPI.GET("/user-management", dependencies.ManajemenPengguna.Daftar)
-	protectedAPI.GET("/user-management/pegawai", dependencies.ManajemenPengguna.CariPegawai)
-	protectedAPI.POST("/user-management", dependencies.ManajemenPengguna.Tambah)
-	protectedAPI.PUT("/user-management/:id/akses", dependencies.ManajemenPengguna.UbahAkses)
+	// UBAC: hanya pengguna dengan permission eksplisit '*' boleh mengelola akses.
+	userManagement := protectedAPI.Group("/user-management")
+	userManagement.Use(dependencies.Autentikasi.WajibPermission("*"))
+	userManagement.GET("", dependencies.ManajemenPengguna.Daftar)
+	userManagement.GET("/pegawai", dependencies.ManajemenPengguna.CariPegawai)
+	userManagement.POST("", dependencies.ManajemenPengguna.Tambah)
+	userManagement.PUT("/:id/akses", dependencies.ManajemenPengguna.UbahAkses)
 }

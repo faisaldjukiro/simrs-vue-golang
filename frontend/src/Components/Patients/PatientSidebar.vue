@@ -24,6 +24,7 @@ import BerkasDigitalPage from '../../Pages/Pasien/BerkasDigital/BerkasDigitalPag
 import ImplementasiKeperawatanPage from '../../Pages/RawatInap/ImplementasiKeperawatan/ImplementasiKeperawatanPage.vue'
 import VentilatorPage from '../../Pages/RawatInap/Ventilator/VentilatorPage.vue'
 import RujukanInternalPage from '../../Pages/Pasien/RujukanInternal/RujukanInternalPage.vue'
+import ChecklistPreOperasiPage from '../../Pages/Pasien/ChecklistPreOperasi/ChecklistPreOperasiPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
@@ -62,6 +63,7 @@ function pulihkanSidebarAktif() {
 }
 
 const halamanSidebar = {
+  checklist_pre_operasi: ChecklistPreOperasiPage,
   cppt_soap: CpptPage,
   penanganan_dokter_petugas: PenangananDokterPetugasPage,
   permintaan_radiologi: PermintaanRadiologiPage,

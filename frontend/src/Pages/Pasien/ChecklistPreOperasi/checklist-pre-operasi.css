@@ -1,0 +1,90 @@
+.pre-operasi-page {
+  min-width: 0;
+  color: var(--text);
+}
+
+.pre-operasi-page .clinical-form-card {
+  margin-top: 12px;
+}
+
+.pre-form,
+.pre-history {
+  padding: 24px 16px 16px;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.pre-info {
+  margin: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.pre-section {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.pre-section h4 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.pre-fields,
+.pre-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pre-actions,
+.pre-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pre-actions {
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.pre-row-actions .clinical-button {
+  padding: 8px 10px;
+}
+
+.pre-history .visit-report-table {
+  --report-table-min-width: 880px;
+}
+
+.pre-detail dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pre-detail dd {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .pre-fields,
+  .pre-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .pre-actions .clinical-button {
+    flex: 1 1 auto;
+  }
+}

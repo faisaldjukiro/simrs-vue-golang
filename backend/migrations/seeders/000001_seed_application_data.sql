@@ -145,6 +145,9 @@ SET kode_sidebar = CONCAT('sidebar_lama_', LPAD(id, 4, '0'));
 UPDATE sidebar_pasien SET kode_sidebar = 'cppt_soap'
 WHERE nama_sidebar = 'Cppt/Soap';
 
+UPDATE sidebar_pasien SET kode_sidebar = 'checklist_pre_operasi'
+WHERE nama_sidebar = 'Checklist Pre Operasi';
+
 UPDATE sidebar_pasien SET kode_sidebar = 'rujukan_internal_ranap'
 WHERE nama_sidebar = 'Rujuk Internal Rawat Inap';
 UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas'
