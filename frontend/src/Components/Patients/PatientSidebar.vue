@@ -26,6 +26,8 @@ import VentilatorPage from '../../Pages/RawatInap/Ventilator/VentilatorPage.vue'
 import RujukanInternalPage from '../../Pages/Pasien/RujukanInternal/RujukanInternalPage.vue'
 import ChecklistPreOperasiPage from '../../Pages/Pasien/ChecklistPreOperasi/ChecklistPreOperasiPage.vue'
 import TabOperasiPage from '../../Pages/Pasien/JadwalOperasi/TabOperasiPage.vue'
+import RisikoJatuhDewasaPage from '../../Pages/Pasien/RisikoJatuhDewasa/RisikoJatuhDewasaPage.vue'
+import RisikoJatuhAnakPage from '../../Pages/Pasien/RisikoJatuhAnak/RisikoJatuhAnakPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
@@ -64,6 +66,8 @@ function pulihkanSidebarAktif() {
 }
 
 const halamanSidebar = {
+  lanjutan_risiko_jatuh_dewasa: RisikoJatuhDewasaPage,
+  lanjutan_risiko_jatuh_anak: RisikoJatuhAnakPage,
   jadwal_operasi: TabOperasiPage,
   checklist_pre_operasi: ChecklistPreOperasiPage,
   cppt_soap: CpptPage,

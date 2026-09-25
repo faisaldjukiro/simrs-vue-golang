@@ -1,0 +1,240 @@
+.risiko-jatuh-page {
+  display: grid;
+  min-width: 0;
+}
+
+.risiko-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.risiko-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.risiko-pertanyaan {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+}
+
+.risiko-pertanyaan small,
+.risiko-label,
+.risiko-ringkasan small {
+  color: var(--muted);
+}
+
+.risiko-ringkasan {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, .8fr);
+  align-items: center;
+  gap: 24px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.risiko-keterangan,
+.risiko-status,
+.risiko-panduan {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.risiko-total {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.risiko-angka {
+  display: grid;
+  flex: 0 0 72px;
+  height: 72px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  font-size: 32px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.risiko-label {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.risiko-keterangan > strong {
+  font-size: 15px;
+}
+
+.risiko-ringkasan small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.risiko-status,
+.risiko-panduan {
+  border-left: 1px solid var(--line);
+  padding-left: 24px;
+}
+
+.risiko-badge {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.risiko-titik {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.risiko-badge.tinggi {
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, .25);
+  background: rgba(239, 68, 68, .08);
+}
+
+.risiko-badge.rendah {
+  color: #0f766e;
+  border-color: rgba(13, 148, 136, .25);
+  background: rgba(13, 148, 136, .08);
+}
+
+:global(.theme-dark) .risiko-badge.tinggi,
+:global(.sirapi-dark) .risiko-badge.tinggi {
+  color: #fca5a5;
+}
+
+:global(.theme-dark) .risiko-badge.rendah,
+:global(.sirapi-dark) .risiko-badge.rendah {
+  color: #5eead4;
+}
+
+.risiko-panduan dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.risiko-panduan dl > div {
+  display: grid;
+  flex: 1 1 64px;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.risiko-panduan dl > div.aktif {
+  color: var(--text);
+  background: var(--surface);
+}
+
+.risiko-panduan dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+@media (max-width: 1100px) {
+  .risiko-ringkasan {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .risiko-panduan {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 16px 0 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .risiko-ringkasan {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+  }
+
+  .risiko-status {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 16px 0 0;
+  }
+}
+
+.risiko-fields .clinical-soap-grid,
+.risiko-fields .clinical-form-actions {
+  margin-top: 0;
+}
+
+.risiko-jatuh-page .clinical-table-actions {
+  flex-wrap: wrap;
+}
+
+.risiko-pertanyaan small {
+  font-size: 12px;
+}
+
+.risiko-detail dl {
+  display: grid;
+  gap: 10px;
+}
+
+.risiko-detail dt {
+  font-weight: 600;
+}
+
+.risiko-detail dd {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .risiko-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clinical-form .risiko-fields {
+    padding: 14px;
+  }
+}
+.risiko-pertanyaan-panjang {
+  grid-column: 1 / -1;
+}
+
+.risiko-pilihan-lengkap {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}

@@ -37,6 +37,8 @@ import (
 	resephttp "simrs-backend/internal/modules/resep/delivery/http"
 	resumepasienhttp "simrs-backend/internal/modules/resume_pasien/delivery/http"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
+	risikojatuhanakhttp "simrs-backend/internal/modules/risiko_jatuh_anak/delivery/http"
+	risikojatuhhttp "simrs-backend/internal/modules/risiko_jatuh_dewasa/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	rujukaninternalhttp "simrs-backend/internal/modules/rujukan_internal/delivery/http"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
@@ -47,6 +49,8 @@ import (
 
 type Dependencies struct {
 	JadwalOperasi           *jadwaloperasihttp.Handler
+	RisikoJatuhDewasa       *risikojatuhhttp.Handler
+	RisikoJatuhAnak         *risikojatuhanakhttp.Handler
 	ChecklistPreOperasi     *checklistpreoperasihttp.Handler
 	AktivitasLog            *aktivitasloghttp.Handler
 	Autentikasi             *autentikasihttp.Handler
@@ -143,6 +147,8 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		{"/cppt", dependencies.CPPT.Register},
 		{"/checklist-pre-operasi", dependencies.ChecklistPreOperasi.Register},
 		{"/jadwal-operasi", dependencies.JadwalOperasi.Register},
+		{"/risiko-jatuh-dewasa", dependencies.RisikoJatuhDewasa.Register},
+		{"/risiko-jatuh-anak", dependencies.RisikoJatuhAnak.Register},
 		{"/diagnosa-pasien", dependencies.DiagnosaPasien.Register},
 		{"/ews-ranap", dependencies.EWSRanap.Register},
 		{"/implementasi-keperawatan", dependencies.ImplementasiKeperawatan.Register},
