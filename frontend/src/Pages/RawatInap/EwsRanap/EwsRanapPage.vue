@@ -2,6 +2,7 @@
 // @ts-nocheck -- migrasi TypeScript bertahap; kontrak data modul lama belum sepenuhnya bertipe.
 import { ChevronDown, ChevronUp, Eye, LoaderCircle, Pencil, Save, Trash2, X } from "@lucide/vue"
 import PrimeColumn from "primevue/column"
+import Dialog from "primevue/dialog"
 import CariPetugas from "../../../Components/Ui/CariPetugas.vue"
 import DataTable from "../../../Components/Ui/DataTable.vue"
 import FormInput from "../../../Components/Ui/FormInput.vue"
@@ -27,6 +28,7 @@ const {
   editingKey,
   deleteTarget,
   formVisible,
+  gambarVisible,
   kataKunciRiwayat,
   pilihanAlat,
   pilihanKesadaran,
@@ -57,6 +59,9 @@ const {
           </p>
         </div>
         <div class="clinical-section-tools">
+          <button type="button" class="clinical-button secondary" @click="gambarVisible = true">
+            <Eye :size="15" /> Panduan Nyeri
+          </button>
           <button v-if="editingKey && !billingLocked" type="button" class="clinical-button secondary" @click="resetForm">
             <X :size="15" /> Batal Edit
           </button>
@@ -101,8 +106,8 @@ const {
                 <h4>Tanda Vital & Kesadaran</h4>
               </div>
               <div :class="['ews-score-chip', scoreClass(form.total_score)]">
-                <strong>{{ form.total_score }}</strong>
-                <span>{{ form.klasifikasi }}</span>
+                <strong>{{ form.total_score || '—' }}</strong>
+                <span>{{ form.klasifikasi || 'Lengkapi parameter EWS' }}</span>
               </div>
             </header>
 
@@ -318,6 +323,20 @@ const {
       </DataTable>
     </article>
 
+    <Dialog
+      v-model:visible="gambarVisible"
+      modal
+      header="Panduan Skala Nyeri"
+      :style="{ width: '760px', maxWidth: '94vw' }"
+      :draggable="false"
+      dismissable-mask
+    >
+      <figure class="ews-pain-preview">
+        <img :src="scoreNyeriImage" alt="Panduan Wong Baker Faces Pain Rating Scale, skala 0 sampai 10" />
+        <figcaption>Gambar referensi asli dari SIMRS Khanza. Pilih skala nyeri pada form penilaian.</figcaption>
+      </figure>
+    </Dialog>
+
     <div v-if="deleteTarget" class="clinical-confirm-backdrop" @click.self="deleteTarget = null">
       <section class="clinical-confirm-dialog" role="dialog" aria-modal="true">
         <h3>Hapus EWS Ranap?</h3>
@@ -335,4 +354,4 @@ const {
   </section>
 </template>
 
-<style src="./ews-ranap.css" scoped></style>
+<style src="@/Pages/RawatInap/EwsRanap/ews-ranap.css" scoped></style>

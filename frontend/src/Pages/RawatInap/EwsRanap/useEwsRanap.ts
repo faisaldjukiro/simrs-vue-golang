@@ -17,6 +17,8 @@ export function useEwsRanap(props) {
   const editingKey = ref(null)
   const deleteTarget = ref(null)
   const formVisible = ref(true)
+  const gambarVisible = ref(false)
+  let mengisiForm = false
   const kataKunciRiwayat = ref('')
   
   const pilihanAlat = ref(toSelectOptions(['Ya', 'Tidak']))
@@ -41,12 +43,18 @@ export function useEwsRanap(props) {
   watch(
     () => [
       form.pernafasan, form.saturasi, form.alat, form.suhu, form.denyut, form.tekanan,
-      form.kesadaran, form.masuk1, form.masuk2, form.keluar1, form.keluar2, form.keluar3,
-      form.keluar4, form.keluar5,
+      form.kesadaran,
     ],
-    hitungOtomatis,
+    () => { if (!mengisiForm) hitungOtomatis() },
     { immediate: true },
   )
+
+  watch([totalMasuk, totalKeluar], () => {
+    if (mengisiForm) return
+    form.jumlahmasuk = String(totalMasuk.value)
+    form.jumlahkeluar = String(totalKeluar.value)
+    form.bc = String(balanceCairan.value)
+  })
   
   watch(() => selectedOfficer.value, (value) => {
     form.nip = value?.nip || value?.kode || ''
@@ -69,16 +77,11 @@ export function useEwsRanap(props) {
   }
   
   function currentDate() {
-    const date = new Date()
-    const offset = date.getTimezoneOffset() * 60000
-    return new Date(date.getTime() - offset).toISOString().slice(0, 10)
+    return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
   }
   
   function currentTime() {
-    const date = new Date()
-    return [date.getHours(), date.getMinutes(), date.getSeconds()]
-      .map((value) => String(value).padStart(2, '0'))
-      .join(':')
+    return new Date(Date.now() + 8 * 3600000).toISOString().slice(11, 19)
   }
   
   function emptyForm() {
@@ -91,8 +94,8 @@ export function useEwsRanap(props) {
       score_pernafasan: '',
       saturasi: '',
       score_saturasi: '',
-      alat: 'Tidak',
-      score_alat: '0',
+      alat: '',
+      score_alat: '',
       suhu: '',
       score_suhu: '',
       denyut: '',
@@ -100,13 +103,13 @@ export function useEwsRanap(props) {
       tekanan: '',
       diastol: '',
       score_tekanan: '',
-      kesadaran: 'A',
-      score_kesadaran: '0',
-      total_score: '0',
-      klasifikasi: 'Sangat Rendah',
-      respon: 'Dilakukan monitoring',
-      tindakan: 'Melanjutkan monitoring',
-      frekuensi: 'Minimal 12 Jam',
+      kesadaran: '',
+      score_kesadaran: '',
+      total_score: '',
+      klasifikasi: '',
+      respon: '',
+      tindakan: '',
+      frekuensi: '',
       skala_nyeri: '0',
       bb: '',
       tb: '',
@@ -205,6 +208,7 @@ export function useEwsRanap(props) {
   }
   
   function fillForm(item, sebagaiEdit = false) {
+    mengisiForm = true
     if (sebagaiEdit) editingKey.value = recordKey(item)
     hapusSemuaErrorValidasi()
     selectedOfficer.value = {
@@ -218,11 +222,11 @@ export function useEwsRanap(props) {
       no_rawat: props.patient.no_rawat,
       nip: item.nip,
     })
-    hitungOtomatis()
+    nextTick(() => { mengisiForm = false })
   }
   
   function payload() {
-    hitungOtomatis()
+    hitungOtomatis(false)
     const body = {
       no_rawat: props.patient.no_rawat,
       nip: selectedOfficer.value?.nip || selectedOfficer.value?.kode || form.nip || petugas.value.nip,
@@ -323,7 +327,7 @@ export function useEwsRanap(props) {
   
   function validasiFormEws() {
     hapusSemuaErrorValidasi()
-    hitungOtomatis()
+    hitungOtomatis(false)
     const fieldKosongPertama = daftarFieldWajib().find((field) => fieldKosong(field.nilai()))
     if (!fieldKosongPertama) return true
   
@@ -401,23 +405,27 @@ export function useEwsRanap(props) {
     }
   }
   
-  function hitungOtomatis() {
+  function hitungOtomatis(perbaruiPanduan = true) {
     form.score_pernafasan = skorPernafasan(form.pernafasan)
     form.score_saturasi = skorSaturasi(form.saturasi)
-    form.score_alat = form.alat === 'Ya' ? '2' : '0'
+    form.score_alat = form.alat === 'Ya' ? '2' : form.alat === 'Tidak' ? '0' : ''
     form.score_suhu = skorSuhu(form.suhu)
     form.score_denyut = skorDenyut(form.denyut)
     form.score_tekanan = skorTekanan(form.tekanan)
-    form.score_kesadaran = form.kesadaran === 'P-V-U' ? '3' : '0'
-    const total = [
+    form.score_kesadaran = form.kesadaran === 'P-V-U' ? '3' : form.kesadaran === 'A' ? '0' : ''
+    const skor = [
       form.score_pernafasan, form.score_saturasi, form.score_alat, form.score_suhu,
       form.score_denyut, form.score_tekanan, form.score_kesadaran,
-    ].reduce((sum, nilai) => sum + toNumber(nilai), 0)
-    form.total_score = String(total)
-    form.klasifikasi = klasifikasi(total)
-    form.respon = responKlinis(total)
-    form.tindakan = tindakanKlinis(total)
-    form.frekuensi = frekuensiMonitoring(total)
+    ]
+    const lengkap = skor.every((nilai) => nilai !== '')
+    const total = skor.reduce((sum, nilai) => sum + toNumber(nilai), 0)
+    form.total_score = lengkap ? String(total) : ''
+    form.klasifikasi = lengkap ? klasifikasi(total) : ''
+    if (perbaruiPanduan) {
+      form.respon = lengkap ? responKlinis(total) : ''
+      form.tindakan = lengkap ? tindakanKlinis(total) : ''
+      form.frekuensi = lengkap ? frekuensiMonitoring(total) : ''
+    }
     form.jumlahmasuk = String(totalMasuk.value)
     form.jumlahkeluar = String(totalKeluar.value)
     form.bc = String(balanceCairan.value)
@@ -430,7 +438,7 @@ export function useEwsRanap(props) {
   
   function skorPernafasan(value) {
     const n = toNumber(value)
-    if (!n) return ''
+    if (!angkaSkorValid(value)) return ''
     if (n <= 8) return '3'
     if (n <= 11) return '1'
     if (n <= 20) return '0'
@@ -440,7 +448,7 @@ export function useEwsRanap(props) {
   
   function skorSaturasi(value) {
     const n = toNumber(value)
-    if (!n) return ''
+    if (!angkaSkorValid(value)) return ''
     if (n <= 91) return '3'
     if (n <= 93) return '2'
     if (n <= 95) return '1'
@@ -449,7 +457,7 @@ export function useEwsRanap(props) {
   
   function skorSuhu(value) {
     const n = toNumber(value)
-    if (!n) return ''
+    if (!angkaSkorValid(value, true)) return ''
     if (n <= 35) return '3'
     if (n <= 36) return '1'
     if (n <= 38) return '0'
@@ -459,7 +467,7 @@ export function useEwsRanap(props) {
   
   function skorDenyut(value) {
     const n = toNumber(value)
-    if (!n) return ''
+    if (!angkaSkorValid(value)) return ''
     if (n <= 40) return '3'
     if (n <= 50) return '1'
     if (n <= 90) return '0'
@@ -470,7 +478,7 @@ export function useEwsRanap(props) {
   
   function skorTekanan(value) {
     const n = toNumber(value)
-    if (!n) return ''
+    if (!angkaSkorValid(value)) return ''
     if (n <= 90) return '3'
     if (n <= 100) return '2'
     if (n <= 110) return '1'
@@ -478,6 +486,12 @@ export function useEwsRanap(props) {
     return '3'
   }
   
+  function angkaSkorValid(value, desimal = false) {
+    const teks = String(value ?? '').trim()
+    return teks.length <= 5 && /^\d+(\.\d)?$/.test(teks)
+      && (desimal || Number.isInteger(Number(teks)))
+  }
+
   function klasifikasi(total) {
     if (total === 0) return 'Sangat Rendah'
     if (total <= 4) return 'Rendah'
@@ -507,6 +521,7 @@ export function useEwsRanap(props) {
   }
   
   function scoreClass(total) {
+    if (fieldKosong(total)) return 'pending'
     const n = toNumber(total)
     if (n >= 7) return 'danger'
     if (n >= 5) return 'warning'
@@ -526,6 +541,7 @@ export function useEwsRanap(props) {
     editingKey,
     deleteTarget,
     formVisible,
+    gambarVisible,
     kataKunciRiwayat,
     pilihanAlat,
     pilihanKesadaran,

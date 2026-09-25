@@ -7,9 +7,34 @@
   gap: 12px;
   margin-top: 14px;
   padding: 12px;
-  border: 1px solid #b8ddd7;
+  border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgba(255, 255, 255, .58);
+  background: var(--surface-soft);
+}
+
+.ews-pain-preview {
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.ews-pain-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: white;
+  border-radius: 8px;
+}
+
+.ews-pain-preview figcaption {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ews-score-chip.pending {
+  color: var(--muted);
+  background: var(--surface);
 }
 
 .ews-subheader {

@@ -219,6 +219,9 @@ func validasiCatatan(catatan *Catatan) error {
 	if !waktuValid(catatan.Jam) {
 		return fmt.Errorf("%w: jam EWS tidak valid", ErrInputTidakValid)
 	}
+	if err := hitungSkorCatatan(catatan); err != nil {
+		return err
+	}
 	wajib := map[string]string{
 		"pernafasan": catatan.Pernafasan, "skor pernafasan": catatan.SkorPernafasan,
 		"saturasi": catatan.Saturasi, "skor saturasi": catatan.SkorSaturasi,
