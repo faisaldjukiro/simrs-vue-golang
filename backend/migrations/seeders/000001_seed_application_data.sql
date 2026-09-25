@@ -163,6 +163,12 @@ WHERE nama_sidebar = 'Observasi Ranap';
 UPDATE sidebar_pasien SET kode_sidebar = 'ews_ranap'
 WHERE nama_sidebar = 'EWS Ranap';
 
+UPDATE sidebar_pasien SET kode_sidebar = 'pews_anak'
+WHERE nama_sidebar = 'Pemantauan PEWS Anak';
+
+UPDATE sidebar_pasien SET kode_sidebar = 'news_anak'
+WHERE nama_sidebar = 'Pemantauan NEWS Anak';
+
 UPDATE sidebar_pasien SET kode_sidebar = 'rujukan_internal_ranap'
 WHERE nama_sidebar = 'Rujuk Internal Rawat Inap';
 UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas'

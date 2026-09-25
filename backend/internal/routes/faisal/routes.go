@@ -31,10 +31,12 @@ import (
 	laporanpenggunaanbedhttp "simrs-backend/internal/modules/laporan_penggunaan_bed/delivery/http"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	"simrs-backend/internal/modules/monitoring_bed"
+	newsanakhttp "simrs-backend/internal/modules/news_anak/delivery/http"
 	observasiranaphttp "simrs-backend/internal/modules/observasi_ranap/delivery/http"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
+	pewsanakhttp "simrs-backend/internal/modules/pews_anak/delivery/http"
 	resephttp "simrs-backend/internal/modules/resep/delivery/http"
 	resumepasienhttp "simrs-backend/internal/modules/resume_pasien/delivery/http"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
@@ -53,6 +55,8 @@ type Dependencies struct {
 	RisikoJatuhDewasa       *risikojatuhhttp.Handler
 	RisikoJatuhAnak         *risikojatuhanakhttp.Handler
 	ObservasiRanap          *observasiranaphttp.Handler
+	PEWSAnak                *pewsanakhttp.Handler
+	NEWSAnak                *newsanakhttp.Handler
 	ChecklistPreOperasi     *checklistpreoperasihttp.Handler
 	AktivitasLog            *aktivitasloghttp.Handler
 	Autentikasi             *autentikasihttp.Handler
@@ -152,6 +156,8 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		{"/risiko-jatuh-dewasa", dependencies.RisikoJatuhDewasa.Register},
 		{"/risiko-jatuh-anak", dependencies.RisikoJatuhAnak.Register},
 		{"/observasi-ranap", dependencies.ObservasiRanap.Register},
+		{"/pews-anak", dependencies.PEWSAnak.Register},
+		{"/news-anak", dependencies.NEWSAnak.Register},
 		{"/diagnosa-pasien", dependencies.DiagnosaPasien.Register},
 		{"/ews-ranap", dependencies.EWSRanap.Register},
 		{"/implementasi-keperawatan", dependencies.ImplementasiKeperawatan.Register},

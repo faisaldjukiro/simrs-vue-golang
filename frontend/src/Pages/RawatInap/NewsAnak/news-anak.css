@@ -1,0 +1,230 @@
+.news-page {
+  min-width: 0;
+}
+
+.news-identitas-grid,
+.news-parameter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.news-summary,
+.news-parameter,
+.news-guidance {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.news-summary {
+  display: grid;
+  grid-template-columns: minmax(190px, auto) minmax(0, 1fr);
+  gap: 24px;
+  margin: 20px 0;
+  padding: 20px;
+  border-inline-start: 4px solid var(--news-accent, var(--muted));
+}
+
+.safe { --news-accent: #0d9488; }
+.info { --news-accent: #0284c7; }
+.warning { --news-accent: #d97706; }
+.danger { --news-accent: #e11d48; }
+
+.news-summary-score {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.news-summary-score > svg {
+  color: var(--news-accent, var(--muted));
+  flex-shrink: 0;
+}
+
+.news-summary-score span,
+.news-summary-guidance > span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.news-summary-score strong {
+  color: var(--text);
+  font-size: 32px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.news-summary-score small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.news-summary-guidance p,
+.news-selected {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.news-parameter {
+  min-width: 0;
+  padding: 16px;
+  border-top: 4px solid var(--score-color, var(--line));
+  background: color-mix(in srgb, var(--score-color, transparent) 7%, var(--surface-soft));
+}
+
+.score-green {
+  --score-color: #15803d;
+  --score-ink: #ffffff;
+}
+
+.score-yellow {
+  --score-color: #facc15;
+  --score-ink: #422006;
+}
+
+.score-orange {
+  --score-color: #fb923c;
+  --score-ink: #431407;
+}
+
+.score-red {
+  --score-color: #b91c1c;
+  --score-ink: #ffffff;
+}
+
+.news-page .news-score-badge {
+  width: fit-content;
+  background: var(--score-color, var(--surface));
+  color: var(--score-ink, var(--text));
+  border-color: var(--score-color, var(--line));
+  font-weight: 600;
+}
+
+.news-color-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.news-summary-score .news-progress {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.news-parameter header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.news-parameter h4 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.news-score-badge,
+.news-total-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--news-accent, var(--line));
+  background: var(--surface);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.news-selected {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.news-guidance {
+  margin-top: 16px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.news-guidance summary {
+  cursor: pointer;
+}
+
+.news-guidance dl,
+.news-detail {
+  display: grid;
+  grid-template-columns: minmax(80px, auto) minmax(0, 1fr);
+  gap: 12px 20px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.news-guidance dd,
+.news-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.news-guidance dt,
+.news-detail dt {
+  font-weight: 600;
+}
+
+.news-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.news-filter > p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.news-page .clinical-table-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1000px) {
+  .news-parameter-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .news-identitas-grid,
+  .news-summary,
+  .news-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .news-filter > * {
+    flex: 1 1 150px;
+  }
+}
+
+.news-response {
+  white-space: pre-line;
+}
+
+.news-parameter-grid {
+  margin-top: 20px;
+}

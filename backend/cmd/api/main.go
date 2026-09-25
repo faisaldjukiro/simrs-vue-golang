@@ -64,6 +64,8 @@ import (
 	"simrs-backend/internal/modules/manajemen_pengguna"
 	manajemenpenggunahttp "simrs-backend/internal/modules/manajemen_pengguna/delivery/http"
 	"simrs-backend/internal/modules/monitoring_bed"
+	"simrs-backend/internal/modules/news_anak"
+	newsanakhttp "simrs-backend/internal/modules/news_anak/delivery/http"
 	"simrs-backend/internal/modules/observasi_ranap"
 	observasiranaphttp "simrs-backend/internal/modules/observasi_ranap/delivery/http"
 	"simrs-backend/internal/modules/penanganan_dokter_petugas"
@@ -72,6 +74,8 @@ import (
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	"simrs-backend/internal/modules/permintaan_radiologi"
 	permintaanradiologihttp "simrs-backend/internal/modules/permintaan_radiologi/delivery/http"
+	"simrs-backend/internal/modules/pews_anak"
+	pewsanakhttp "simrs-backend/internal/modules/pews_anak/delivery/http"
 	"simrs-backend/internal/modules/resep"
 	resephttp "simrs-backend/internal/modules/resep/delivery/http"
 	"simrs-backend/internal/modules/resume_pasien"
@@ -263,6 +267,8 @@ func main() {
 		RisikoJatuhDewasa:       risikojatuhhttp.NewHandler(risiko_jatuh_dewasa.NewRepositori(simrsDB)),
 		RisikoJatuhAnak:         risikojatuhanakhttp.NewHandler(risiko_jatuh_anak.NewRepositori(simrsDB)),
 		ObservasiRanap:          observasiranaphttp.NewHandler(observasi_ranap.NewRepositori(simrsDB)),
+		PEWSAnak:                pewsanakhttp.NewHandler(pews_anak.NewRepositori(simrsDB)),
+		NEWSAnak:                newsanakhttp.NewHandler(news_anak.NewRepositori(simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,
