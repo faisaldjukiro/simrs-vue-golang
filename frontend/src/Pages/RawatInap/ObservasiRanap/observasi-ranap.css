@@ -1,0 +1,60 @@
+.observasi-page {
+  min-width: 0;
+}
+
+.observasi-identitas-grid {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(130px, 1fr) minmax(0, 2fr);
+  gap: 12px;
+}
+
+.observasi-vital-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.observasi-catatan {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.observasi-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.observasi-filter > p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.observasi-page .clinical-table-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1000px) {
+  .observasi-vital-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .observasi-identitas-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .observasi-vital-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .observasi-filter > * {
+    flex: 1 1 150px;
+  }
+}

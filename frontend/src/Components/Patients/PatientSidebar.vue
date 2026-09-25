@@ -28,6 +28,7 @@ import ChecklistPreOperasiPage from '../../Pages/Pasien/ChecklistPreOperasi/Chec
 import TabOperasiPage from '../../Pages/Pasien/JadwalOperasi/TabOperasiPage.vue'
 import RisikoJatuhDewasaPage from '../../Pages/Pasien/RisikoJatuhDewasa/RisikoJatuhDewasaPage.vue'
 import RisikoJatuhAnakPage from '../../Pages/Pasien/RisikoJatuhAnak/RisikoJatuhAnakPage.vue'
+import ObservasiRanapPage from '../../Pages/RawatInap/ObservasiRanap/ObservasiRanapPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
 
@@ -68,6 +69,7 @@ function pulihkanSidebarAktif() {
 const halamanSidebar = {
   lanjutan_risiko_jatuh_dewasa: RisikoJatuhDewasaPage,
   lanjutan_risiko_jatuh_anak: RisikoJatuhAnakPage,
+  observasi_ranap: ObservasiRanapPage,
   jadwal_operasi: TabOperasiPage,
   checklist_pre_operasi: ChecklistPreOperasiPage,
   cppt_soap: CpptPage,
