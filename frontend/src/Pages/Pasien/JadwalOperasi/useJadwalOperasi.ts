@@ -157,7 +157,7 @@ export function useJadwalOperasi(props: PropsJadwalOperasi) {
     const tbody = table.createTBody()
     for (const r of filteredRows.value) {
       const row = tbody.insertRow()
-      for (const value of [r.tanggal, r.jam_mulai, r.jam_selesai, r.nama_paket, r.nama_dokter, r.nama_ruang, r.status, r.dokteranastesi, r.perawat, r.sumber]) {
+      for (const value of [r.tanggal, r.jam_mulai, r.jam_selesai, r.nama_paket, r.nama_dokter, r.nama_ruang, r.status, r.dokteranastesi, r.perawat, r.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi']) {
         row.insertCell().textContent = value || '-'
       }
     }

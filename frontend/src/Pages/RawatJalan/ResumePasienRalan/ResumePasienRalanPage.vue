@@ -162,7 +162,7 @@ const {
     <div v-if="hapusTerbuka" class="resume-dialog-backdrop" @click.self="hapusTerbuka = false">
       <section class="resume-dialog">
         <h3>Hapus Resume Pasien?</h3>
-        <p>Resume untuk nomor rawat {{ patient.no_rawat }} akan dihapus dari SIMRS Khanza.</p>
+        <p>Resume untuk nomor rawat {{ patient.no_rawat }} akan dihapus dari SIMRS.</p>
         <div>
           <button type="button" class="resume-button secondary" @click="hapusTerbuka = false">
             <X :size="15" /> Batal

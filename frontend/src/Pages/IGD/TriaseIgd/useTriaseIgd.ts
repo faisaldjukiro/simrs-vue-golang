@@ -28,8 +28,8 @@ export function useTriaseIgd(props) {
     ? ['Ruang Resusitasi', 'Ruang Kritis', 'Zona Kuning', 'Zona Hijau', 'Zona Hitam']
     : ['Zona Kuning', 'Zona Hijau']))
   const planNote = computed(() => activeType.value === 'primer'
-    ? 'Ruang Resusitasi dan Ruang Kritis mengikuti pilihan Triase Primer SIMRS Khanza.'
-    : 'Triase Sekunder di SIMRS Khanza hanya menerima Zona Kuning atau Zona Hijau.')
+    ? 'Ruang Resusitasi dan Ruang Kritis mengikuti pilihan Triase Primer SIMRS.'
+    : 'Triase Sekunder di SIMRS hanya menerima Zona Kuning atau Zona Hijau.')
   const caseOptions = computed(() => data.macam_kasus.map((item) => ({ label: item.nama, value: item.kode })))
   const selectedCriteria = computed(() => data.kriteria_skala.filter((item) => item.skala === form.skala && form.kode_kriteria.includes(item.kode)))
   const criteriaGroups = computed(() => data.pemeriksaan.map((pemeriksaan) => ({

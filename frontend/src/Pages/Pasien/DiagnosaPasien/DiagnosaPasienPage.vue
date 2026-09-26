@@ -35,7 +35,7 @@ const {
         <div>
           <span>CODING PASIEN</span>
           <h3>Diagnosa & Prosedur</h3>
-          <p>Data disimpan langsung ke diagnosa_pasien dan prosedur_pasien SIMRS Khanza.</p>
+          <p>Data disimpan langsung ke diagnosa_pasien dan prosedur_pasien SIMRS.</p>
         </div>
         <strong><FileCheck2 :size="16" /> {{ jumlahCoding }} coding</strong>
       </header>

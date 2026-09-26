@@ -63,7 +63,7 @@ func (h *Handler) Simpan(c *gin.Context) {
 		tulisError(c, err)
 		return
 	}
-	httpresponse.Success(c, http.StatusCreated, gin.H{"pesan": "Rujukan berhasil disimpan langsung di Khanza."})
+	httpresponse.Success(c, http.StatusCreated, gin.H{"pesan": "Rujukan berhasil disimpan langsung di SIMRS."})
 }
 
 func (h *Handler) mutasi(c *gin.Context, aksi string) {

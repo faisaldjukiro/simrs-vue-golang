@@ -188,7 +188,7 @@ const {
           <div>
             <span>REFERENSI RESUME RANAP</span>
             <h3>{{ referensiTerbuka.judul }}</h3>
-            <p>Data diambil dari pelayanan SIMRS Khanza pada nomor rawat ini.</p>
+            <p>Data diambil dari pelayanan SIMRS pada nomor rawat ini.</p>
           </div>
           <button type="button" class="resume-button secondary" @click="referensiTerbuka = null">
             <X :size="15" />
@@ -259,7 +259,7 @@ const {
     <div v-if="hapusTerbuka" class="resume-dialog-backdrop" @click.self="hapusTerbuka = false">
       <section class="resume-dialog">
         <h3>Hapus Resume Pasien?</h3>
-        <p>Resume untuk nomor rawat {{ patient.no_rawat }} akan dihapus dari SIMRS Khanza.</p>
+        <p>Resume untuk nomor rawat {{ patient.no_rawat }} akan dihapus dari SIMRS.</p>
         <div><button type="button" class="resume-button secondary" @click="hapusTerbuka = false"><X :size="15" /> Batal</button><button type="button" class="resume-button danger" @click="hapus"><LoaderCircle v-if="deleting" class="spin" :size="15" /><Trash2 v-else :size="15" /> Hapus</button></div>
       </section>
     </div>

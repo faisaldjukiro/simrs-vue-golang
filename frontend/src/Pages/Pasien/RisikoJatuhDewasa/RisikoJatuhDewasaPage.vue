@@ -24,7 +24,7 @@ const {
         <div>
           <span>Rekam Medis · Rawat Inap</span>
           <h3>{{ editing ? 'Edit Penilaian' : 'Lanjutan Risiko Jatuh Dewasa' }}</h3>
-          <p>Penilaian Morse mengikuti SIMRS Khanza. Penyimpanan langsung ke Khanza.</p>
+          <p>Penilaian Morse mengikuti SIMRS. Penyimpanan langsung ke SIMRS.</p>
         </div>
         <div class="clinical-section-tools">
           <button v-if="editing" type="button" class="clinical-button secondary" :disabled="saving" @click="reset">
@@ -230,7 +230,7 @@ const {
       </div>
     </Dialog>
     <Dialog :visible="!!hapusTarget" modal header="Hapus Penilaian?" :closable="!saving" :style="{ width: '480px', maxWidth: '95vw' }" @update:visible="!saving && (hapusTarget = null)">
-      <p>Penilaian tanggal {{ hapusTarget?.data.tanggal }} akan dihapus langsung dari Khanza. Tindakan ini tidak dapat dibatalkan.</p>
+      <p>Penilaian tanggal {{ hapusTarget?.data.tanggal }} akan dihapus langsung dari SIMRS. Tindakan ini tidak dapat dibatalkan.</p>
       <p v-if="errorSimpan" role="alert">{{ errorSimpan }}</p>
       <template #footer>
         <button class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>

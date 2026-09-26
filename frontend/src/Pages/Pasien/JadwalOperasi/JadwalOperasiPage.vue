@@ -42,7 +42,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
         </button>
       </header>
       <p class="jadwal-info">
-        Jadwal baru langsung disimpan ke Khanza.
+        Jadwal baru langsung disimpan ke SIMRS.
         Edit dan hapus langsung berlaku pada sumber data baris yang dipilih.
       </p>
       <p v-if="pesanKunci" class="jadwal-info" role="status">{{ pesanKunci }}</p>
@@ -53,7 +53,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
         @submit.prevent="simpan"
       >
         <p v-if="editing" class="jadwal-edit" role="status">
-          Mengedit jadwal {{ editing.sumber }}: {{ editing.nama_paket }} — {{ editing.tanggal }}.
+          Mengedit jadwal {{ editing.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}: {{ editing.nama_paket }} — {{ editing.tanggal }}.
         </p>
         <div class="jadwal-fields">
           <InputPencarian
@@ -122,7 +122,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
           />
         </div>
         <p class="jadwal-help">
-          Pilihan paket mengikuti kelas dan penjamin sesuai pengaturan tarif Khanza.
+          Pilihan paket mengikuti kelas dan penjamin sesuai pengaturan tarif SIMRS.
           Jam 00:00:00–00:00:00 berarti waktu belum ditentukan dan belum diperiksa bentroknya.
         </p>
         <p v-if="errorSimpan" class="patient-error" role="alert">{{ errorSimpan }}</p>
@@ -132,7 +132,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
           </button>
           <button type="submit" class="clinical-button primary" :disabled="terkunci">
             <Save :size="16" />
-            {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan ke Khanza' }}
+            {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan ke SIMRS' }}
           </button>
         </footer>
       </form>
@@ -219,7 +219,9 @@ watch(records, rows => emit('jadwal-dimuat', rows))
               <small>{{ r.perawat || '-' }}</small>
             </template>
           </Column>
-          <Column field="sumber" header="Sumber" />
+          <Column header="Sumber">
+            <template #body="{ data: r }">{{ r.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</template>
+          </Column>
           <Column header="Aksi" style="min-width: 170px">
             <template #body="{ data: r }">
               <div v-if="r.bisa_ubah" class="clinical-table-actions">
@@ -246,8 +248,8 @@ watch(records, rows => emit('jadwal-dimuat', rows))
       @update:visible="value => { if (!value && !saving) hapusTarget = null }"
     >
       <p>{{ hapusTarget?.nama_paket }} — {{ hapusTarget?.tanggal }}</p>
-      <p>Jadwal ini akan dihapus dari {{ hapusTarget?.sumber }}.</p>
-      <p v-if="hapusTarget?.sumber === 'Khanza'">Penghapusan langsung berlaku di Khanza dan tidak dapat dipulihkan melalui halaman ini.</p>
+      <p>Jadwal ini akan dihapus dari {{ hapusTarget?.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}.</p>
+      <p v-if="hapusTarget?.sumber === 'Khanza'">Penghapusan langsung berlaku di SIMRS dan tidak dapat dipulihkan melalui halaman ini.</p>
       <template #footer>
         <button class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>
         <button class="clinical-button danger" :disabled="terkunci" @click="hapus">

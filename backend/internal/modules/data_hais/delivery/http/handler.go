@@ -1,4 +1,4 @@
-package risikojatuhanakhttp
+package datahaishttp
 
 import (
 	"context"
@@ -6,16 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"simrs-backend/internal/modules/autentikasi"
-	"simrs-backend/internal/modules/risiko_jatuh_anak"
+	"simrs-backend/internal/modules/data_hais"
 	"simrs-backend/internal/shared/httpresponse"
 	"time"
 )
 
 type Handler struct {
-	repo *risiko_jatuh_anak.Repositori
+	repo *data_hais.Repositori
 }
 
-func NewHandler(repo *risiko_jatuh_anak.Repositori) *Handler { return &Handler{repo: repo} }
+func NewHandler(repo *data_hais.Repositori) *Handler { return &Handler{repo: repo} }
 func (h *Handler) Register(g *gin.RouterGroup) {
 	g.GET("", h.proses)
 	g.POST("", h.proses)
@@ -47,29 +47,27 @@ func (h *Handler) proses(c *gin.Context) {
 		return
 	}
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 32*1024)
-	var in risiko_jatuh_anak.Input
+	var in data_hais.Input
 	if c.ShouldBindJSON(&in) != nil {
-		tulisError(c, risiko_jatuh_anak.ErrValidasi)
+		tulisError(c, data_hais.ErrValidasi)
 		return
 	}
 	if err := h.repo.Mutasi(ctx, in, c.Request.Method, u.Username, admin); err != nil {
 		tulisError(c, err)
 		return
 	}
-	pesan := "Penilaian risiko jatuh berhasil disimpan ke SIMRS"
+	pesan := "Data HAIs berhasil disimpan di SIRAPI"
 	if c.Request.Method == http.MethodDelete {
-		pesan = "Penilaian risiko jatuh berhasil dihapus dari SIMRS"
+		pesan = "Data HAIs berhasil dihapus dari SIRAPI"
 	}
 	httpresponse.Success(c, 200, gin.H{"pesan": pesan})
 }
 func tulisError(c *gin.Context, err error) {
-	status, kode, pesan := 500, "RISIKO_JATUH_ERROR", "Penilaian belum dapat diproses. Periksa koneksi dan tabel SIMRS, lalu muat ulang riwayat."
+	status, kode, pesan := 500, "DATA_HAIS_ERROR", "Data HAIs belum dapat diproses. Periksa koneksi database dan migrasi SIRAPI, lalu muat ulang riwayat."
 	switch {
-	case errors.Is(err, risiko_jatuh_anak.ErrValidasi):
+	case errors.Is(err, data_hais.ErrValidasi):
 		status, kode, pesan = 422, "VALIDATION_ERROR", err.Error()
-	case errors.Is(err, risiko_jatuh_anak.ErrAkses):
-		status, kode, pesan = 403, "FORBIDDEN", err.Error()
-	case errors.Is(err, risiko_jatuh_anak.ErrKonflik):
+	case errors.Is(err, data_hais.ErrKonflik):
 		status, kode, pesan = 409, "CONFLICT", err.Error()
 	}
 	httpresponse.Error(c, status, kode, pesan)

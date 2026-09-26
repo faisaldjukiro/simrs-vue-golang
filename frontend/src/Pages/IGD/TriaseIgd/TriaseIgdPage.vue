@@ -125,7 +125,7 @@ const {
                       <span>{{ item.pengkajian }}</span>
                     </label>
                   </section>
-                  <p v-if="criteriaGroups.length === 0">Belum ada kriteria Skala {{ form.skala }} pada master SIMRS Khanza.</p>
+                  <p v-if="criteriaGroups.length === 0">Belum ada kriteria Skala {{ form.skala }} pada master SIMRS.</p>
                 </div>
                 <footer><b>{{ selectedCriteria.length }}</b> kriteria dipilih</footer>
               </section>
@@ -153,6 +153,6 @@ const {
       </div>
     </article>
 
-    <div v-if="deleteType" class="triage-confirm-backdrop" @click.self="deleteType = ''"><section role="dialog" aria-modal="true"><AlertTriangle :size="26"/><h3>Hapus Triase {{ deleteType === 'primer' ? 'Primer' : 'Sekunder' }}?</h3><p>Data pengkajian dan seluruh kriteria skala yang dipilih akan dihapus dari SIMRS Khanza.</p><div><button type="button" :disabled="deleting" @click="deleteType = ''">Batal</button><button type="button" class="danger" :disabled="deleting" @click="confirmDelete"><LoaderCircle v-if="deleting" class="spin" :size="14"/><Trash2 v-else :size="14"/>{{ deleting ? 'Menghapus...' : 'Hapus' }}</button></div></section></div>
+    <div v-if="deleteType" class="triage-confirm-backdrop" @click.self="deleteType = ''"><section role="dialog" aria-modal="true"><AlertTriangle :size="26"/><h3>Hapus Triase {{ deleteType === 'primer' ? 'Primer' : 'Sekunder' }}?</h3><p>Data pengkajian dan seluruh kriteria skala yang dipilih akan dihapus dari SIMRS.</p><div><button type="button" :disabled="deleting" @click="deleteType = ''">Batal</button><button type="button" class="danger" :disabled="deleting" @click="confirmDelete"><LoaderCircle v-if="deleting" class="spin" :size="14"/><Trash2 v-else :size="14"/>{{ deleting ? 'Menghapus...' : 'Hapus' }}</button></div></section></div>
   </section>
 </template>

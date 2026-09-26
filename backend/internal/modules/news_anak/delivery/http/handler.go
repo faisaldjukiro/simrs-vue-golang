@@ -68,14 +68,14 @@ func (h *Handler) proses(c *gin.Context) {
 		tulisError(c, err)
 		return
 	}
-	pesan := "Pemantauan NEWS Anak berhasil disimpan ke Khanza"
+	pesan := "Pemantauan NEWS Anak berhasil disimpan ke SIMRS"
 	if c.Request.Method == http.MethodDelete {
-		pesan = "Pemantauan NEWS Anak berhasil dihapus dari Khanza"
+		pesan = "Pemantauan NEWS Anak berhasil dihapus dari SIMRS"
 	}
 	httpresponse.Success(c, 200, gin.H{"pesan": pesan})
 }
 func tulisError(c *gin.Context, err error) {
-	status, kode, pesan := 500, "NEWS_ANAK_ERROR", "NEWS Anak belum dapat diproses. Periksa koneksi dan tabel Khanza, lalu muat ulang riwayat."
+	status, kode, pesan := 500, "NEWS_ANAK_ERROR", "NEWS Anak belum dapat diproses. Periksa koneksi dan tabel SIMRS, lalu muat ulang riwayat."
 	switch {
 	case errors.Is(err, news_anak.ErrValidasi):
 		status, kode, pesan = 422, "VALIDATION_ERROR", err.Error()

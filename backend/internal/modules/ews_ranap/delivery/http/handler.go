@@ -125,7 +125,7 @@ func (h *Handler) tulisError(c *gin.Context, err error) {
 	case errors.Is(err, ews_ranap.ErrBillingTerkunci):
 		httpresponse.Error(c, http.StatusConflict, "EWS_RANAP_BILLING_LOCKED", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "EWS_RANAP_SIMRS_UNAVAILABLE", "EWS Ranap tidak dapat diproses pada SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "EWS_RANAP_SIMRS_UNAVAILABLE", "EWS Ranap tidak dapat diproses pada SIMRS")
 	}
 }
 

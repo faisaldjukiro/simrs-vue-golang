@@ -26,7 +26,7 @@ func (h *Handler) Data(c *gin.Context) {
 			httpresponse.Error(c, http.StatusUnprocessableEntity, "RIWAYAT_PERAWATAN_VALIDATION_ERROR", err.Error())
 			return
 		}
-		httpresponse.Error(c, http.StatusServiceUnavailable, "RIWAYAT_PERAWATAN_SIMRS_UNAVAILABLE", "Riwayat perawatan tidak dapat dibaca dari SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "RIWAYAT_PERAWATAN_SIMRS_UNAVAILABLE", "Riwayat perawatan tidak dapat dibaca dari SIMRS")
 		return
 	}
 	httpresponse.Success(c, http.StatusOK, data)

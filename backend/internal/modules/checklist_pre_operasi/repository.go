@@ -296,7 +296,7 @@ func (r *Repositori) Daftar(ctx context.Context, noRawat string, user uint64, ad
 	lama, err := r.riwayatLama(ctx, noRawat)
 	if err != nil {
 		// Jangan samarkan kegagalan riwayat sebagai daftar kosong.
-		hasil.Peringatan = "Riwayat Khanza belum dapat dibaca. Yang ditampilkan hanya catatan SIRAPI."
+		hasil.Peringatan = "Riwayat SIMRS belum dapat dibaca. Yang ditampilkan hanya catatan SIRAPI."
 	} else {
 		hasil.Catatan = append(hasil.Catatan, lama...)
 	}

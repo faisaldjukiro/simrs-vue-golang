@@ -4,27 +4,26 @@ import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import DataTable from '../../../Components/Ui/DataTable.vue'
 import FormInput from '../../../Components/Ui/FormInput.vue'
-import InputPencarian from '../../../Components/Ui/InputPencarian.vue'
 import TableSearch from '../../../Components/Ui/TableSearch.vue'
-import { bidangObservasi, type PropsObservasi } from '../../../types/observasiRanap'
-import { useObservasiRanap } from './useObservasiRanap'
+import { bidangHais, type PropsHais } from '../../../types/dataHais'
+import { useDataHais } from './useDataHais'
 
-const props = defineProps<PropsObservasi>()
+const props = defineProps<PropsHais>()
 const {
   loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing,
-  hapusTarget, petugas, form, terkunci, mulai, selesai, errorFilter,
-  waktuSekarang, reset, muat, cariPetugas, edit, mutasi, cetak,
-} = useObservasiRanap(props)
+  hapusTarget, kamar, form, terkunci, mulai, selesai, errorFilter,
+  waktuSekarang, reset, muat, edit, mutasi, cetak,
+} = useDataHais(props)
 </script>
 
 <template>
-  <section class="clinical-page observasi-page">
+  <section class="clinical-page hais-page">
     <article class="clinical-form-card">
       <header class="clinical-section-header">
         <div>
           <span>Pelayanan Rawat Inap</span>
-          <h3>{{ editing ? 'Edit Catatan Observasi' : 'Catatan Observasi Rawat Inap' }}</h3>
-          <p>Pencatatan tanda vital pasien. Data disimpan langsung ke SIMRS.</p>
+          <h3>{{ editing ? 'Edit Data HAIs' : 'Data HAIs' }}</h3>
+          <p>Pencatatan HAIs pasien rawat inap. Data baru disimpan di SIRAPI; riwayat lama hanya dapat dibaca.</p>
         </div>
         <div class="clinical-section-tools">
           <button v-if="editing" type="button" class="clinical-button secondary" :disabled="saving" @click="reset">
@@ -34,7 +33,7 @@ const {
             type="button"
             class="clinical-button toggle icon-only"
             :aria-expanded="formVisible"
-            aria-controls="observasi-form"
+            aria-controls="hais-form"
             :aria-label="formVisible ? 'Sembunyikan Form Input' : 'Tampilkan Form Input'"
             :title="formVisible ? 'Sembunyikan Form Input' : 'Tampilkan Form Input'"
             @click="formVisible = !formVisible"
@@ -44,24 +43,34 @@ const {
           </button>
         </div>
       </header>
-      <form v-show="formVisible" id="observasi-form" class="clinical-form" @submit.prevent="mutasi()">
+      <form v-show="formVisible" id="hais-form" class="clinical-form" @submit.prevent="mutasi()">
         <fieldset class="form-compact" :disabled="saving">
-          <div class="observasi-identitas-grid">
-            <FormInput v-model="form.tgl_perawatan" label="Tanggal Perawatan" type="date" required :disabled="terkunci" />
-            <FormInput v-model="form.jam_rawat" label="Jam Rawat (WITA)" type="time" step="1" required :disabled="terkunci" />
-            <InputPencarian v-model="petugas" label="Petugas" :search="cariPetugas" required :disabled="terkunci" />
+          <div class="hais-identitas-grid">
+            <FormInput v-model="form.tanggal" label="Tanggal" type="date" required :disabled="terkunci" />
+            <FormInput :model-value="form.kd_kamar || kamar" label="Kamar / Bed" disabled />
+            <FormInput v-model="form.DEKU" label="Dekubitus" jenis="select"
+              :options="[{ label: 'Tidak', value: 'TIDAK' }, { label: 'Iya', value: 'IYA' }]"
+              :disabled="terkunci" required />
           </div>
-          <div class="observasi-vital-grid">
-            <FormInput
-              v-for="bidang in bidangObservasi"
-              :key="bidang.key"
-              v-model="form[bidang.key]"
-              :label="bidang.label"
-              :maxlength="bidang.batas"
-              :disabled="terkunci"
-            />
-          </div>
-          <p class="observasi-catatan">Isi sesuai hasil pengukuran. Kolom yang belum diukur dapat dibiarkan kosong.</p>
+          <section v-for="grup in ['Hari Pemasangan Alat', 'Infeksi RS', 'Kultur dan Antibiotik']" :key="grup" class="hais-group">
+            <h4>{{ grup }}</h4>
+            <div class="hais-vital-grid">
+              <FormInput
+                v-for="bidang in bidangHais.filter(b => b.grup === grup)"
+                :key="bidang.key"
+                v-model="form[bidang.key]"
+                :label="bidang.label"
+                :type="bidang.angka ? 'number' : 'text'"
+                :min="bidang.angka ? 0 : undefined"
+                :max="bidang.angka ? 99 : undefined"
+                :step="bidang.angka ? 1 : undefined"
+                :maxlength="bidang.angka ? 2 : 200"
+                :required="bidang.angka"
+                :disabled="terkunci"
+              />
+            </div>
+          </section>
+          <p class="hais-catatan">Kamar mengikuti kamar terakhir pasien, termasuk kamar ibu pada rawat gabung. Nilai angka diisi 0–99 sesuai pencatatan.</p>
           <p v-if="errorSimpan" class="patient-error" role="alert">{{ errorSimpan }}</p>
           <footer class="clinical-form-actions">
             <button type="button" class="clinical-button secondary" :disabled="terkunci" @click="waktuSekarang">
@@ -73,7 +82,7 @@ const {
             <button type="submit" class="clinical-button primary" :disabled="terkunci">
               <LoaderCircle v-if="saving" class="spin" :size="15" />
               <Save v-else :size="15" />
-              {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan Observasi' }}
+              {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan HAIs' }}
             </button>
           </footer>
         </fieldset>
@@ -84,12 +93,12 @@ const {
       <header class="clinical-section-header">
         <div>
           <span>Kunjungan {{ patient.no_rawat }}</span>
-          <h3>Riwayat Observasi</h3>
+          <h3>Riwayat HAIs</h3>
           <p v-if="loading">Sedang memuat catatan...</p>
           <p v-else-if="!error">{{ rows.length }} dari {{ records.length }} catatan ditampilkan.</p>
         </div>
         <div class="clinical-section-tools">
-          <TableSearch v-model="keyword" placeholder="Cari tanggal, petugas, atau hasil..." :total="records.length" :filtered="rows.length" aria-label="Cari riwayat observasi" />
+          <TableSearch v-model="keyword" placeholder="Cari tanggal, kamar, kultur, atau hasil..." :total="records.length" :filtered="rows.length" aria-label="Cari riwayat hais" />
           <button type="button" class="clinical-button secondary" :disabled="loading || saving" @click="muat">
             <RefreshCw :size="15" /> Muat Ulang
           </button>
@@ -98,7 +107,7 @@ const {
           </button>
         </div>
       </header>
-      <div class="observasi-filter">
+      <div class="hais-filter">
         <FormInput v-model="mulai" label="Dari Tanggal" type="date" />
         <FormInput v-model="selesai" label="Sampai Tanggal" type="date" />
         <button type="button" class="clinical-button secondary" @click="mulai = ''; selesai = ''; keyword = ''">Semua Catatan</button>
@@ -106,7 +115,7 @@ const {
       </div>
       <div v-if="loading" class="clinical-state" role="status">
         <LoaderCircle class="spin" :size="25" />
-        <strong>Menarik catatan observasi...</strong>
+        <strong>Menarik catatan hais...</strong>
       </div>
       <div v-else-if="error" class="clinical-state error" role="alert">
         <strong>{{ error }}</strong>
@@ -119,27 +128,25 @@ const {
         paginator
         :rows-per-page="10"
         :rows-per-page-options="[10, 25, 50]"
-        empty-message="Catatan observasi tidak ditemukan."
+        empty-message="Catatan hais tidak ditemukan."
       >
-        <Column header="Tanggal / Jam" style="min-width:150px">
+        <Column header="Tanggal" style="min-width:150px">
           <template #body="{ data: r }">
             <div class="clinical-table-main">
-              <strong>{{ r.data.tgl_perawatan }}</strong>
-              <span>{{ r.data.jam_rawat }} WITA</span>
+              <strong>{{ r.data.tanggal }}</strong>
             </div>
           </template>
         </Column>
-        <Column v-for="bidang in bidangObservasi" :key="bidang.key" :header="bidang.label" style="min-width:105px">
+        <Column v-for="bidang in bidangHais" :key="bidang.key" :header="bidang.label" style="min-width:105px">
           <template #body="{ data: r }">{{ r.data[bidang.key] || '—' }}</template>
         </Column>
-        <Column header="Petugas" style="min-width:180px">
-          <template #body="{ data: r }">
-            <div class="clinical-table-main">
-              <strong>{{ r.nama_petugas || r.data.nip }}</strong>
-              <span>{{ r.data.nip }}</span>
-            </div>
-          </template>
+        <Column header="Dekubitus">
+          <template #body="{ data: r }">{{ r.data.DEKU }}</template>
         </Column>
+        <Column header="Kamar / Bed" style="min-width:140px">
+          <template #body="{ data: r }">{{ r.data.kd_kamar }}</template>
+        </Column>
+        <Column field="sumber" header="Sumber" style="min-width:140px" />
         <Column header="Aksi" style="min-width:140px">
           <template #body="{ data: r }">
             <div v-if="r.bisa_ubah" class="clinical-table-actions">
@@ -152,8 +159,8 @@ const {
       </DataTable>
     </article>
 
-    <Dialog :visible="!!hapusTarget" modal header="Hapus Catatan Observasi?" :closable="!saving" :style="{ width: '480px', maxWidth: '95vw' }" @update:visible="!saving && (hapusTarget = null)">
-      <p>Catatan {{ hapusTarget?.data.tgl_perawatan }} pukul {{ hapusTarget?.data.jam_rawat }} akan dihapus langsung dari SIMRS. Tindakan ini tidak dapat dibatalkan.</p>
+    <Dialog :visible="!!hapusTarget" modal header="Hapus Data HAIs?" :closable="!saving" :style="{ width: '480px', maxWidth: '95vw' }" @update:visible="!saving && (hapusTarget = null)">
+      <p>Catatan {{ hapusTarget?.data.tanggal }} akan dihapus dari SIRAPI. Tindakan ini tidak dapat dibatalkan.</p>
       <p v-if="errorSimpan" role="alert">{{ errorSimpan }}</p>
       <template #footer>
         <button type="button" class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>
@@ -163,4 +170,4 @@ const {
   </section>
 </template>
 
-<style src="@/Pages/RawatInap/ObservasiRanap/observasi-ranap.css" scoped></style>
+<style src="@/Pages/RawatInap/DataHais/data-hais.css" scoped></style>

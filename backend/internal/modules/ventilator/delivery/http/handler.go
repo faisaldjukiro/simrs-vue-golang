@@ -143,7 +143,7 @@ func (h *Handler) err(c *gin.Context, e error) {
 		httpresponse.Error(c, 404, "VENTILATOR_NOT_FOUND", "Data ventilator tidak ditemukan")
 		return
 	}
-	httpresponse.Error(c, 503, "VENTILATOR_SIMRS_UNAVAILABLE", "Data ventilator tidak dapat diproses pada SIMRS Khanza")
+	httpresponse.Error(c, 503, "VENTILATOR_SIMRS_UNAVAILABLE", "Data ventilator tidak dapat diproses pada SIMRS")
 }
 
 func waktuMySQL(value string) string { return strings.Replace(strings.TrimSpace(value), "T", " ", 1) }

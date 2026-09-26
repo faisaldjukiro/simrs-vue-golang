@@ -158,10 +158,10 @@ export function useInputResep(props) {
       const [met,depo,num]=await Promise.allSettled([resepMetodeRacik(props.token),resepDepoDefault(props.token,props.patient.no_rawat,statusRawat()),resepNomorAuto(props.token,form.tgl_peresepan)])
       if(met.status === 'fulfilled'){
         methods.value = normalisasiMetodeRacik(met.value)
-        if(!methods.value.length) notifikasi.peringatan('Metode racik belum ditemukan di tabel metode_racik SIMRS Khanza.')
+        if(!methods.value.length) notifikasi.peringatan('Metode racik belum ditemukan di tabel metode_racik SIMRS.')
       }else{
         methods.value = []
-        notifikasi.peringatan(`Metode racik tidak dapat dimuat: ${met.reason?.message || 'cek koneksi SIMRS Khanza'}`)
+        notifikasi.peringatan(`Metode racik tidak dapat dimuat: ${met.reason?.message || 'cek koneksi SIMRS'}`)
       }
       if(depo.status==='fulfilled'){
         form.kd_bangsal=depo.value?.kd_bangsal||''

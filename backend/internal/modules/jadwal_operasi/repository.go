@@ -392,7 +392,7 @@ func (r *Repositori) Daftar(ctx context.Context, no string, user uint64, admin b
 	}
 	lama, err := r.riwayat(ctx, no)
 	if err != nil {
-		hasil.Peringatan = "Riwayat Khanza belum dapat dibaca. Hanya jadwal SIRAPI yang ditampilkan."
+		hasil.Peringatan = "Riwayat SIMRS belum dapat dibaca. Hanya jadwal SIRAPI yang ditampilkan."
 	} else {
 		for i := range lama {
 			lama[i].BisaUbah = hasil.PesanKunci == ""

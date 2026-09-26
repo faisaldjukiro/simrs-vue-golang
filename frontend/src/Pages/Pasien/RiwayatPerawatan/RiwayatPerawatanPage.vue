@@ -47,7 +47,7 @@ const {
   <section class="care-history-page">
     <article class="care-history-filter">
       <header>
-        <div><span>REKAM MEDIS PASIEN</span><h3>Riwayat Perawatan</h3><p>Data dibaca langsung dari SIMRS Khanza berdasarkan nomor rekam medis.</p></div>
+        <div><span>REKAM MEDIS PASIEN</span><h3>Riwayat Perawatan</h3><p>Data dibaca langsung dari SIMRS berdasarkan nomor rekam medis.</p></div>
         <button type="button" :disabled="loading" @click="muatData"><LoaderCircle v-if="loading" class="spin" :size="15" /><Filter v-else :size="15" /> Tampilkan</button>
       </header>
 

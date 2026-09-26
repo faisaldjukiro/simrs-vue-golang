@@ -81,7 +81,7 @@ func (h *Handler) error(c *gin.Context, err error) {
 	case errors.Is(err, modul.ErrBillingTerkunci):
 		httpresponse.Error(c, http.StatusConflict, "AWAL_KEPERAWATAN_IGD_BILLING_LOCKED", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "AWAL_KEPERAWATAN_IGD_SIMRS_UNAVAILABLE", "Data penilaian awal keperawatan IGD tidak dapat diproses pada SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "AWAL_KEPERAWATAN_IGD_SIMRS_UNAVAILABLE", "Data penilaian awal keperawatan IGD tidak dapat diproses pada SIMRS")
 	}
 }
 func penggunaLogin(c *gin.Context) (autentikasi.Pengguna, bool) {

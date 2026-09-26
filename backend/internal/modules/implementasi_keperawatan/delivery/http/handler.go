@@ -125,7 +125,7 @@ func (h *Handler) tulisError(c *gin.Context, err error) {
 	case errors.Is(err, implementasi_keperawatan.ErrBillingTerkunci):
 		httpresponse.Error(c, http.StatusConflict, "IMPLEMENTASI_KEPERAWATAN_BILLING_LOCKED", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "IMPLEMENTASI_KEPERAWATAN_SIMRS_UNAVAILABLE", "Implementasi keperawatan tidak dapat diproses pada SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "IMPLEMENTASI_KEPERAWATAN_SIMRS_UNAVAILABLE", "Implementasi keperawatan tidak dapat diproses pada SIMRS")
 	}
 }
 

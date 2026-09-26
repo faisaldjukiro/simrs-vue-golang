@@ -18,7 +18,7 @@ type Mutasi struct {
 	Baru Input   `json:"baru"`
 }
 
-const PesanArsipGagal = "Rujukan sudah tersimpan di Khanza, tetapi pengarsipan lokal gagal. Muat ulang dan kirim ulang untuk menyelesaikan pengarsipan."
+const PesanArsipGagal = "Rujukan sudah tersimpan di SIMRS, tetapi pengarsipan lokal gagal. Muat ulang dan kirim ulang untuk menyelesaikan pengarsipan."
 
 func kunciTujuan(jenis string, input Input) string {
 	if jenis == Ranap {
@@ -279,5 +279,5 @@ func (r *Repositori) Kirim(ctx context.Context, jenis string, asal Rujukan) (str
 	if err != nil {
 		return PesanArsipGagal, nil
 	}
-	return "Rujukan tersimpan di Khanza. Salinan lokal telah diarsipkan.", nil
+	return "Rujukan tersimpan di SIMRS. Salinan lokal telah diarsipkan.", nil
 }

@@ -175,7 +175,7 @@ export function useChecklistPreOperasi(props: PropsChecklist) {
     identitas.textContent = [
       props.patient.nama_pasien || props.patient.nm_pasien || '-',
       'RM: ' + (props.patient.no_rekam_medis || props.patient.no_rkm_medis || '-'),
-      r.no_rawat, r.tanggal + ' WITA', 'Sumber: ' + r.sumber,
+      r.no_rawat, r.tanggal + ' WITA', 'Sumber: ' + (r.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi'),
     ].join(' · ')
     const tabel = doc.createElement('table')
     for (const b of bidangChecklist) {

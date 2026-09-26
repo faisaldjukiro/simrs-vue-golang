@@ -48,9 +48,9 @@ func (h *Handler) simpanPendukung(c *gin.Context) {
 		tulisError(c, err)
 		return
 	}
-	pesan := "Catatan berhasil disimpan langsung ke Khanza"
+	pesan := "Catatan berhasil disimpan langsung ke SIMRS"
 	if c.Request.Method == http.MethodDelete {
-		pesan = "Catatan berhasil dihapus dari Khanza"
+		pesan = "Catatan berhasil dihapus dari SIMRS"
 	}
 	httpresponse.Success(c, http.StatusOK, gin.H{"pesan": pesan})
 }
@@ -65,7 +65,7 @@ func (h *Handler) pendukung(c *gin.Context) {
 		if errors.Is(err, jadwal_operasi.ErrValidasi) {
 			tulisError(c, err)
 		} else {
-			httpresponse.Error(c, http.StatusInternalServerError, "RIWAYAT_OPERASI_ERROR", "Riwayat belum dapat dibaca. Periksa koneksi dan ketersediaan tabel modul ini di Khanza.")
+			httpresponse.Error(c, http.StatusInternalServerError, "RIWAYAT_OPERASI_ERROR", "Riwayat belum dapat dibaca. Periksa koneksi dan ketersediaan tabel modul ini di SIMRS.")
 		}
 		return
 	}
@@ -99,7 +99,7 @@ func tulisError(c *gin.Context, err error) {
 	} else if errors.Is(err, jadwal_operasi.ErrKonflik) || errors.Is(err, jadwal_operasi.ErrBentrok) || errors.Is(err, jadwal_operasi.ErrTerkunci) {
 		httpresponse.Error(c, http.StatusConflict, "JADWAL_OPERASI_CONFLICT", err.Error())
 	} else {
-		httpresponse.Error(c, http.StatusInternalServerError, "JADWAL_OPERASI_ERROR", "Jadwal belum dapat diproses. Periksa koneksi/izin database Khanza dan migration SIRAPI. Muat ulang riwayat sebelum mencoba simpan kembali.")
+		httpresponse.Error(c, http.StatusInternalServerError, "JADWAL_OPERASI_ERROR", "Jadwal belum dapat diproses. Periksa koneksi/izin database SIMRS dan migration SIRAPI. Muat ulang riwayat sebelum mencoba simpan kembali.")
 	}
 }
 
@@ -175,7 +175,7 @@ func (h *Handler) simpan(c *gin.Context) {
 	}
 	pesan := "Perubahan jadwal lokal disimpan di SIRAPI"
 	if input.ID == 0 {
-		pesan = "Jadwal operasi berhasil disimpan langsung di Khanza"
+		pesan = "Jadwal operasi berhasil disimpan langsung di SIMRS"
 	}
 	httpresponse.Success(c, status, gin.H{"pesan": pesan, "waktu": time.Now().UTC()})
 }
@@ -195,7 +195,7 @@ func (h *Handler) hapus(c *gin.Context) {
 	}
 	pesan := "Jadwal dihapus dari daftar aktif SIRAPI"
 	if input.Sumber == "Khanza" {
-		pesan = "Jadwal berhasil dihapus dari Khanza"
+		pesan = "Jadwal berhasil dihapus dari SIMRS"
 	}
 	httpresponse.Success(c, http.StatusOK, gin.H{"pesan": pesan})
 }

@@ -83,7 +83,7 @@ func hitungSkorCatatan(c *Catatan) error {
 	c.BC = strconv.Itoa(masuk - keluar)
 	for _, nilai := range []string{c.JumlahMasuk, c.JumlahKeluar, c.BC} {
 		if len(nilai) > 5 {
-			return fmt.Errorf("%w: total cairan melebihi kapasitas kolom Khanza (5 karakter)", ErrInputTidakValid)
+			return fmt.Errorf("%w: total cairan melebihi kapasitas kolom SIMRS (5 karakter)", ErrInputTidakValid)
 		}
 	}
 	c.TotalSkor = strconv.Itoa(total)

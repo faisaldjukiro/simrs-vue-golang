@@ -37,20 +37,20 @@ const {
 
       <!-- <p class="rujukan-info">
         <ArrowRightToLine :size="18" aria-hidden="true" />
-        Rujukan baru langsung disimpan di Khanza. Rujukan lokal lama dapat dikirim
-        satu per satu melalui tombol Kirim ke Khanza, tanpa menimpa data yang sudah ada.
+        Rujukan baru langsung disimpan di SIMRS. Rujukan lokal lama dapat dikirim
+        satu per satu melalui tombol Kirim ke SIMRS, tanpa menimpa data yang sudah ada.
       </p> -->
       <p v-if="pesanKunci" class="billing-lock" role="status">{{ pesanKunci }}</p>
 
       <form v-show="formVisible" class="clinical-form form-compact rujukan-form" @submit.prevent="simpan">
         <fieldset :disabled="terkunci">
           <p v-if="editing" class="rujukan-edit-status" role="status">
-            Mengedit rujukan {{ editing.sumber }}: {{ editing.nama_poli }} — {{ editing.nama_dokter }}.
+            Mengedit rujukan {{ editing.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}: {{ editing.nama_poli }} — {{ editing.nama_dokter }}.
             <span v-if="editing.sumber === 'SIRAPI'">
               Perubahan tetap lokal sampai dikirim.
             </span>
             <span v-else>
-              Perubahan disimpan langsung di Khanza.
+              Perubahan disimpan langsung di SIMRS.
             </span>
           </p>
           <div class="rujukan-fields" :key="`${patient.no_rawat}-${moduleName}`">
@@ -67,8 +67,8 @@ const {
           </div>
           <p class="rujukan-help">
             {{ ranap
-              ? 'Satu rujukan per poli tujuan dalam kunjungan yang sama, mengikuti Khanza.'
-              : 'Satu rujukan per dokter tujuan dalam kunjungan yang sama, mengikuti Khanza.' }}
+              ? 'Satu rujukan per poli tujuan dalam kunjungan yang sama, mengikuti SIMRS.'
+              : 'Satu rujukan per dokter tujuan dalam kunjungan yang sama, mengikuti SIMRS.' }}
           </p>
           <p v-if="errorSimpan" class="patient-error" role="alert">{{ errorSimpan }}</p>
           <footer class="clinical-form-actions">
@@ -82,7 +82,7 @@ const {
             <button type="submit" class="clinical-button primary" :disabled="terkunci">
               <LoaderCircle v-if="saving" class="spin" :size="15" />
               <Save v-else :size="15" />
-              {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan ke Khanza' }}
+              {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan ke SIMRS' }}
             </button>
           </footer>
         </fieldset>
@@ -138,11 +138,11 @@ const {
         <Column header="Sumber" style="width:200px">
           <template #body="{ data }">
             <div class="clinical-table-main rujukan-source">
-              <strong>{{ data.sumber }}</strong>
+              <strong>{{ data.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</strong>
               <span v-if="data.konflik_khanza" class="rujukan-conflict">
-                Kunci rujukan sudah ada di Khanza, tetapi isinya berbeda. Periksa kedua baris sebelum melanjutkan.
+                Kunci rujukan sudah ada di SIMRS, tetapi isinya berbeda. Periksa kedua baris sebelum melanjutkan.
               </span>
-              <span v-else>{{ data.sumber === 'SIRAPI' ? 'Lokal, belum dikirim ke Khanza' : 'Tersimpan di Khanza'
+              <span v-else>{{ data.sumber === 'SIRAPI' ? 'Lokal, belum dikirim ke SIMRS' : 'Tersimpan di SIMRS'
               }}</span>
             </div>
           </template>
@@ -161,9 +161,9 @@ const {
               </div>
               <button v-if="data.sumber === 'SIRAPI'" type="button" class="clinical-button primary rujukan-send"
                 :disabled="terkunci || data.konflik_khanza"
-                :title="data.konflik_khanza ? 'Data berbeda dengan Khanza. Periksa dan sesuaikan terlebih dahulu.' : 'Kirim rujukan lokal ini ke Khanza'"
+                :title="data.konflik_khanza ? 'Data berbeda dengan SIMRS. Periksa dan sesuaikan terlebih dahulu.' : 'Kirim rujukan lokal ini ke SIMRS'"
                 @click="mintaKonfirmasi('kirim', data)">
-                <ArrowRightToLine :size="14" /> Kirim ke Khanza
+                <ArrowRightToLine :size="14" /> Kirim ke SIMRS
               </button>
             </div>
           </template>
@@ -172,7 +172,7 @@ const {
     </article>
 
     <Dialog class="rujukan-confirm" :visible="!!konfirmasi"
-      :header="konfirmasi?.aksi === 'hapus' ? 'Hapus rujukan?' : 'Kirim rujukan ke Khanza?'" modal append-to="self"
+      :header="konfirmasi?.aksi === 'hapus' ? 'Hapus rujukan?' : 'Kirim rujukan ke SIMRS?'" modal append-to="self"
       :closable="!saving" :close-on-escape="!saving" :style="{ width: '480px', maxWidth: 'calc(100vw - 32px)' }"
       @update:visible="value => { if (!value && !saving) konfirmasi = null }">
       <template v-if="konfirmasi">
@@ -181,21 +181,21 @@ const {
           <span>{{ konfirmasi.row.nama_dokter }}</span>
           <span>No. rawat: {{ konfirmasi.row.no_rawat }}</span>
           <span v-if="ranap">{{ konfirmasi.row.tanggal }} · {{ konfirmasi.row.jam }}</span>
-          <span>Sumber: {{ konfirmasi.row.sumber }}</span>
+          <span>Sumber: {{ konfirmasi.row.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</span>
         </div>
         <p v-if="konfirmasi.aksi === 'hapus'" class="rujukan-confirm-help">
-          Hanya rujukan ini yang akan dihapus dari {{ konfirmasi.row.sumber }}.
+          Hanya rujukan ini yang akan dihapus dari {{ konfirmasi.row.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}.
           <span v-if="konfirmasi.row.sumber === 'SIRAPI'">
-            Data di Khanza tidak dihapus.
+            Data di SIMRS tidak dihapus.
           </span>
           <span v-else>
-            Penghapusan langsung berlaku di Khanza.
+            Penghapusan langsung berlaku di SIMRS.
           </span>
           Tindakan ini tidak dapat dibatalkan.
         </p>
         <p v-else class="rujukan-confirm-help">
-          Rujukan dikirim ke Khanza dan salinan lokal diarsipkan. Jika kuncinya sudah ada
-          dengan isi berbeda, pengiriman ditolak. Data Khanza tidak ditimpa.
+          Rujukan dikirim ke SIMRS dan salinan lokal diarsipkan. Jika kuncinya sudah ada
+          dengan isi berbeda, pengiriman ditolak. Data SIMRS tidak ditimpa.
         </p>
         <p v-if="errorAksi" class="patient-error" role="alert">{{ errorAksi }}</p>
       </template>
@@ -206,7 +206,7 @@ const {
         <button type="button" class="clinical-button" :class="konfirmasi?.aksi === 'hapus' ? 'danger' : 'primary'"
           :disabled="saving || terkunci" @click="jalankanAksi">
           <LoaderCircle v-if="saving" class="spin" :size="15" />
-          {{ saving ? 'Memproses...' : konfirmasi?.aksi === 'hapus' ? 'Ya, Hapus Rujukan' : 'Ya, Kirim ke Khanza' }}
+          {{ saving ? 'Memproses...' : konfirmasi?.aksi === 'hapus' ? 'Ya, Hapus Rujukan' : 'Ya, Kirim ke SIMRS' }}
         </button>
       </template>
     </Dialog>

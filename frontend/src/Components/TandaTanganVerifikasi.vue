@@ -43,6 +43,6 @@ watch(() => props.data, muatTandaTangan, { deep: true })
     <span>{{ data.peran }}<template v-if="data.peran === 'Dokter DPJP' && data.urutan"> {{ data.urutan }}</template></span>
     <strong>{{ data.dokter || '-' }}</strong>
     <small>ID {{ data.kode_dokter || '-' }}</small>
-    <em v-if="gagal">QR belum dapat dimuat dari server Khanza.</em>
+    <em v-if="gagal">QR belum dapat dimuat dari server SIMRS.</em>
   </article>
 </template>

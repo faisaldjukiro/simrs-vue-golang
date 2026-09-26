@@ -333,14 +333,14 @@ const {
     >
       <figure class="ews-pain-preview">
         <img :src="scoreNyeriImage" alt="Panduan Wong Baker Faces Pain Rating Scale, skala 0 sampai 10" />
-        <figcaption>Gambar referensi asli dari SIMRS Khanza. Pilih skala nyeri pada form penilaian.</figcaption>
+        <figcaption>Gambar referensi asli dari SIMRS. Pilih skala nyeri pada form penilaian.</figcaption>
       </figure>
     </Dialog>
 
     <div v-if="deleteTarget" class="clinical-confirm-backdrop" @click.self="deleteTarget = null">
       <section class="clinical-confirm-dialog" role="dialog" aria-modal="true">
         <h3>Hapus EWS Ranap?</h3>
-        <p>Catatan tanggal {{ deleteTarget.tanggal }} pukul {{ deleteTarget.jam }} akan dihapus dari SIMRS Khanza.</p>
+        <p>Catatan tanggal {{ deleteTarget.tanggal }} pukul {{ deleteTarget.jam }} akan dihapus dari SIMRS.</p>
         <div>
           <button type="button" class="clinical-button secondary" :disabled="deleting" @click="deleteTarget = null">Batal</button>
           <button type="button" class="clinical-button danger" :disabled="deleting" @click="deleteRecord(deleteTarget)">

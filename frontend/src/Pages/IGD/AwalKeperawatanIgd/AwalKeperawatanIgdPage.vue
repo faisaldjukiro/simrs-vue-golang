@@ -95,7 +95,7 @@ const {
             <section class="assessment-strip">
               <h4><span>V.</span> Skala Nyeri</h4>
               <div class="pain-assessment-layout">
-                <figure class="pain-scale-guide"><img src="/img/skala-nyeri-khanza.png" alt="Panduan Wong-Baker Faces Pain Rating Scale dari SIMRS Khanza"><figcaption>Pilih angka skala nyeri pasien</figcaption><div><button v-for="score in painScores" :key="score" type="button" :class="{ active: form.skala_nyeri === score }" :aria-pressed="form.skala_nyeri === score" @click="form.skala_nyeri = score">{{ score }}</button></div></figure>
+                <figure class="pain-scale-guide"><img src="/img/skala-nyeri-khanza.png" alt="Panduan Wong-Baker Faces Pain Rating Scale dari SIMRS"><figcaption>Pilih angka skala nyeri pasien</figcaption><div><button v-for="score in painScores" :key="score" type="button" :class="{ active: form.skala_nyeri === score }" :aria-pressed="form.skala_nyeri === score" @click="form.skala_nyeri = score">{{ score }}</button></div></figure>
                 <div class="nursing-grid pain-fields"><FormInput v-model="form.nyeri" label="Jenis Nyeri" jenis="select" :options="options.nyeri"/><FormInput v-model="form.provokes" label="Penyebab" jenis="select" :options="options.provokes"/><FormInput v-model="form.ket_provokes" label="Keterangan Penyebab"/><FormInput v-model="form.quality" label="Kualitas" jenis="select" :options="options.quality"/><FormInput v-model="form.ket_quality" label="Keterangan Kualitas"/><FormInput v-model="form.lokasi" label="Lokasi"/><FormInput v-model="form.menyebar" label="Menyebar" jenis="select" :options="options.yaTidak"/><FormInput v-model="form.skala_nyeri" label="Severity · Skala Nyeri" jenis="select" :options="options.skala"/><FormInput v-model="form.durasi" label="Waktu / Durasi (Menit)"/><FormInput v-model="form.nyeri_hilang" label="Nyeri Hilang Bila" jenis="select" :options="options.hilang"/><FormInput v-model="form.ket_nyeri" label="Keterangan Nyeri Hilang"/><FormInput v-model="form.pada_dokter" label="Diberitahukan Pada Dokter?" jenis="select" :options="options.yaTidak"/><FormInput v-model="form.ket_dokter" label="Jam"/></div>
               </div>
             </section>
@@ -135,7 +135,7 @@ const {
       </form>
 
       <Dialog v-model:visible="confirmDelete" modal header="Hapus Penilaian" class="initial-nursing-dialog" :style="{ width: 'min(430px, 92vw)' }">
-        <p>Penilaian awal keperawatan IGD pasien ini akan dihapus dari SIMRS Khanza.</p>
+        <p>Penilaian awal keperawatan IGD pasien ini akan dihapus dari SIMRS.</p>
         <template #footer><button type="button" class="secondary" @click="confirmDelete = false">Batal</button><button type="button" class="danger" :disabled="deleting" @click="remove"><LoaderCircle v-if="deleting" class="spin" :size="14"/><Trash2 v-else :size="14"/>{{ deleting ? 'Menghapus...' : 'Hapus' }}</button></template>
       </Dialog>
     </template>

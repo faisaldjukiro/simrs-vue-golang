@@ -120,7 +120,7 @@ func (h *Handler) tulisError(c *gin.Context, err error) {
 	case errors.Is(err, berkas_digital.ErrBerkasTidakDitemukan):
 		httpresponse.Error(c, http.StatusNotFound, "BERKAS_DIGITAL_NOT_FOUND", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "BERKAS_DIGITAL_SIMRS_UNAVAILABLE", "Berkas digital tidak dapat diproses pada SIMRS Khanza.")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "BERKAS_DIGITAL_SIMRS_UNAVAILABLE", "Berkas digital tidak dapat diproses pada SIMRS.")
 	}
 }
 
@@ -152,26 +152,26 @@ func (h *Handler) kirimKeServerKhanza(c *gin.Context, fileHeader *multipart.File
 
 	request, err := http.NewRequestWithContext(c.Request.Context(), http.MethodPost, h.uploadURL, &body)
 	if err != nil {
-		return fmt.Errorf("request upload ke SIMRS Khanza tidak valid")
+		return fmt.Errorf("request upload ke SIMRS tidak valid")
 	}
 	request.Header.Set("Content-Type", writer.FormDataContentType())
 	request.Header.Set("Accept", "text/plain")
 
 	response, err := h.client.Do(request)
 	if err != nil {
-		return fmt.Errorf("upload ke server berkas SIMRS Khanza gagal: %w", err)
+		return fmt.Errorf("upload ke server berkas SIMRS gagal: %w", err)
 	}
 	defer response.Body.Close()
 	responseBody, _ := io.ReadAll(io.LimitReader(response.Body, 2048))
 	pesan := strings.TrimSpace(string(responseBody))
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return fmt.Errorf("server berkas SIMRS Khanza menolak upload: HTTP %d %s", response.StatusCode, pesan)
+		return fmt.Errorf("server berkas SIMRS menolak upload: HTTP %d %s", response.StatusCode, pesan)
 	}
 	if pesan != "UPLOAD_BERHASIL" {
 		if pesan == "" {
 			pesan = "respon kosong"
 		}
-		return fmt.Errorf("server berkas SIMRS Khanza gagal upload: %s", pesan)
+		return fmt.Errorf("server berkas SIMRS gagal upload: %s", pesan)
 	}
 	return nil
 }

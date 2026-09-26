@@ -268,7 +268,7 @@ const {
           <div v-else class="recipe-empty-box"><FlaskConical :size="26" /><span>Cari obat racikan, lalu tambahkan ke tabel detail.</span></div>
 
           <div class="recipe-racik-actions">
-            <small>{{ methods.length ? `${methods.length} metode racik tersedia` : 'Metode racik belum termuat dari SIMRS Khanza' }}</small>
+            <small>{{ methods.length ? `${methods.length} metode racik tersedia` : 'Metode racik belum termuat dari SIMRS' }}</small>
             <div class="recipe-racik-action-buttons">
               <button v-if="editingRacikanIndex !== null" type="button" class="recipe-action-button secondary" :disabled="locked" @click="batalEditRacikan"><X :size="15"/> Batal Edit</button>
               <button type="button" class="recipe-action-button" :disabled="locked" @click="addRacik">

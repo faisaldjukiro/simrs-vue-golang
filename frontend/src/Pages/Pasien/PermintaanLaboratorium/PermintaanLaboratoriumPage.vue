@@ -134,7 +134,7 @@ const {
             <span>{{ scope.status === 'ranap' ? 'Rawat Inap' : 'Rawat Jalan' }}</span>
             <span>Penjamin pasien: {{ scope.kodeCaraBayar || '-' }}</span>
             <span>Kelas pasien: {{ scope.kelas || '-' }}</span>
-            <span>Pilihan mengikuti pengaturan tarif Khanza.</span>
+            <span>Pilihan mengikuti pengaturan tarif SIMRS.</span>
           </div>
           <footer class="clinical-form-actions">
             <button type="button" class="clinical-button secondary" @click="Object.assign(form, waktuSekarang())">

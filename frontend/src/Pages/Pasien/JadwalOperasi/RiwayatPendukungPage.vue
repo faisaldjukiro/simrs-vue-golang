@@ -20,9 +20,9 @@ const {
     <article v-if="bidang.length" class="clinical-form-card">
       <header class="clinical-section-header">
         <div>
-          <span>{{ editing ? 'Edit Catatan Khanza' : 'Input Catatan Baru' }}</span>
+          <span>{{ editing ? 'Edit Catatan SIMRS' : 'Input Catatan Baru' }}</span>
           <h3>{{ judul }}</h3>
-          <p>Simpan, edit, dan hapus langsung berlaku di Khanza.</p>
+          <p>Simpan, edit, dan hapus langsung berlaku di SIMRS.</p>
         </div>
         <button class="clinical-button toggle" :aria-expanded="formVisible" @click="formVisible = !formVisible">
           <ChevronUp v-if="formVisible" :size="16" />
@@ -77,7 +77,7 @@ const {
             {{ editing ? 'Batal Edit' : 'Reset' }}
           </button>
           <button type="submit" class="clinical-button primary" :disabled="terkunci">
-            <Save :size="16" /> {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan ke Khanza' }}
+            <Save :size="16" /> {{ saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Simpan ke SIMRS' }}
           </button>
         </footer>
       </form>
@@ -85,7 +85,7 @@ const {
     <article class="clinical-history-card">
     <header class="clinical-section-header">
       <div>
-        <span>Riwayat Khanza · {{ patient.no_rawat }}</span>
+        <span>Riwayat SIMRS · {{ patient.no_rawat }}</span>
         <h3>{{ judul }}</h3>
         <p v-if="jenis === 'laporan_operasi'">Laporan pada tanggal jadwal {{ jadwalOperasi.tanggal }}.</p>
         <p v-else>Riwayat seluruh kunjungan ini, termasuk catatan sebelum tanggal operasi.</p>
@@ -94,7 +94,7 @@ const {
     </header>
     <div class="operasi-riwayat-body">
       <p v-if="!bidang.length && !loading && !error" class="operasi-tab-help" role="status">
-        Tab ini menampilkan data yang sudah tersimpan di Khanza. Form tambah, edit, dan hapus modul ini belum tersedia di SIRAPI.
+        Tab ini menampilkan data yang sudah tersimpan di SIMRS. Form tambah, edit, dan hapus modul ini belum tersedia di SIRAPI.
       </p>
       <FormInput v-model="q" type="search" label="Cari dalam riwayat" placeholder="Cari isi catatan..." />
       <p v-if="error" class="patient-error" role="alert">{{ error }}</p>
@@ -152,7 +152,7 @@ const {
     </Dialog>
     <Dialog
       :visible="!!hapusTarget"
-      header="Hapus Catatan Khanza?"
+      header="Hapus Catatan SIMRS?"
       modal
       :closable="!saving"
       :close-on-escape="!saving"
@@ -160,7 +160,7 @@ const {
       @update:visible="value => { if (!value && !saving) hapusTarget = null }"
     >
       <p>{{ judul }} · {{ hapusTarget?.tanggal || hapusTarget?.tanggal_masuk }}</p>
-      <p>Catatan dihapus permanen dari Khanza dan tidak dapat dipulihkan melalui halaman ini.</p>
+      <p>Catatan dihapus permanen dari SIMRS dan tidak dapat dipulihkan melalui halaman ini.</p>
       <p v-if="errorSimpan" class="patient-error" role="alert">{{ errorSimpan }}</p>
       <template #footer>
         <button class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>

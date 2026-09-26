@@ -188,7 +188,7 @@ export function useHome(props, emit) {
   const serviceStatuses = computed(() => [
     { label: 'Web Servis', value: 'Online', tone: 'online' },
     {
-      label: 'Simrs Khanza',
+      label: 'SIMRS',
       value: !isAuthenticated.value ? 'Perlu login' : dashboardLoading.value ? 'Memeriksa...' : dashboardError.value ? 'Offline' : `Online - ${dashboard.value.koneksi_database.latensi_ms} ms`,
       tone: !isAuthenticated.value || dashboardLoading.value ? 'pending' : dashboardError.value ? 'offline' : 'online',
     },
@@ -324,7 +324,7 @@ export function useHome(props, emit) {
   async function loadDashboard(filterPerModul = patientFilters.value) {
     if (!isAuthenticated.value) {
       dashboardLoading.value = false
-      dashboardError.value = 'Silakan login untuk membaca data pasien dari database SIMRS KHANZA.'
+      dashboardError.value = 'Silakan login untuk membaca data pasien dari database SIMRS.'
       return
     }
   

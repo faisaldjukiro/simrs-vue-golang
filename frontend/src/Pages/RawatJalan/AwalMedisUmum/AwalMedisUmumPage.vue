@@ -116,7 +116,7 @@ const {
     </form>
 
     <Dialog v-model:visible="confirmDelete" modal header="Hapus Penilaian Awal Medis Umum" class="medical-dialog" :style="{ width: 'min(440px, 92vw)' }">
-      <p>Penilaian pasien ini akan dihapus dari SIMRS Khanza.</p>
+      <p>Penilaian pasien ini akan dihapus dari SIMRS.</p>
       <template #footer><button type="button" class="clinical-button secondary" @click="confirmDelete = false">Batal</button><button type="button" class="clinical-button danger" :disabled="deleting" @click="remove"><LoaderCircle v-if="deleting" class="spin" :size="14"/><Trash2 v-else :size="14"/>{{ deleting ? 'Menghapus...' : 'Hapus' }}</button></template>
     </Dialog>
   </section>

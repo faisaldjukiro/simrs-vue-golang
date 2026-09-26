@@ -180,7 +180,7 @@ const {
     <div v-if="deleteTarget" class="clinical-confirm-backdrop" @click.self="deleteTarget = null">
       <section class="clinical-confirm-dialog" role="dialog" aria-modal="true">
         <h3>Hapus Catatan CPPT?</h3>
-        <p>Catatan tanggal {{ formatDate(deleteTarget.tgl_perawatan) }} pukul {{ deleteTarget.jam_rawat }} akan dihapus dari SIMRS Khanza.</p>
+        <p>Catatan tanggal {{ formatDate(deleteTarget.tgl_perawatan) }} pukul {{ deleteTarget.jam_rawat }} akan dihapus dari SIMRS.</p>
         <div>
           <button type="button" class="clinical-button secondary" :disabled="deleting" @click="deleteTarget = null">Batal</button>
           <button type="button" class="clinical-button danger" :disabled="deleting" @click="confirmDelete">

@@ -51,7 +51,7 @@ func tulisError(c *gin.Context, err error) {
 	} else if errors.Is(err, checklist_pre_operasi.ErrKonflik) {
 		httpresponse.Error(c, http.StatusConflict, "CHECKLIST_CONFLICT", err.Error())
 	} else {
-		httpresponse.Error(c, http.StatusInternalServerError, "CHECKLIST_ERROR", "Checklist belum dapat diproses. Periksa koneksi/izin database Khanza dan migration SIRAPI. Muat ulang riwayat sebelum mencoba simpan kembali.")
+		httpresponse.Error(c, http.StatusInternalServerError, "CHECKLIST_ERROR", "Checklist belum dapat diproses. Periksa koneksi/izin database SIMRS dan migration SIRAPI. Muat ulang riwayat sebelum mencoba simpan kembali.")
 	}
 }
 
@@ -127,7 +127,7 @@ func (h *Handler) simpan(c *gin.Context) {
 	}
 	pesan := "Perubahan checklist lokal disimpan di SIRAPI"
 	if input.ID == 0 {
-		pesan = "Checklist pre operasi berhasil disimpan langsung di Khanza"
+		pesan = "Checklist pre operasi berhasil disimpan langsung di SIMRS"
 	}
 	httpresponse.Success(c, status, gin.H{"pesan": pesan, "waktu": time.Now().UTC()})
 }
@@ -147,7 +147,7 @@ func (h *Handler) hapus(c *gin.Context) {
 	}
 	pesan := "Checklist dihapus dari daftar aktif SIRAPI"
 	if input.Sumber == "Khanza" {
-		pesan = "Checklist berhasil dihapus dari Khanza"
+		pesan = "Checklist berhasil dihapus dari SIMRS"
 	}
 	httpresponse.Success(c, http.StatusOK, gin.H{"pesan": pesan})
 }

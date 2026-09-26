@@ -25,7 +25,7 @@ const {
         <div>
           <span>Pelayanan Rawat Inap Anak</span>
           <h3>{{ editing ? 'Edit Pemantauan PEWS Anak' : 'Pemantauan PEWS Anak' }}</h3>
-          <p>Penilaian mengikuti RMPemantauanPEWS Khanza. Data disimpan langsung ke Khanza.</p>
+          <p>Penilaian mengikuti RMPemantauanPEWS SIMRS. Data disimpan langsung ke SIMRS.</p>
         </div>
         <div class="clinical-section-tools">
           <button v-if="editing" type="button" class="clinical-button secondary" :disabled="saving" @click="reset">
@@ -59,7 +59,7 @@ const {
             />
           </div>
           <p v-if="!loading && !error && !bolehPilihPetugas && !petugasLogin.kode" class="patient-error" role="alert">
-            Akun login belum terhubung ke data petugas Khanza. Riwayat dapat dilihat, tetapi penilaian belum dapat disimpan.
+            Akun login belum terhubung ke data petugas SIMRS. Riwayat dapat dilihat, tetapi penilaian belum dapat disimpan.
           </p>
 
           <section class="pews-summary" :class="lengkap ? warnaSkor(total) : 'pending'" aria-live="polite">
@@ -104,7 +104,7 @@ const {
           </div>
 
           <details class="pews-guidance">
-            <summary>Panduan skor dari SIMRS Khanza</summary>
+            <summary>Panduan skor dari SIMRS</summary>
             <dl>
               <template v-for="p in panduan" :key="p.minimal">
                 <dt>Skor {{ p.minimal === p.maksimal ? p.minimal : `${p.minimal}–${p.maksimal}` }}</dt>
@@ -241,7 +241,7 @@ const {
       :style="{ width: '480px', maxWidth: '95vw' }"
       @update:visible="!saving && (hapusTarget = null)"
     >
-      <p>Catatan {{ hapusTarget?.data.tanggal }} akan dihapus langsung dari Khanza. Tindakan ini tidak dapat dibatalkan.</p>
+      <p>Catatan {{ hapusTarget?.data.tanggal }} akan dihapus langsung dari SIMRS. Tindakan ini tidak dapat dibatalkan.</p>
       <p v-if="errorSimpan" role="alert">{{ errorSimpan }}</p>
       <template #footer>
         <button type="button" class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>

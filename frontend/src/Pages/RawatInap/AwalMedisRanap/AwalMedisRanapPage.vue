@@ -29,7 +29,7 @@ const {
     <div v-if="loading" class="medical-state"><LoaderCircle class="spin" :size="28"/><strong>Menarik penilaian Awal Medis Ranap...</strong></div>
     <form v-else class="medical-form clinical-form-card clinical-form" @submit.prevent="save">
       <header class="clinical-section-header">
-        <div><span>PENILAIAN MEDIS RAWAT INAP</span><h3>{{ editing ? 'Edit' : 'Input' }} Awal Medis Ranap</h3><p>Penilaian awal dokter pasien dewasa mengikuti form SIMRS Khanza.</p></div>
+        <div><span>PENILAIAN MEDIS RAWAT INAP</span><h3>{{ editing ? 'Edit' : 'Input' }} Awal Medis Ranap</h3><p>Penilaian awal dokter pasien dewasa mengikuti form SIMRS.</p></div>
         <div class="header-actions">
           <button v-if="editing && !billingLocked" type="button" class="clinical-button danger" :disabled="deleting" @click="confirmDelete = true"><Trash2 :size="15"/>Hapus</button>
           <button type="button" class="clinical-button primary icon-only" :title="formOpen ? 'Sembunyikan form input' : 'Tampilkan form input'" @click="formOpen = !formOpen"><ChevronUp v-if="formOpen" :size="18"/><ChevronDown v-else :size="18"/></button>
@@ -121,7 +121,7 @@ const {
     </form>
 
     <Dialog v-model:visible="confirmDelete" modal header="Hapus Penilaian Awal Medis Ranap" class="medical-dialog" :style="{ width: 'min(440px, 92vw)' }">
-      <p>Penilaian pasien ini akan dihapus dari SIMRS Khanza.</p>
+      <p>Penilaian pasien ini akan dihapus dari SIMRS.</p>
       <template #footer><button type="button" class="clinical-button secondary" @click="confirmDelete = false">Batal</button><button type="button" class="clinical-button danger" :disabled="deleting" @click="remove"><LoaderCircle v-if="deleting" class="spin" :size="14"/><Trash2 v-else :size="14"/>{{ deleting ? 'Menghapus...' : 'Hapus' }}</button></template>
     </Dialog>
   </section>

@@ -15,7 +15,7 @@ const x = reactive(useKunjunganRanap(props));
             <div>
                 <span>Laporan Pelayanan</span>
                 <h1>Kunjungan Rawat Inap</h1>
-                <p>Adaptasi laporan DlgKunjunganRanap SIMRS Khanza.</p>
+                <p>Adaptasi laporan DlgKunjunganRanap SIMRS.</p>
             </div>
             <Hotel :size="30" />
         </header>

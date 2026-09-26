@@ -108,6 +108,6 @@ func (h *Handler) tanganiError(c *gin.Context, err error) {
 	case errors.Is(err, modul.ErrTidakDitemukan):
 		httpresponse.Error(c, http.StatusNotFound, "PERMINTAAN_LABORATORIUM_NOT_FOUND", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "PERMINTAAN_LABORATORIUM_SIMRS_UNAVAILABLE", "Permintaan laboratorium tidak dapat diproses pada SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "PERMINTAAN_LABORATORIUM_SIMRS_UNAVAILABLE", "Permintaan laboratorium tidak dapat diproses pada SIMRS")
 	}
 }

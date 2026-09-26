@@ -56,14 +56,14 @@ func (h *Handler) proses(c *gin.Context) {
 		tulisError(c, err)
 		return
 	}
-	pesan := "Catatan observasi rawat inap berhasil disimpan ke Khanza"
+	pesan := "Catatan observasi rawat inap berhasil disimpan ke SIMRS"
 	if c.Request.Method == http.MethodDelete {
-		pesan = "Catatan observasi rawat inap berhasil dihapus dari Khanza"
+		pesan = "Catatan observasi rawat inap berhasil dihapus dari SIMRS"
 	}
 	httpresponse.Success(c, 200, gin.H{"pesan": pesan})
 }
 func tulisError(c *gin.Context, err error) {
-	status, kode, pesan := 500, "OBSERVASI_RANAP_ERROR", "Observasi belum dapat diproses. Periksa koneksi dan tabel Khanza, lalu muat ulang riwayat."
+	status, kode, pesan := 500, "OBSERVASI_RANAP_ERROR", "Observasi belum dapat diproses. Periksa koneksi dan tabel SIMRS, lalu muat ulang riwayat."
 	switch {
 	case errors.Is(err, observasi_ranap.ErrValidasi):
 		status, kode, pesan = 422, "VALIDATION_ERROR", err.Error()

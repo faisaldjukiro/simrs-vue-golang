@@ -30,7 +30,7 @@ const {
       <div>
         <span>Laporan Pelayanan</span>
         <h1>Laporan 10 Penyakit</h1>
-        <p>Adaptasi laporan Dlg10Penyakit SIMRS Khanza.</p>
+        <p>Adaptasi laporan Dlg10Penyakit SIMRS.</p>
       </div>
       <BarChart3 :size="30" />
     </header>

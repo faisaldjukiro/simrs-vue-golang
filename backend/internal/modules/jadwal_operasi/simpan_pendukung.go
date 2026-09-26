@@ -198,7 +198,7 @@ func (r *Repositori) SimpanPendukung(ctx context.Context, in InputPendukung, met
 		return err
 	}
 	if !jadwalAda {
-		return fmt.Errorf("%w: jadwal Khanza berubah atau tidak ditemukan", ErrKonflik)
+		return fmt.Errorf("%w: jadwal SIMRS berubah atau tidak ditemukan", ErrKonflik)
 	}
 	kolom := []string{"no_rawat"}
 	baru := []any{in.NoRawat}

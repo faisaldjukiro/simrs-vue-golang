@@ -80,6 +80,6 @@ func (h *Handler) tulisError(c *gin.Context, err error) {
 	case errors.Is(err, modul.ErrBillingTerkunci):
 		httpresponse.Error(c, http.StatusConflict, "awal_medis_ranap_BILLING_LOCKED", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "awal_medis_ranap_SIMRS_UNAVAILABLE", "Penilaian awal medis ranap tidak dapat diproses pada SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "awal_medis_ranap_SIMRS_UNAVAILABLE", "Penilaian awal medis ranap tidak dapat diproses pada SIMRS")
 	}
 }

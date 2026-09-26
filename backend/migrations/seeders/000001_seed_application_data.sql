@@ -137,7 +137,8 @@ VALUES
     ('Konseling Farmasi', 'MessageCircle', JSON_ARRAY('Rawat Inap'), 60, TRUE, NOW(), NOW()),
     ('Informasi Obat', 'Pill', JSON_ARRAY('Rawat Inap'), 61, TRUE, NOW(), NOW()),
     ('Transfer Antar Ruang', 'ArrowRightLeft', JSON_ARRAY('Rawat Inap'), 62, TRUE, NOW(), NOW()),
-    ('Triase IGD', 'Stethoscope', JSON_ARRAY('IGD/UGD'), 64, TRUE, NOW(), NOW());
+    ('Triase IGD', 'Stethoscope', JSON_ARRAY('IGD/UGD'), 64, TRUE, NOW(), NOW()),
+    ('Data HAIs', 'ClipboardList', JSON_ARRAY('Rawat Inap'), 65, TRUE, NOW(), NOW());
 
 UPDATE sidebar_pasien
 SET kode_sidebar = CONCAT('sidebar_lama_', LPAD(id, 4, '0'));
@@ -168,6 +169,9 @@ WHERE nama_sidebar = 'Pemantauan PEWS Anak';
 
 UPDATE sidebar_pasien SET kode_sidebar = 'news_anak'
 WHERE nama_sidebar = 'Pemantauan NEWS Anak';
+
+UPDATE sidebar_pasien SET kode_sidebar = 'data_hais'
+WHERE nama_sidebar = 'Data HAIs';
 
 UPDATE sidebar_pasien SET kode_sidebar = 'rujukan_internal_ranap'
 WHERE nama_sidebar = 'Rujuk Internal Rawat Inap';

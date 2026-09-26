@@ -25,7 +25,7 @@ const {
         <div>
           <span>Pelayanan Rawat Inap Anak</span>
           <h3>{{ editing ? 'Edit Pemantauan NEWS Anak' : 'Pemantauan NEWS Anak' }}</h3>
-          <p>Penilaian mengikuti RMPemantauanNEWS Khanza. Data disimpan langsung ke Khanza.</p>
+          <p>Penilaian mengikuti RMPemantauanNEWS SIMRS. Data disimpan langsung ke SIMRS.</p>
         </div>
         <div class="clinical-section-tools">
           <button v-if="editing" type="button" class="clinical-button secondary" :disabled="saving" @click="reset">
@@ -59,7 +59,7 @@ const {
             />
           </div>
           <p v-if="!loading && !error && !bolehPilihPetugas && !petugasLogin.kode" class="patient-error" role="alert">
-            Akun login belum terhubung ke data petugas Khanza. Riwayat dapat dilihat, tetapi penilaian belum dapat disimpan.
+            Akun login belum terhubung ke data petugas SIMRS. Riwayat dapat dilihat, tetapi penilaian belum dapat disimpan.
           </p>
 
           <section class="news-summary" :class="warnaTotal" aria-live="polite">
@@ -77,7 +77,7 @@ const {
             </div>
           </section>
           <p v-if="perluVerifikasi" class="patient-error" role="alert">
-            Perlu verifikasi klinis: lima parameter berskor 1 masuk respon bawaan pada kode Khanza.
+            Perlu verifikasi klinis: lima parameter berskor 1 masuk respon bawaan pada kode SIMRS.
             Konfirmasikan kepada penanggung jawab klinis; jangan menganggapnya sebagai kondisi normal.
           </p>
           <section v-if="lengkap" class="news-guidance">
@@ -112,7 +112,7 @@ const {
           </div>
 
           <details class="news-guidance">
-            <summary>Panduan skor dari SIMRS Khanza</summary>
+            <summary>Panduan skor dari SIMRS</summary>
             <dl>
               <template v-for="p in panduan" :key="p.kode">
                 <dt>{{ p.syarat }}</dt>
@@ -258,7 +258,7 @@ const {
       :style="{ width: '480px', maxWidth: '95vw' }"
       @update:visible="!saving && (hapusTarget = null)"
     >
-      <p>Catatan {{ hapusTarget?.data.tanggal }} akan dihapus langsung dari Khanza. Tindakan ini tidak dapat dibatalkan.</p>
+      <p>Catatan {{ hapusTarget?.data.tanggal }} akan dihapus langsung dari SIMRS. Tindakan ini tidak dapat dibatalkan.</p>
       <p v-if="errorSimpan" role="alert">{{ errorSimpan }}</p>
       <template #footer>
         <button type="button" class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>

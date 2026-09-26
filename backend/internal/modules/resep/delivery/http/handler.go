@@ -133,6 +133,6 @@ func (h *Handler) error(c *gin.Context, e error) {
 	case errors.Is(e, modul.ErrBillingTerkunci):
 		httpresponse.Error(c, 409, "BILLING_TERKUNCI", "Resep tidak dapat diubah karena billing sudah diproses")
 	default:
-		httpresponse.Error(c, 503, "RESEP_UNAVAILABLE", "Resep tidak dapat diproses pada SIMRS Khanza: "+e.Error())
+		httpresponse.Error(c, 503, "RESEP_UNAVAILABLE", "Resep tidak dapat diproses pada SIMRS: "+e.Error())
 	}
 }

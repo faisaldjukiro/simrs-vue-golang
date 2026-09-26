@@ -83,6 +83,6 @@ func (h *Handler) error(c *gin.Context, err error) {
 	case errors.Is(err, modul.ErrKunjunganInvalid):
 		httpresponse.Error(c, http.StatusNotFound, "DIAGNOSA_PASIEN_NOT_FOUND", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "DIAGNOSA_PASIEN_SIMRS_UNAVAILABLE", "Diagnosa pasien tidak dapat diproses pada SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "DIAGNOSA_PASIEN_SIMRS_UNAVAILABLE", "Diagnosa pasien tidak dapat diproses pada SIMRS")
 	}
 }

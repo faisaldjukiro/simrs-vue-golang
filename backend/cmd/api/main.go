@@ -39,6 +39,8 @@ import (
 	checklistpreoperasihttp "simrs-backend/internal/modules/checklist_pre_operasi/delivery/http"
 	"simrs-backend/internal/modules/cppt"
 	cppthttp "simrs-backend/internal/modules/cppt/delivery/http"
+	"simrs-backend/internal/modules/data_hais"
+	datahaishttp "simrs-backend/internal/modules/data_hais/delivery/http"
 	"simrs-backend/internal/modules/diagnosa_pasien"
 	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
 	"simrs-backend/internal/modules/ews_ranap"
@@ -269,6 +271,7 @@ func main() {
 		ObservasiRanap:          observasiranaphttp.NewHandler(observasi_ranap.NewRepositori(simrsDB)),
 		PEWSAnak:                pewsanakhttp.NewHandler(pews_anak.NewRepositori(simrsDB)),
 		NEWSAnak:                newsanakhttp.NewHandler(news_anak.NewRepositori(simrsDB)),
+		DataHais:                datahaishttp.NewHandler(data_hais.NewRepositori(db, simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,

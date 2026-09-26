@@ -136,6 +136,6 @@ func (h *Handler) error(c *gin.Context, err error) {
 	case errors.Is(err, modul.ErrTidakDitemukan):
 		httpresponse.Error(c, http.StatusNotFound, "PENANGANAN_NOT_FOUND", err.Error())
 	default:
-		httpresponse.Error(c, http.StatusServiceUnavailable, "PENANGANAN_SIMRS_UNAVAILABLE", "Penanganan dokter dan petugas tidak dapat diproses pada SIMRS Khanza")
+		httpresponse.Error(c, http.StatusServiceUnavailable, "PENANGANAN_SIMRS_UNAVAILABLE", "Penanganan dokter dan petugas tidak dapat diproses pada SIMRS")
 	}
 }
