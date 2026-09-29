@@ -173,6 +173,9 @@ WHERE nama_sidebar = 'Pemantauan NEWS Anak';
 UPDATE sidebar_pasien SET kode_sidebar = 'data_hais'
 WHERE nama_sidebar = 'Data HAIs';
 
+UPDATE sidebar_pasien SET kode_sidebar = 'edukasi_pasien'
+WHERE nama_sidebar = 'Edukasi Pasien';
+
 UPDATE sidebar_pasien SET kode_sidebar = 'rujukan_internal_ranap'
 WHERE nama_sidebar = 'Rujuk Internal Rawat Inap';
 UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas'

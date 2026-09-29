@@ -19,8 +19,8 @@ API `/api/jadwal-operasi` mengikuti permission modul pelayanan pasien.
   diberi peringatan, tidak dianggap riwayat kosong.
 - Atas izin eksplisit user, jadwal baru langsung INSERT ke booking_operasi Khanza
   (10 kolom sesuai referensi). Tidak ada fallback/salinan lokal apabila gagal.
-- Jadwal lokal lama tetap dapat diedit/dihapus oleh pembuat atau permission *.
-  Hapus memakai deleted_at. Tidak ada pengiriman massal data lokal.
+- Jadwal lokal lama hanya-baca apabila tabel arsip masih ada. Mutasi jadwal
+  selalu memakai tabel SIMRS; tidak ada pengiriman massal data lokal.
 - Edit/hapus Khanza telah diizinkan user melalui PUT/DELETE /khanza.
   Snapshot asli seluruh kolom wajib disertakan. Perubahan data/target ambigu
   ditolak; hapus permanen membutuhkan konfirmasi di UI. Billing tetap diperiksa.
@@ -29,18 +29,37 @@ API `/api/jadwal-operasi` mengikuti permission modul pelayanan pasien.
 
 ## Waktu dan bentrok
 
-Tanggal/jam menggunakan WITA. Pasangan 00:00:00–00:00:00 mengikuti referensi
-untuk waktu belum ditentukan; tidak lolos sebagai reservasi waktu terkonfirmasi.
-Jam lain wajib selesai setelah mulai pada tanggal yang sama.
+Tanggal/jam menggunakan WITA. Mengikuti Java, jam mulai 00:00:00 melewati
+pemeriksaan bentrok. Format waktu tetap divalidasi, tanpa menambahkan aturan
+urutan jam yang tidak ada di dialog lama.
 
-Pemeriksaan bentrok mencakup interval saling menutupi, bukan hanya jam mulai
-seperti query desktop. Interval berurutan tidak bentrok. Sesuai referensi,
-pengecekan ruang membandingkan kunjungan berbeda; beberapa paket kunjungan
-yang sama dapat memakai satu sesi. Duplikasi paket/tanggal/jam mulai ditolak.
+Pemeriksaan bentrok sama dengan query desktop: tanggal/ruang sama, nomor rawat
+berbeda, dan jam mulai jadwal lain BETWEEN mulai dan selesai (inklusif).
+Ini bukan deteksi semua kemungkinan tumpang tindih interval. Duplikasi
+paket/tanggal/jam mulai tetap ditolak sesuai primary key tabel.
 
-Permintaan simpan dari SIRAPI diserialisasi melalui baris lock database lokal. Riwayat Khanza
-dibaca sebelum simpan, tetapi perubahan yang dilakukan bersamaan di aplikasi
-Khanza tidak dapat dikunci secara atomik dengan database lokal.
+Simpan memakai named lock pada koneksi SIMRS, tanpa tabel pengunci lokal.
+Lock ini tidak mengoordinasikan aplikasi lain yang tidak memakai lock yang sama.
+
+Edit mengikuti delapan kolom Java; dokteranastesi dan perawat dipertahankan,
+dan kedua input dinonaktifkan saat edit. Snapshot seluruh kolom tetap diperiksa.
+Batas booking_operasi yang dikonfirmasi pengguna: kode_paket 15, kd_ruang_ok 3,
+kd_dokter 20, dokteranastesi/perawat masing-masing 50 karakter.
+
+POST jadwal baru tidak lagi ditandai sebagai arsip SIRAPI oleh handler.
+
+## Template laporan
+
+GET `/api/jadwal-operasi/template-laporan?q=...` mencari tabel SIMRS
+`template_laporan_operasi`. Pengguna memilih lalu menerapkan template secara
+eksplisit; penggantian isian yang sudah ada membutuhkan konfirmasi.
+POST/PUT pendukung laporan menerima `simpan_template: true` untuk menyimpan
+laporan dan template dalam transaksi yang sama. Dokter mengikuti akun dokter
+login, atau operator jadwal bila akun bukan dokter, seperti Java.
+ID memakai tanggal laporan/jadwal ditambah urutan empat digit; bentrok ID
+membatalkan transaksi, tidak menimpa template. Tidak ada DDL/migration SIMRS.
+Template yang melebihi batas form laporan harus disesuaikan oleh pengguna;
+teks tidak dipotong otomatis. Skema laporan_operasi belum dikonfirmasi ulang.
 
 ## Batas modul
 

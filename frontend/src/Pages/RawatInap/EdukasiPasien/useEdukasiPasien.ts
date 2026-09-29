@@ -1,10 +1,10 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { request } from '../../../lib/shared/http'
 import { useNotifikasi } from '../../../lib/shared/useNotifikasi'
-import { bidangHais } from '../../../types/dataHais'
-import type { CatatanHais, HasilHais, PropsHais } from '../../../types/dataHais'
+import { bidangEdukasi } from '../../../types/edukasiPasien'
+import type { CatatanEdukasi, HasilEdukasi, PropsEdukasi } from '../../../types/edukasiPasien'
 
-export function useDataHais(props: PropsHais) {
+export function useEdukasiPasien(props: PropsEdukasi) {
   const notifikasi = useNotifikasi()
   const loading = ref(false)
   const saving = ref(false)
@@ -13,13 +13,15 @@ export function useDataHais(props: PropsHais) {
   const keyword = ref('')
   const mulai = ref('')
   const selesai = ref('')
-  const cakupan = ref('kunjungan')
   const formVisible = ref(true)
-  const records = ref<CatatanHais[]>([])
-  const editing = ref<CatatanHais | null>(null)
-  const detail = ref<CatatanHais | null>(null)
-  const hapusTarget = ref<CatatanHais | null>(null)
-  const kamar = ref('')
+  const records = ref<CatatanEdukasi[]>([])
+  const editing = ref<CatatanEdukasi | null>(null)
+  const detail = ref<CatatanEdukasi | null>(null)
+  const hapusTarget = ref<CatatanEdukasi | null>(null)
+  const petugas = ref<Record<string, string>>({})
+  const ruangan = ref<Record<string, string>>({})
+  const petugasLogin = ref<Record<string, string>>({})
+  const bolehPilihPetugas = ref(false)
   const form = reactive<Record<string, string>>({})
   let generasi = 0
   let urutan = 0
@@ -27,15 +29,15 @@ export function useDataHais(props: PropsHais) {
     ? 'Tanggal mulai tidak boleh melewati tanggal selesai.' : '')
   const rows = computed(() => records.value.filter(r =>
     !errorFilter.value &&
-    (!mulai.value || r.data.tanggal >= mulai.value) &&
-    (!selesai.value || r.data.tanggal <= selesai.value) &&
-    [r.sumber, ...Object.values(r.data)].join(' ').toLocaleLowerCase()
+    (!mulai.value || r.data.tgl_perawatan >= mulai.value) &&
+    (!selesai.value || r.data.tgl_perawatan <= selesai.value) &&
+    [r.nama_petugas, r.nama_ruangan, r.sumber, ...Object.values(r.data)].join(' ').toLocaleLowerCase()
       .includes(keyword.value.trim().toLocaleLowerCase()),
-  ).map(r => ({ ...r, kunci: [r.sumber, r.data.no_rawat, r.data.tanggal].join(' ') })))
+  ).map(r => ({ ...r, kunci: r.sumber + ':' + r.data.tgl_perawatan + ' ' + r.data.jam_rawat })))
   const terkunci = computed(() => loading.value || saving.value || !!error.value)
 
   function api<T>(path = '', options: RequestInit = {}) {
-    return request<T>('/api/data-hais' + path, {
+    return request<T>('/api/edukasi-pasien' + path, {
       ...options,
       headers: { Authorization: 'Bearer ' + props.token },
     })
@@ -43,18 +45,18 @@ export function useDataHais(props: PropsHais) {
 
   function waktuSekarang() {
     const sekarang = new Date(Date.now() + 8 * 3600000).toISOString()
-    form.tanggal = sekarang.slice(0, 10)
+    form.tgl_perawatan = sekarang.slice(0, 10)
+    form.jam_rawat = sekarang.slice(11, 19)
   }
 
   function reset() {
-    const deku = form.DEKU || 'TIDAK'
     editing.value = null
     errorSimpan.value = ''
-
+    if (!petugas.value.kode) petugas.value = { ...petugasLogin.value }
+    const metode = form.metode || 'Audio'
     Object.keys(form).forEach(k => delete form[k])
-    for (const b of bidangHais) form[b.key] = b.angka ? '0' : ''
-    form.DEKU = deku
-    form.kd_kamar = kamar.value
+    for (const b of bidangEdukasi) form[b.key] = ''
+    form.metode = metode
     waktuSekarang()
   }
 
@@ -64,25 +66,21 @@ export function useDataHais(props: PropsHais) {
     loading.value = true
     error.value = ''
     try {
-      if (errorFilter.value) throw new Error(errorFilter.value)
-      if (cakupan.value === 'semua' && (!mulai.value || !selesai.value)) {
-        throw new Error('Isi periode tanggal untuk melihat seluruh pasien.')
-      }
-      const hasil = await api<HasilHais>('?' + new URLSearchParams({
-        no_rawat: props.patient.no_rawat,
-        cakupan: cakupan.value,
-        mulai: mulai.value,
-        selesai: selesai.value,
-      }))
+      const hasil = await api<HasilEdukasi>('?' + new URLSearchParams({ no_rawat: props.patient.no_rawat }))
       if (konteks !== generasi || id !== urutan) return
       records.value = hasil.catatan
-      kamar.value = hasil.kamar
-      if (!editing.value) form.kd_kamar = hasil.kamar
+      petugasLogin.value = hasil.petugas_login
+      bolehPilihPetugas.value = hasil.boleh_pilih_petugas
+      if (!editing.value && !petugas.value.kode) petugas.value = { ...hasil.petugas_login }
     } catch (e) {
-      if (konteks === generasi && id === urutan) error.value = e instanceof Error ? e.message : 'Gagal memuat HAIs.'
+      if (konteks === generasi && id === urutan) error.value = e instanceof Error ? e.message : 'Gagal memuat edukasi.'
     } finally {
       if (konteks === generasi && id === urutan) loading.value = false
     }
+  }
+
+  function cariReferensi(jenis: 'petugas' | 'ruangan', q: string) {
+    return api<Record<string, string>[]>('/referensi?' + new URLSearchParams({ jenis, q }))
   }
 
   function cetak() {
@@ -93,30 +91,20 @@ export function useDataHais(props: PropsHais) {
       return
     }
     const doc = popup.document
-    doc.title = 'Data HAIs'
+    doc.title = 'Catatan Edukasi Pasien'
     doc.documentElement.lang = 'id'
     const style = doc.createElement('style')
-    style.textContent = '@page { size: A3 landscape; margin: 10mm; } body { font: 9px Arial, sans-serif; color: #111; } h1 { font-size: 18px; } table { width: 100%; border-collapse: collapse; table-layout: fixed; } th, td { border: 1px solid #aaa; padding: 3px; text-align: left; overflow-wrap: anywhere; } th { background: #eee; } thead { display: table-header-group; } tr { break-inside: avoid; }'
+    style.textContent = '@page { size: A4 landscape; margin: 12mm; } body { font: 12px Arial, sans-serif; color: #111; } h1 { font-size: 20px; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #aaa; padding: 8px; text-align: left; overflow-wrap: anywhere; } th { background: #eee; } thead { display: table-header-group; } tr { break-inside: avoid; }'
     doc.head.append(style)
     const title = doc.createElement('h1')
-    title.textContent = 'Data HAIs'
+    title.textContent = 'Catatan Edukasi Pasien'
     const identity = doc.createElement('p')
-    identity.textContent = cakupan.value === 'semua' ? 'Seluruh pasien' : `${props.patient.nm_pasien || '-'} | RM: ${props.patient.no_rkm_medis || '-'} | No. Rawat: ${props.patient.no_rawat}`
+    identity.textContent = `${props.patient.nm_pasien || '-'} | RM: ${props.patient.no_rkm_medis || '-'} | No. Rawat: ${props.patient.no_rawat}`
     const period = doc.createElement('p')
     period.textContent = `Periode: ${mulai.value || 'Awal kunjungan'} s.d. ${selesai.value || 'Terakhir'} | Pencarian: ${keyword.value || '-'} | ${rows.value.length} catatan | Waktu WITA`
     const table = doc.createElement('table')
     const head = table.createTHead().insertRow()
-    const kolomCetak = [
-      { key: 'tanggal', label: 'Tanggal' },
-      { key: 'no_rawat', label: 'No. Rawat' },
-      { key: 'no_rkm_medis', label: 'No. RM' },
-      { key: 'nm_pasien', label: 'Nama Pasien' },
-      ...bidangHais.filter(b => b.angka),
-      { key: 'DEKU', label: 'Dekubitus' },
-      ...bidangHais.filter(b => !b.angka),
-      { key: 'kamar_bangsal', label: 'Kamar / Bangsal' },
-    ]
-    for (const { label } of kolomCetak) {
+    for (const label of ['Tanggal', 'Jam', ...bidangEdukasi.map(b => b.label), 'Petugas', 'Ruangan', 'Sumber']) {
       const th = doc.createElement('th')
       th.textContent = label
       head.append(th)
@@ -124,8 +112,8 @@ export function useDataHais(props: PropsHais) {
     const body = table.createTBody()
     for (const r of rows.value) {
       const tr = body.insertRow()
-      for (const { key } of kolomCetak) {
-        tr.insertCell().textContent = r.data[key] || (key === 'kamar_bangsal' ? r.data.kd_kamar : '') || '-'
+      for (const value of [r.data.tgl_perawatan, r.data.jam_rawat, ...bidangEdukasi.map(b => r.data[b.key]), `${r.nama_petugas || '-'} (${r.data.nip})`, r.nama_ruangan || r.data.kd_ruangan, r.sumber]) {
+        tr.insertCell().textContent = value || '-'
       }
     }
     doc.body.append(title, identity, period, table)
@@ -133,19 +121,21 @@ export function useDataHais(props: PropsHais) {
     popup.requestAnimationFrame(() => popup.print())
   }
 
-  function edit(row: CatatanHais) {
+  function edit(row: CatatanEdukasi) {
     if (terkunci.value || !row.bisa_ubah) return
     reset()
     editing.value = { ...row, data: { ...row.data } }
     formVisible.value = true
     Object.assign(form, row.data)
+    petugas.value = { kode: row.data.nip, nama: row.nama_petugas }
+    ruangan.value = { kode: row.data.kd_ruangan, nama: row.nama_ruangan }
   }
 
   async function mutasi(hapus = false) {
     if (terkunci.value || (hapus && !hapusTarget.value)) return
     errorSimpan.value = ''
-    if (!hapus && (!form.kd_kamar || !form.tanggal)) {
-      errorSimpan.value = 'Tanggal dan kamar rawat inap wajib tersedia.'
+    if (!hapus && (!petugas.value.kode || !form.tgl_perawatan || !form.jam_rawat)) {
+      errorSimpan.value = 'Lengkapi tanggal, jam, dan petugas.'
       return
     }
     const konteks = generasi
@@ -156,10 +146,7 @@ export function useDataHais(props: PropsHais) {
         body: JSON.stringify({
           no_rawat: props.patient.no_rawat,
           sumber: hapus ? hapusTarget.value?.sumber : editing.value?.sumber,
-          // Input type=number dapat mengeluarkan number meskipun state awal string.
-          data: hapus ? undefined : Object.fromEntries(
-            Object.entries(form).map(([key, value]) => [key, String(value ?? '')]),
-          ),
+          data: hapus ? undefined : { ...form, nip: petugas.value.kode, kd_ruangan: ruangan.value.kode || '' },
           asli: hapus ? hapusTarget.value?.data : editing.value?.data,
         }),
       })
@@ -169,7 +156,7 @@ export function useDataHais(props: PropsHais) {
       notifikasi.sukses(hasil.pesan)
       await muat()
     } catch (e) {
-      if (konteks === generasi) errorSimpan.value = e instanceof Error ? e.message : 'Hais gagal disimpan.'
+      if (konteks === generasi) errorSimpan.value = e instanceof Error ? e.message : 'Edukasi gagal disimpan.'
     } finally {
       if (konteks === generasi) saving.value = false
     }
@@ -179,34 +166,26 @@ export function useDataHais(props: PropsHais) {
     generasi++
     saving.value = false
     records.value = []
-    kamar.value = ''
+    petugasLogin.value = {}
+    petugas.value = {}
+    ruangan.value = {}
+    form.metode = 'Audio'
+    bolehPilihPetugas.value = false
     detail.value = null
     hapusTarget.value = null
     keyword.value = ''
-    cakupan.value = 'kunjungan'
     mulai.value = ''
     selesai.value = ''
     formVisible.value = true
-    form.DEKU = 'TIDAK'
     reset()
     void muat()
   }, { immediate: true })
-  watch([cakupan, mulai, selesai], () => {
-    // Jangan tampilkan/cetak hasil periode atau cakupan sebelumnya.
-    if (cakupan.value === 'semua' && (!mulai.value || !selesai.value)) {
-      const hari = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
-      mulai.value = hari.slice(0, 8) + '01'
-      selesai.value = hari
-    }
-    records.value = []
-    void muat()
-  })
   onBeforeUnmount(() => { generasi++ })
 
   return {
     loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing, detail,
-    hapusTarget, kamar, form, terkunci,
-    mulai, selesai, cakupan, errorFilter, cetak,
-    waktuSekarang, reset, muat, edit, mutasi,
+    hapusTarget, petugas, ruangan, petugasLogin, bolehPilihPetugas, form, terkunci,
+    mulai, selesai, errorFilter, cetak,
+    waktuSekarang, reset, muat, cariReferensi, edit, mutasi,
   }
 }

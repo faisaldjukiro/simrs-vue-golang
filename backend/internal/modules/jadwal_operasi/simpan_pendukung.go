@@ -15,11 +15,12 @@ import (
 )
 
 type InputPendukung struct {
-	Jenis   string            `json:"jenis"`
-	NoRawat string            `json:"no_rawat"`
-	Jadwal  Input             `json:"jadwal"`
-	Data    map[string]string `json:"data"`
-	Asli    map[string]string `json:"asli"`
+	SimpanTemplate bool              `json:"simpan_template"`
+	Jenis          string            `json:"jenis"`
+	NoRawat        string            `json:"no_rawat"`
+	Jadwal         Input             `json:"jadwal"`
+	Data           map[string]string `json:"data"`
+	Asli           map[string]string `json:"asli"`
 }
 
 var ErrAksesPendukung = errors.New("hanya tenaga medis/petugas yang tercatat atau administrator yang boleh mengubah catatan ini")
@@ -140,6 +141,9 @@ func (r *Repositori) SimpanPendukung(ctx context.Context, in InputPendukung, met
 		return ErrValidasi
 	}
 	if metode != "POST" && metode != "PUT" && metode != "DELETE" {
+		return ErrValidasi
+	}
+	if in.SimpanTemplate && (in.Jenis != "laporan_operasi" || metode == "DELETE") {
 		return ErrValidasi
 	}
 	if metode != "DELETE" {
@@ -280,6 +284,11 @@ func (r *Repositori) SimpanPendukung(ctx context.Context, in InputPendukung, met
 	}
 	if err != nil {
 		return err
+	}
+	if in.SimpanTemplate {
+		if err = simpanTemplateLaporan(ctx, tx, in, username); err != nil {
+			return err
+		}
 	}
 	return tx.Commit()
 }

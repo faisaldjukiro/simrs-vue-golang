@@ -43,7 +43,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
       </header>
       <p class="jadwal-info">
         Jadwal baru langsung disimpan ke SIMRS.
-        Edit dan hapus langsung berlaku pada sumber data baris yang dipilih.
+        Edit dan hapus berlaku pada data SIMRS. Arsip lokal hanya dapat dibaca.
       </p>
       <p v-if="pesanKunci" class="jadwal-info" role="status">{{ pesanKunci }}</p>
       <form
@@ -53,7 +53,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
         @submit.prevent="simpan"
       >
         <p v-if="editing" class="jadwal-edit" role="status">
-          Mengedit jadwal {{ editing.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}: {{ editing.nama_paket }} — {{ editing.tanggal }}.
+          Mengedit jadwal {{ editing.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}: {{ editing.nama_paket }} — {{ editing.tanggal }}.
         </p>
         <div class="jadwal-fields">
           <InputPencarian
@@ -111,19 +111,23 @@ watch(records, rows => emit('jadwal-dimuat', rows))
           <FormInput
             v-model="form.dokteranastesi"
             label="Dokter Anestesi"
-            :maxlength="255"
-            :disabled="terkunci"
+            :maxlength="50"
+            :disabled="terkunci || !!editing"
           />
           <FormInput
             v-model="form.perawat"
             label="Perawat"
-            :maxlength="255"
-            :disabled="terkunci"
+            :maxlength="50"
+            :disabled="terkunci || !!editing"
           />
         </div>
         <p class="jadwal-help">
           Pilihan paket mengikuti kelas dan penjamin sesuai pengaturan tarif SIMRS.
-          Jam 00:00:00–00:00:00 berarti waktu belum ditentukan dan belum diperiksa bentroknya.
+          Pemeriksaan bentrok mengikuti jam mulai jadwal pasien lain di ruang dan tanggal yang sama.
+          Jam mulai 00:00:00 tidak diperiksa bentroknya.
+        </p>
+        <p v-if="editing" class="jadwal-help">
+          Sesuai proses SIMRS lama, edit jadwal tidak mengubah dokter anestesi dan perawat.
         </p>
         <p v-if="errorSimpan" class="patient-error" role="alert">{{ errorSimpan }}</p>
         <footer class="jadwal-actions">
@@ -220,7 +224,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
             </template>
           </Column>
           <Column header="Sumber">
-            <template #body="{ data: r }">{{ r.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</template>
+            <template #body="{ data: r }">{{ r.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}</template>
           </Column>
           <Column header="Aksi" style="min-width: 170px">
             <template #body="{ data: r }">
@@ -248,7 +252,7 @@ watch(records, rows => emit('jadwal-dimuat', rows))
       @update:visible="value => { if (!value && !saving) hapusTarget = null }"
     >
       <p>{{ hapusTarget?.nama_paket }} — {{ hapusTarget?.tanggal }}</p>
-      <p>Jadwal ini akan dihapus dari {{ hapusTarget?.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}.</p>
+      <p>Jadwal ini akan dihapus dari {{ hapusTarget?.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}.</p>
       <p v-if="hapusTarget?.sumber === 'Khanza'">Penghapusan langsung berlaku di SIMRS dan tidak dapat dipulihkan melalui halaman ini.</p>
       <template #footer>
         <button class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>

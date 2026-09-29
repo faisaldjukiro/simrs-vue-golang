@@ -12,6 +12,7 @@ const {
   loading, error, q, hasil, detail, baris, kolomUtama, label, muat,
   bidang, form, pilihan, editing, hapusTarget, saving, errorSimpan, formVisible,
   terkunci, nilaiSkor, reset, edit, cari, mutasi, cetak,
+  templateLaporan, simpanTemplate, cariTemplate, terapkanTemplate,
 } = useRiwayatPendukung(props)
 </script>
 
@@ -39,6 +40,17 @@ const {
           Form serah-terima klinis. Pencatatan ini tidak memindahkan bed atau mengubah status kamar pasien.
         </p>
         <div class="operasi-input-grid">
+          <template v-if="jenis === 'laporan_operasi'">
+            <InputPencarian
+              v-model="templateLaporan"
+              label="Template Laporan Operasi"
+              :search="cariTemplate"
+              :disabled="terkunci"
+            />
+            <button type="button" class="clinical-button secondary" :disabled="terkunci || !templateLaporan.kode" @click="terapkanTemplate">
+              Gunakan Template
+            </button>
+          </template>
           <template v-for="b in bidang" :key="b.kode">
             <InputPencarian
               v-if="b.jenis === 'dokter' || b.jenis === 'petugas'"
@@ -72,6 +84,10 @@ const {
           </template>
         </div>
         <p v-if="errorSimpan" class="patient-error" role="alert">{{ errorSimpan }}</p>
+        <label v-if="jenis === 'laporan_operasi'">
+          <input v-model="simpanTemplate" type="checkbox" :disabled="terkunci" />
+          Simpan juga sebagai template. Pastikan teks template tidak memuat identitas pasien.
+        </label>
         <footer class="operasi-form-actions">
           <button type="button" class="clinical-button secondary" :disabled="saving" @click="reset">
             {{ editing ? 'Batal Edit' : 'Reset' }}

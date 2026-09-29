@@ -3,6 +3,7 @@ package jadwal_operasi
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"sort"
@@ -10,6 +11,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"simrs-backend/internal/shared/arsiplokal"
 	"simrs-backend/internal/shared/khanzamutasi"
 
 	"github.com/go-sql-driver/mysql"
@@ -62,7 +64,7 @@ func Validasi(in *Input) error {
 		nilai *string
 		batas int
 	}{
-		{&in.NoRawat, 17}, {&in.KodePaket, 30}, {&in.KdDokter, 20}, {&in.KdRuangOK, 20},
+		{&in.NoRawat, 17}, {&in.KodePaket, 15}, {&in.KdDokter, 20}, {&in.KdRuangOK, 3},
 	} {
 		*v.nilai = strings.TrimSpace(*v.nilai)
 		if *v.nilai == "" || utf8.RuneCountInString(*v.nilai) > v.batas {
@@ -77,9 +79,6 @@ func Validasi(in *Input) error {
 			return fmt.Errorf("%w: jam tidak valid", ErrValidasi)
 		}
 	}
-	if !(in.JamMulai == "00:00:00" && in.JamSelesai == "00:00:00") && in.JamSelesai <= in.JamMulai {
-		return fmt.Errorf("%w: jam selesai harus setelah mulai pada tanggal yang sama", ErrValidasi)
-	}
 	switch in.Status {
 	case "Permintaan", "Menunggu", "Proses Operasi", "Selesai":
 	default:
@@ -87,8 +86,8 @@ func Validasi(in *Input) error {
 	}
 	in.DokterAnestesi = strings.TrimSpace(in.DokterAnestesi)
 	in.Perawat = strings.TrimSpace(in.Perawat)
-	if utf8.RuneCountInString(in.DokterAnestesi) > 255 || utf8.RuneCountInString(in.Perawat) > 255 {
-		return fmt.Errorf("%w: nama anestesi/perawat maksimal 255 karakter", ErrValidasi)
+	if utf8.RuneCountInString(in.DokterAnestesi) > 50 || utf8.RuneCountInString(in.Perawat) > 50 {
+		return fmt.Errorf("%w: nama anestesi/perawat maksimal 50 karakter", ErrValidasi)
 	}
 	return nil
 }
@@ -215,7 +214,11 @@ func (r *Repositori) nama(ctx context.Context, in Input) (string, string, string
 	return paket, dokter, ruang, err
 }
 
+// Simpan memakai tabel SIMRS saja. Named lock menggantikan tabel mutex lokal.
 func (r *Repositori) Simpan(ctx context.Context, in Input, user uint64, admin bool) error {
+	if in.Sumber != "Khanza" && (in.ID != 0 || in.Sumber == "SIRAPI") {
+		return fmt.Errorf("%w: arsip lokal hanya baca; rekonsiliasi diperlukan", ErrValidasi)
+	}
 	if err := Validasi(&in); err != nil {
 		return err
 	}
@@ -226,66 +229,75 @@ func (r *Repositori) Simpan(ctx context.Context, in Input, user uint64, admin bo
 	if pesan != "" {
 		return ErrTerkunci
 	}
-	paket, dokter, ruang, err := r.nama(ctx, in)
+	if _, _, _, err = r.nama(ctx, in); err != nil {
+		return err
+	}
+	conn, err := r.simrs.Conn(ctx)
 	if err != nil {
 		return err
 	}
-	tx, err := r.lokal.BeginTx(ctx, nil)
+	defer conn.Close()
+	const lockName = "CONCAT('sirapi.booking.',LEFT(SHA2(DATABASE(),256),32))"
+	var locked sql.NullInt64
+	if err = conn.QueryRowContext(ctx, "SELECT GET_LOCK("+lockName+",10)").Scan(&locked); err != nil {
+		return err
+	}
+	if !locked.Valid || locked.Int64 != 1 {
+		return ErrKonflik
+	}
+	defer func() {
+		release, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		var freed sql.NullInt64
+		if e := conn.QueryRowContext(release, "SELECT RELEASE_LOCK("+lockName+")").Scan(&freed); e != nil || !freed.Valid || freed.Int64 != 1 {
+			_ = conn.Raw(func(any) error { return driver.ErrBadConn })
+		}
+	}()
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	// Serialisasi penulisan SIRAPI agar dua permintaan lokal tidak lolos cek bentrok bersamaan.
-	var mutex int
-	if err = tx.QueryRowContext(ctx, "SELECT id FROM sirapi_jadwal_operasi_lock WHERE id=1 FOR UPDATE").Scan(&mutex); err != nil {
-		return err
-	}
-	var jumlah int
-	if in.ID != 0 {
-		err = tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM sirapi_jadwal_operasi WHERE id=? AND no_rawat=? AND versi=? AND deleted_at IS NULL AND (dibuat_oleh=? OR ?)", in.ID, in.NoRawat, in.Versi, user, admin).Scan(&jumlah)
-		if err != nil {
-			return err
-		}
-		if jumlah != 1 {
-			return ErrKonflik
-		}
-	}
-	// Jadwal paket yang sama tidak boleh dicatat dua kali, termasuk jam belum ditentukan.
-	err = tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM sirapi_jadwal_operasi WHERE no_rawat=? AND kode_paket=? AND tanggal=? AND jam_mulai=? AND id<>? AND deleted_at IS NULL", in.NoRawat, in.KodePaket, in.Tanggal, in.JamMulai, in.ID).Scan(&jumlah)
-	if err != nil {
-		return err
-	}
-	if jumlah > 0 {
-		return ErrBentrok
-	}
 	pengecualian := ""
-	cekArgs := []any{in.NoRawat, in.KodePaket, in.Tanggal, in.JamMulai}
+	argsAsli := []any{}
+	whereAsli := ""
 	if in.Sumber == "Khanza" {
 		if in.Asli == nil || in.Asli.NoRawat != in.NoRawat {
 			return ErrValidasi
 		}
 		kolom, lama := snapshot(*in.Asli)
-		where, args := khanzamutasi.Kondisi(kolom, lama)
-		pengecualian = " AND NOT (" + where + ")"
-		cekArgs = append(cekArgs, args...)
+		whereAsli, argsAsli = khanzamutasi.Kondisi(kolom, lama)
+		rows, e := tx.QueryContext(ctx, "SELECT 1 FROM booking_operasi WHERE "+whereAsli+" LIMIT 2 FOR UPDATE", argsAsli...)
+		if e != nil {
+			return e
+		}
+		count := 0
+		for rows.Next() {
+			count++
+		}
+		e = rows.Err()
+		rows.Close()
+		if e != nil {
+			return e
+		}
+		if count != 1 {
+			return ErrKonflik
+		}
+		pengecualian = " AND NOT (" + whereAsli + ")"
 	}
-	err = r.simrs.QueryRowContext(ctx, "SELECT COUNT(*) FROM booking_operasi WHERE no_rawat=? AND kode_paket=? AND tanggal=? AND jam_mulai=?"+pengecualian, cekArgs...).Scan(&jumlah)
+	var jumlah int
+	args := append([]any{in.NoRawat, in.KodePaket, in.Tanggal, in.JamMulai}, argsAsli...)
+	err = tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM booking_operasi WHERE no_rawat=? AND kode_paket=? AND tanggal=? AND jam_mulai=?"+pengecualian, args...).Scan(&jumlah)
 	if err != nil {
 		return err
 	}
 	if jumlah > 0 {
 		return ErrBentrok
 	}
-	if in.JamMulai != in.JamSelesai {
-		// Interval setengah terbuka: jadwal berurutan boleh, interval saling menutupi ditolak.
-		err = tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM sirapi_jadwal_operasi WHERE tanggal=? AND kd_ruang_ok=? AND no_rawat<>? AND deleted_at IS NULL AND jam_mulai<jam_selesai AND jam_mulai<? AND jam_selesai>?", in.Tanggal, in.KdRuangOK, in.NoRawat, in.JamSelesai, in.JamMulai).Scan(&jumlah)
-		if err != nil {
-			return err
-		}
-		if jumlah > 0 {
-			return ErrBentrok
-		}
-		err = r.simrs.QueryRowContext(ctx, "SELECT COUNT(*) FROM booking_operasi WHERE tanggal=? AND kd_ruang_ok=? AND no_rawat<>? AND jam_mulai<jam_selesai AND jam_mulai<? AND jam_selesai>?", in.Tanggal, in.KdRuangOK, in.NoRawat, in.JamSelesai, in.JamMulai).Scan(&jumlah)
+	// Sesuai BtnSimpan/BtnEdit Java: jam mulai pasien lain dalam rentang inklusif.
+	if in.JamMulai != "00:00:00" {
+		err = tx.QueryRowContext(ctx, queryBentrokJava,
+			in.Tanggal, in.KdRuangOK, in.NoRawat, in.JamMulai, in.JamSelesai).Scan(&jumlah)
 		if err != nil {
 			return err
 		}
@@ -293,34 +305,21 @@ func (r *Repositori) Simpan(ctx context.Context, in Input, user uint64, admin bo
 			return ErrBentrok
 		}
 	}
-	args := []any{in.KodePaket, in.Tanggal, in.JamMulai, in.JamSelesai, in.Status, in.KdDokter, in.KdRuangOK, in.DokterAnestesi, in.Perawat, paket, dokter, ruang}
+	kolom, baru := snapshot(in)
 	if in.Sumber == "Khanza" {
-		return r.mutasiKhanza(ctx, in, false)
-	}
-	if in.ID == 0 {
-		// Izin user: jadwal BARU langsung ke Khanza. Tidak ada fallback/salinan lokal.
-		// Transaksi lokal hanya memegang mutex; rollback defer melepaskan lock.
-		_, err = r.simrs.ExecContext(ctx, `INSERT INTO booking_operasi
-			(no_rawat,kode_paket,tanggal,jam_mulai,jam_selesai,status,kd_dokter,kd_ruang_ok,dokteranastesi,perawat)
-			VALUES (?,?,?,?,?,?,?,?,?,?)`,
-			in.NoRawat, in.KodePaket, in.Tanggal, in.JamMulai, in.JamSelesai,
-			in.Status, in.KdDokter, in.KdRuangOK, in.DokterAnestesi, in.Perawat)
-		var mysqlErr *mysql.MySQLError
-		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
-			return ErrBentrok
+		// Java hanya mengubah delapan kolom utama, bukan anestesi/perawat.
+		kolom, baru = kolom[:8], baru[:8]
+		set := make([]string, len(kolom))
+		for i, k := range kolom {
+			set[i] = k + "=?"
 		}
-		return err
+		_, err = tx.ExecContext(ctx, "UPDATE booking_operasi SET "+strings.Join(set, ",")+" WHERE "+whereAsli+" LIMIT 1", append(baru, argsAsli...)...)
 	} else {
-		args = append(args, user, in.ID, in.NoRawat, in.Versi, user, admin)
-		var hasil sql.Result
-		hasil, err = tx.ExecContext(ctx, "UPDATE sirapi_jadwal_operasi SET kode_paket=?,tanggal=?,jam_mulai=?,jam_selesai=?,status=?,kd_dokter=?,kd_ruang_ok=?,dokteranastesi=?,perawat=?,nama_paket=?,nama_dokter=?,nama_ruang=?,diubah_oleh=?,versi=versi+1 WHERE id=? AND no_rawat=? AND versi=? AND deleted_at IS NULL AND (dibuat_oleh=? OR ?)", args...)
-		if err == nil {
-			var jumlah int64
-			jumlah, err = hasil.RowsAffected()
-			if err == nil && jumlah == 0 {
-				return ErrKonflik
-			}
-		}
+		_, err = tx.ExecContext(ctx, "INSERT INTO booking_operasi ("+strings.Join(kolom, ",")+") VALUES (?,?,?,?,?,?,?,?,?,?)", baru...)
+	}
+	var e *mysql.MySQLError
+	if errors.As(err, &e) && e.Number == 1062 {
+		return ErrBentrok
 	}
 	if err != nil {
 		return err
@@ -329,18 +328,8 @@ func (r *Repositori) Simpan(ctx context.Context, in Input, user uint64, admin bo
 }
 
 func (r *Repositori) Hapus(ctx context.Context, in Input, user uint64, admin bool) error {
-	if in.Sumber == "Khanza" {
-		pesan, err := r.kunci(ctx, in.NoRawat)
-		if err != nil {
-			return err
-		}
-		if pesan != "" {
-			return ErrTerkunci
-		}
-		return r.mutasiKhanza(ctx, in, true)
-	}
-	if in.ID == 0 || in.NoRawat == "" || in.Versi < 1 {
-		return ErrValidasi
+	if in.Sumber != "Khanza" {
+		return fmt.Errorf("%w: arsip lokal hanya baca; rekonsiliasi diperlukan", ErrValidasi)
 	}
 	pesan, err := r.kunci(ctx, in.NoRawat)
 	if err != nil {
@@ -349,15 +338,7 @@ func (r *Repositori) Hapus(ctx context.Context, in Input, user uint64, admin boo
 	if pesan != "" {
 		return ErrTerkunci
 	}
-	hasil, err := r.lokal.ExecContext(ctx, "UPDATE sirapi_jadwal_operasi SET deleted_at=NOW(),diubah_oleh=?,versi=versi+1 WHERE id=? AND no_rawat=? AND versi=? AND deleted_at IS NULL AND (dibuat_oleh=? OR ?)", user, in.ID, in.NoRawat, in.Versi, user, admin)
-	if err != nil {
-		return err
-	}
-	n, err := hasil.RowsAffected()
-	if err == nil && n == 0 {
-		return ErrKonflik
-	}
-	return err
+	return r.mutasiKhanza(ctx, in, true)
 }
 
 func (r *Repositori) Daftar(ctx context.Context, no string, user uint64, admin bool) (Hasil, error) {
@@ -371,33 +352,38 @@ func (r *Repositori) Daftar(ctx context.Context, no string, user uint64, admin b
 		return hasil, err
 	}
 	rows, err := r.lokal.QueryContext(ctx, "SELECT id,versi,no_rawat,kode_paket,DATE_FORMAT(tanggal,'%Y-%m-%d'),CAST(jam_mulai AS CHAR),CAST(jam_selesai AS CHAR),status,kd_dokter,kd_ruang_ok,dokteranastesi,perawat,nama_paket,nama_dokter,nama_ruang,dibuat_oleh FROM sirapi_jadwal_operasi WHERE no_rawat=? AND deleted_at IS NULL", no)
-	if err != nil {
+	if err != nil && !arsiplokal.TabelTidakAda(err) {
 		return hasil, err
 	}
-	for rows.Next() {
-		var v Jadwal
-		var pembuat uint64
-		if err = rows.Scan(&v.ID, &v.Versi, &v.NoRawat, &v.KodePaket, &v.Tanggal, &v.JamMulai, &v.JamSelesai, &v.Status, &v.KdDokter, &v.KdRuangOK, &v.DokterAnestesi, &v.Perawat, &v.NamaPaket, &v.NamaDokter, &v.NamaRuang, &pembuat); err != nil {
-			rows.Close()
+	if err == nil {
+		for rows.Next() {
+			var v Jadwal
+			var pembuat uint64
+			if err = rows.Scan(&v.ID, &v.Versi, &v.NoRawat, &v.KodePaket, &v.Tanggal, &v.JamMulai, &v.JamSelesai, &v.Status, &v.KdDokter, &v.KdRuangOK, &v.DokterAnestesi, &v.Perawat, &v.NamaPaket, &v.NamaDokter, &v.NamaRuang, &pembuat); err != nil {
+				rows.Close()
+				return hasil, err
+			}
+			v.Sumber = "SIRAPI"
+			v.BisaUbah = false
+			hasil.Jadwal = append(hasil.Jadwal, v)
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
 			return hasil, err
 		}
-		v.Sumber = "SIRAPI"
-		v.BisaUbah = hasil.PesanKunci == "" && (admin || pembuat == user)
-		hasil.Jadwal = append(hasil.Jadwal, v)
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		return hasil, err
 	}
 	lama, err := r.riwayat(ctx, no)
 	if err != nil {
-		hasil.Peringatan = "Riwayat SIMRS belum dapat dibaca. Hanya jadwal SIRAPI yang ditampilkan."
+		return hasil, err
 	} else {
 		for i := range lama {
 			lama[i].BisaUbah = hasil.PesanKunci == ""
 		}
 		hasil.Jadwal = append(hasil.Jadwal, lama...)
+	}
+	if len(hasil.Jadwal) > len(lama) {
+		hasil.Peringatan = "Ada arsip lokal yang belum direkonsiliasi. Arsip hanya baca; penyimpanan baru langsung ke SIMRS."
 	}
 	sort.SliceStable(hasil.Jadwal, func(i, j int) bool {
 		return hasil.Jadwal[i].Tanggal+hasil.Jadwal[i].JamMulai > hasil.Jadwal[j].Tanggal+hasil.Jadwal[j].JamMulai

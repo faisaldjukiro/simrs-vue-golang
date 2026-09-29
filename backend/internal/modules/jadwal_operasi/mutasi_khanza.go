@@ -7,6 +7,8 @@ import (
 	"simrs-backend/internal/shared/khanzamutasi"
 )
 
+const queryBentrokJava = "SELECT COUNT(*) FROM booking_operasi WHERE tanggal=? AND kd_ruang_ok=? AND no_rawat<>? AND jam_mulai BETWEEN ? AND ?"
+
 func snapshot(in Input) ([]string, []any) {
 	return []string{"no_rawat", "kode_paket", "tanggal", "jam_mulai", "jam_selesai", "status", "kd_dokter", "kd_ruang_ok", "dokteranastesi", "perawat"},
 		[]any{in.NoRawat, in.KodePaket, in.Tanggal, in.JamMulai, in.JamSelesai, in.Status, in.KdDokter, in.KdRuangOK, in.DokterAnestesi, in.Perawat}

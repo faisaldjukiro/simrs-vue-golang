@@ -12,17 +12,19 @@ import (
 	"unicode/utf8"
 
 	"github.com/go-sql-driver/mysql"
+	"simrs-backend/internal/shared/arsiplokal"
 	"simrs-backend/internal/shared/khanzamutasi"
 )
 
 var ErrValidasi = errors.New("data HAIs tidak valid")
 var ErrKonflik = errors.New("catatan sudah ada, berubah, atau hilang; muat ulang riwayat")
 
-const tabel = "data_hais"
+const tabel = "data_HAIs"
 
 type Input struct {
 	NoRawat string            `json:"no_rawat"`
-	Data    map[string]string `json:"data"`
+	Sumber  string            `json:"sumber"`
+	Data    DataForm          `json:"data"`
 	Asli    map[string]string `json:"asli"`
 }
 
@@ -56,8 +58,11 @@ func Validasi(in *Input) error {
 	for _, k := range Kolom()[1:13] {
 		v := strings.TrimSpace(in.Data[k])
 		n, err := strconv.Atoi(v)
-		if err != nil || n < 0 || n > 99 {
-			return fmt.Errorf("%w: %s wajib berupa bilangan bulat 0 sampai 99", ErrValidasi, k)
+		if err != nil || n < 0 {
+			return fmt.Errorf("%w: %s wajib berupa bilangan bulat tidak negatif", ErrValidasi, k)
+		}
+		if k != "HAP" && k != "Tinea" && k != "Scabies" && n > 99 {
+			return fmt.Errorf("%w: %s maksimal 99", ErrValidasi, k)
 		}
 		in.Data[k] = strconv.Itoa(n)
 	}
@@ -74,10 +79,18 @@ func Validasi(in *Input) error {
 	return nil
 }
 
-func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool) (Hasil, error) {
+func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool, semua bool, mulai, selesai string) (Hasil, error) {
 	h := Hasil{Catatan: []Catatan{}}
 	if strings.TrimSpace(no) == "" || len(no) > 17 {
 		return h, ErrValidasi
+	}
+	if semua {
+		if _, err := time.Parse("2006-01-02", mulai); err != nil {
+			return h, fmt.Errorf("%w: tanggal mulai wajib diisi", ErrValidasi)
+		}
+		if _, err := time.Parse("2006-01-02", selesai); err != nil || mulai > selesai {
+			return h, fmt.Errorf("%w: periode tanggal tidak valid", ErrValidasi)
+		}
 	}
 
 	kamar, err := r.kamar(ctx, no)
@@ -90,15 +103,34 @@ func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool
 		tabel, nama string
 		ubah        bool
 	}{
-		{r.db, tabel, "SIRAPI", true},
-		{r.simrs, "data_HAIs", "Riwayat lama", false},
+		{r.db, "data_hais", "Arsip lokal", false},
+		{r.simrs, tabel, "SIMRS", true},
 	} {
+		if semua && sumber.db == r.db {
+			continue
+		}
 		selects := []string{"DATE_FORMAT(c.tanggal,'%Y-%m-%d')"}
 		for _, k := range Kolom()[1:] {
 			selects = append(selects, "COALESCE(c."+k+",'')")
 		}
-		rows, err := sumber.db.QueryContext(ctx, "SELECT "+strings.Join(selects, ",")+" FROM "+sumber.tabel+" c WHERE c.no_rawat=? ORDER BY c.tanggal DESC", no)
+		keys := append([]string{}, Kolom()...)
+		from := " FROM " + sumber.tabel + " c"
+		where := " WHERE c.no_rawat=?"
+		args := []any{no}
+		if sumber.db == r.simrs {
+			from += " INNER JOIN reg_periksa rp ON rp.no_rawat=c.no_rawat INNER JOIN pasien p ON p.no_rkm_medis=rp.no_rkm_medis INNER JOIN kamar k ON k.kd_kamar=c.kd_kamar INNER JOIN bangsal b ON b.kd_bangsal=k.kd_bangsal"
+			selects = append(selects, "c.no_rawat", "rp.no_rkm_medis", "p.nm_pasien", "CONCAT(c.kd_kamar,', ',b.nm_bangsal)")
+			keys = append(keys, "no_rawat", "no_rkm_medis", "nm_pasien", "kamar_bangsal")
+			if semua {
+				where = " WHERE c.tanggal BETWEEN ? AND ?"
+				args = []any{mulai, selesai}
+			}
+		}
+		rows, err := sumber.db.QueryContext(ctx, "SELECT "+strings.Join(selects, ",")+from+where+" ORDER BY c.tanggal,c.no_rawat", args...)
 		if err != nil {
+			if sumber.db == r.db && arsiplokal.TabelTidakAda(err) {
+				continue
+			}
 			return h, err
 		}
 		for rows.Next() {
@@ -112,9 +144,13 @@ func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool
 				return h, err
 			}
 			c := Catatan{Data: map[string]string{}, Sumber: sumber.nama, BisaUbah: sumber.ubah}
-			for i, k := range Kolom() {
+			for i, k := range keys {
 				c.Data[k] = nilai[i]
 			}
+			if c.Data["no_rawat"] == "" {
+				c.Data["no_rawat"] = no
+			}
+			c.BisaUbah = c.BisaUbah && c.Data["no_rawat"] == no
 			h.Catatan = append(h.Catatan, c)
 		}
 		err = rows.Err()
@@ -123,7 +159,7 @@ func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool
 			return h, err
 		}
 	}
-	sort.SliceStable(h.Catatan, func(i, j int) bool { return h.Catatan[i].Data["tanggal"] > h.Catatan[j].Data["tanggal"] })
+	sort.SliceStable(h.Catatan, func(i, j int) bool { return h.Catatan[i].Data["tanggal"] < h.Catatan[j].Data["tanggal"] })
 	return h, nil
 }
 
@@ -145,6 +181,9 @@ func (r *Repositori) Mutasi(ctx context.Context, in Input, metode, username stri
 	}
 	if metode != "POST" && metode != "PUT" && metode != "DELETE" {
 		return ErrValidasi
+	}
+	if metode != "POST" && in.Sumber != "SIMRS" {
+		return fmt.Errorf("%w: arsip lokal hanya baca; rekonsiliasi diperlukan", ErrValidasi)
 	}
 	if metode != "DELETE" {
 		if err = Validasi(&in); err != nil {
@@ -192,8 +231,8 @@ func (r *Repositori) Mutasi(ctx context.Context, in Input, metode, username stri
 		}
 	}()
 	if metode == "POST" {
-		_, err = r.db.ExecContext(ctx, "INSERT INTO "+tabel+" ("+strings.Join(kolom, ",")+") VALUES ("+strings.TrimSuffix(strings.Repeat("?,", len(kolom)), ",")+")", baru...)
+		_, err = r.simrs.ExecContext(ctx, "INSERT INTO "+tabel+" ("+strings.Join(kolom, ",")+") VALUES ("+strings.TrimSuffix(strings.Repeat("?,", len(kolom)), ",")+")", baru...)
 		return err
 	}
-	return khanzamutasi.Jalankan(ctx, r.db, tabel, kolom, lama, baru, metode == "DELETE")
+	return khanzamutasi.Jalankan(ctx, r.simrs, tabel, kolom, lama, baru, metode == "DELETE")
 }

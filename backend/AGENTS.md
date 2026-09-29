@@ -12,14 +12,16 @@ Jangan ubah `simrs-lama` kecuali user meminta secara eksplisit. Pakai folder itu
 
 Ada dua koneksi database:
 
-- `DB_*` adalah database aplikasi lokal backend baru.
-- `SIMRS_DB_*` adalah database SIMRS lama.
+- `DB_*` khusus akun, hak akses, menu, konfigurasi, dan audit aplikasi; bukan transaksi pasien.
+- `SIMRS_DB_*` adalah database transaksi SIMRS, menggunakan tabel yang sudah tersedia.
 
 Migration dan seeder hanya boleh memakai `DB_*`.
 
-Jangan pernah menjalankan migration, fresh, drop, alter, insert, update, atau delete ke database `SIMRS_DB_*`.
+Jangan menjalankan migration, seeder, fresh, CREATE, DROP, atau ALTER ke database `SIMRS_DB_*`.
 
-Database SIMRS lama hanya boleh dibaca untuk query tampilan dan migrasi bertahap yang disetujui user.
+CRUD transaksi (SELECT, INSERT, UPDATE, DELETE) melalui fitur aplikasi wajib memakai tabel yang sudah ada pada `SIMRS_DB_*`. Larangan migrasi tidak melarang CRUD. Jangan membuat tabel transaksi tandingan atau fallback simpan ke `DB_*`. Jika SIMRS gagal, laporkan gagal; jangan mengaku berhasil menyimpan lokal.
+
+Arsip lokal dari versi sebelumnya harus dipertahankan, hanya baca, dan direkonsiliasi secara terpisah setelah pemeriksaan konflik. Jangan menjalankan mutasi data pasien nyata untuk pengujian.
 
 Default yang diinginkan user:
 

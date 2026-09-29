@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"simrs-backend/internal/shared/arsiplokal"
 	"strings"
 	"time"
 )
@@ -134,7 +135,7 @@ func (r *Repositori) Daftar(ctx context.Context, jenis, noRawat string) (Data, e
 	lokal, err := r.bacaDaftar(ctx, r.aplikasiDB, `SELECT id, kd_dokter, nama_dokter, kd_poli, nama_poli,
 		COALESCE(DATE_FORMAT(tanggal,'%Y-%m-%d'),''), COALESCE(TIME_FORMAT(jam,'%H:%i:%s'),'')
 		FROM sirapi_rujukan_internal WHERE no_rawat = ? AND jenis_rawat = ? AND dikirim_pada IS NULL ORDER BY id DESC`, "SIRAPI", noRawat, noRawat, jenis)
-	if err != nil {
+	if err != nil && !arsiplokal.TabelTidakAda(err) {
 		return Data{}, err
 	}
 	for i := range lokal {

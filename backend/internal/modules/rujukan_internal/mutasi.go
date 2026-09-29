@@ -161,19 +161,16 @@ func (r *Repositori) Mutasi(ctx context.Context, jenis string, asal Rujukan, bar
 		}
 		baru = &valid
 	}
-	db := r.simrsDB
-	if asal.Sumber == "SIRAPI" {
-		db = r.aplikasiDB
+
+	if asal.Sumber != "Khanza" {
+		return fmt.Errorf("%w: arsip lokal hanya baca; gunakan rekonsiliasi per baris", ErrInput)
 	}
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := r.simrsDB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 	var referensi pembaca = tx
-	if asal.Sumber == "SIRAPI" {
-		referensi = r.simrsDB
-	}
 	if err = periksaKunjungan(ctx, referensi, asal.NoRawat, jenis, asal.Sumber == "Khanza"); err != nil {
 		return err
 	}
@@ -187,21 +184,13 @@ func (r *Repositori) Mutasi(ctx context.Context, jenis string, asal Rujukan, bar
 	if aktual != asal.Input {
 		return ErrBerubah
 	}
-	var namaDokter, namaPoli string
 	if baru != nil {
-		namaDokter, namaPoli, err = periksaReferensi(ctx, referensi, *baru)
+		_, _, err = periksaReferensi(ctx, referensi, *baru)
 		if err != nil {
 			return err
 		}
 	}
-	if asal.Sumber == "SIRAPI" {
-		if baru == nil {
-			_, err = tx.ExecContext(ctx, `DELETE FROM sirapi_rujukan_internal WHERE id = ? AND jenis_rawat = ? AND no_rawat = ? AND dikirim_pada IS NULL`, asal.ID, jenis, asal.NoRawat)
-		} else {
-			_, err = tx.ExecContext(ctx, `UPDATE sirapi_rujukan_internal SET kd_dokter = ?, nama_dokter = ?, kd_poli = ?, nama_poli = ?, kunci_tujuan = ?, tanggal = NULLIF(?,''), jam = NULLIF(?,'')
-				WHERE id = ? AND jenis_rawat = ? AND no_rawat = ? AND dikirim_pada IS NULL`, baru.KodeDokter, namaDokter, baru.KodePoli, namaPoli, kunciTujuan(jenis, *baru), baru.Tanggal, baru.Jam, asal.ID, jenis, asal.NoRawat)
-		}
-	} else {
+	{
 		tabel, kolom := targetKhanza(jenis)
 		where := " WHERE no_rawat = ? AND " + kolom + " = ?"
 		if baru == nil {

@@ -45,11 +45,8 @@ const {
       <form v-show="formVisible" class="clinical-form form-compact rujukan-form" @submit.prevent="simpan">
         <fieldset :disabled="terkunci">
           <p v-if="editing" class="rujukan-edit-status" role="status">
-            Mengedit rujukan {{ editing.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}: {{ editing.nama_poli }} — {{ editing.nama_dokter }}.
-            <span v-if="editing.sumber === 'SIRAPI'">
-              Perubahan tetap lokal sampai dikirim.
-            </span>
-            <span v-else>
+            Mengedit rujukan {{ editing.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}: {{ editing.nama_poli }} — {{ editing.nama_dokter }}.
+            <span>
               Perubahan disimpan langsung di SIMRS.
             </span>
           </p>
@@ -138,7 +135,7 @@ const {
         <Column header="Sumber" style="width:200px">
           <template #body="{ data }">
             <div class="clinical-table-main rujukan-source">
-              <strong>{{ data.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</strong>
+              <strong>{{ data.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}</strong>
               <span v-if="data.konflik_khanza" class="rujukan-conflict">
                 Kunci rujukan sudah ada di SIMRS, tetapi isinya berbeda. Periksa kedua baris sebelum melanjutkan.
               </span>
@@ -150,7 +147,7 @@ const {
         <Column header="Aksi" style="min-width:210px;width:210px">
           <template #body="{ data }">
             <div class="rujukan-actions">
-              <div class="clinical-table-actions">
+              <div v-if="data.sumber === 'Khanza'" class="clinical-table-actions">
                 <button type="button" title="Edit rujukan" :disabled="terkunci" @click="edit(data)">
                   <Pencil :size="14" /> Edit
                 </button>
@@ -159,6 +156,7 @@ const {
                   <Trash2 :size="14" /> Hapus
                 </button>
               </div>
+              <span v-if="data.sumber === 'SIRAPI'" class="clinical-owner-note">Arsip lokal · hanya baca</span>
               <button v-if="data.sumber === 'SIRAPI'" type="button" class="clinical-button primary rujukan-send"
                 :disabled="terkunci || data.konflik_khanza"
                 :title="data.konflik_khanza ? 'Data berbeda dengan SIMRS. Periksa dan sesuaikan terlebih dahulu.' : 'Kirim rujukan lokal ini ke SIMRS'"
@@ -181,10 +179,10 @@ const {
           <span>{{ konfirmasi.row.nama_dokter }}</span>
           <span>No. rawat: {{ konfirmasi.row.no_rawat }}</span>
           <span v-if="ranap">{{ konfirmasi.row.tanggal }} · {{ konfirmasi.row.jam }}</span>
-          <span>Sumber: {{ konfirmasi.row.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</span>
+          <span>Sumber: {{ konfirmasi.row.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}</span>
         </div>
         <p v-if="konfirmasi.aksi === 'hapus'" class="rujukan-confirm-help">
-          Hanya rujukan ini yang akan dihapus dari {{ konfirmasi.row.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}.
+          Hanya rujukan ini yang akan dihapus dari {{ konfirmasi.row.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}.
           <span v-if="konfirmasi.row.sumber === 'SIRAPI'">
             Data di SIMRS tidak dihapus.
           </span>

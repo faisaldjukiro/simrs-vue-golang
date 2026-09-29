@@ -26,6 +26,8 @@ export function useRiwayatPendukung(props: PropsRiwayatPendukung) {
   const saving = ref(false)
   const errorSimpan = ref('')
   const formVisible = ref(true)
+  const templateLaporan = ref<Record<string, string>>({})
+  const simpanTemplate = ref(false)
   const bidang = computed(() => hasil.value.form || [])
   const terkunci = computed(() => saving.value || loading.value || !!error.value || !!hasil.value.pesan_kunci)
   const nilaiSkor = computed(() => {
@@ -50,6 +52,8 @@ export function useRiwayatPendukung(props: PropsRiwayatPendukung) {
   const kolomUtama = computed(() => hasil.value.kolom.slice(0, 5))
 
   function reset() {
+    templateLaporan.value = {}
+    simpanTemplate.value = false
     editing.value = null
     errorSimpan.value = ''
     for (const k of Object.keys(form)) delete form[k]
@@ -95,6 +99,21 @@ export function useRiwayatPendukung(props: PropsRiwayatPendukung) {
     })
   }
 
+  function cariTemplate(q: string) {
+    return request<Record<string, string>[]>('/api/jadwal-operasi/template-laporan?' + new URLSearchParams({ q }), {
+      headers: { Authorization: 'Bearer ' + props.token },
+    })
+  }
+
+  function terapkanTemplate() {
+    if (terkunci.value || !templateLaporan.value.kode) return
+    if (['diagnosa_preop', 'diagnosa_postop', 'jaringan_dieksekusi', 'laporan_operasi'].some(k => form[k])
+      && !window.confirm('Ganti isian diagnosis, jaringan, dan laporan dengan template yang dipilih?')) return
+    for (const k of ['diagnosa_preop', 'diagnosa_postop', 'jaringan_dieksekusi', 'laporan_operasi']) {
+      form[k] = templateLaporan.value[k] || ''
+    }
+  }
+
   async function mutasi(hapus = false) {
     if (terkunci.value) return
     const asli = hapus ? hapusTarget.value : editing.value
@@ -108,6 +127,10 @@ export function useRiwayatPendukung(props: PropsRiwayatPendukung) {
         errorSimpan.value = b.label + ' wajib diisi.'
         return
       }
+      if (!hapus && b.batas && Array.from(data[b.kode] || '').length > b.batas) {
+        errorSimpan.value = b.label + ' maksimal ' + b.batas + ' karakter. Sesuaikan isi template sebelum menyimpan.'
+        return
+      }
     }
     const id = urutan
     saving.value = true
@@ -117,6 +140,7 @@ export function useRiwayatPendukung(props: PropsRiwayatPendukung) {
         headers: { Authorization: 'Bearer ' + props.token },
         body: JSON.stringify({
           jenis: props.jenis,
+          simpan_template: !hapus && props.jenis === 'laporan_operasi' && simpanTemplate.value,
           no_rawat: String(props.patient.no_rawat || ''),
           jadwal: props.jadwalOperasi,
           data,
@@ -200,6 +224,8 @@ export function useRiwayatPendukung(props: PropsRiwayatPendukung) {
     for (const k of Object.keys(form)) delete form[k]
     editing.value = null
     hapusTarget.value = null
+    templateLaporan.value = {}
+    simpanTemplate.value = false
     errorSimpan.value = ''
     void muat()
   }, { immediate: true })
@@ -208,5 +234,6 @@ export function useRiwayatPendukung(props: PropsRiwayatPendukung) {
     loading, error, q, hasil, detail, baris, kolomUtama, label, muat,
     bidang, form, pilihan, editing, hapusTarget, saving, errorSimpan, formVisible,
     terkunci, nilaiSkor, reset, edit, cari, mutasi, cetak,
+    templateLaporan, simpanTemplate, cariTemplate, terapkanTemplate,
   }
 }

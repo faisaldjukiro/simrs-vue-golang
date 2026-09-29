@@ -24,6 +24,7 @@ func NewHandler(repo *jadwal_operasi.Repositori) *Handler {
 func (h *Handler) Register(group *gin.RouterGroup) {
 	group.GET("", h.daftar)
 	group.GET("/referensi", h.referensi)
+	group.GET("/template-laporan", h.templateLaporan)
 	group.GET("/pendukung", h.pendukung)
 	group.POST("/pendukung", h.simpanPendukung)
 	group.PUT("/pendukung", h.simpanPendukung)
@@ -31,6 +32,18 @@ func (h *Handler) Register(group *gin.RouterGroup) {
 	group.POST("", h.simpan)
 	group.PUT("/:id", h.simpan)
 	group.DELETE("/:id", h.hapus)
+}
+
+func (h *Handler) templateLaporan(c *gin.Context) {
+	if _, _, ok := pengguna(c); !ok {
+		return
+	}
+	data, err := h.repo.TemplateLaporan(c.Request.Context(), c.Query("q"))
+	if err != nil {
+		tulisError(c, err)
+		return
+	}
+	httpresponse.Success(c, http.StatusOK, data)
 }
 
 func (h *Handler) simpanPendukung(c *gin.Context) {
@@ -49,6 +62,9 @@ func (h *Handler) simpanPendukung(c *gin.Context) {
 		return
 	}
 	pesan := "Catatan berhasil disimpan langsung ke SIMRS"
+	if input.SimpanTemplate {
+		pesan = "Laporan dan template berhasil disimpan ke SIMRS"
+	}
 	if c.Request.Method == http.MethodDelete {
 		pesan = "Catatan berhasil dihapus dari SIMRS"
 	}
@@ -99,7 +115,7 @@ func tulisError(c *gin.Context, err error) {
 	} else if errors.Is(err, jadwal_operasi.ErrKonflik) || errors.Is(err, jadwal_operasi.ErrBentrok) || errors.Is(err, jadwal_operasi.ErrTerkunci) {
 		httpresponse.Error(c, http.StatusConflict, "JADWAL_OPERASI_CONFLICT", err.Error())
 	} else {
-		httpresponse.Error(c, http.StatusInternalServerError, "JADWAL_OPERASI_ERROR", "Jadwal belum dapat diproses. Periksa koneksi/izin database SIMRS dan migration SIRAPI. Muat ulang riwayat sebelum mencoba simpan kembali.")
+		httpresponse.Error(c, http.StatusInternalServerError, "JADWAL_OPERASI_ERROR", "Jadwal belum dapat diproses. Periksa koneksi, izin, dan struktur tabel SIMRS. Muat ulang riwayat sebelum mencoba simpan kembali.")
 	}
 }
 
@@ -136,7 +152,7 @@ func bacaInput(c *gin.Context) (jadwal_operasi.Input, bool) {
 	}
 	// ID hanya berasal dari URL, tidak boleh disisipkan ke endpoint pembuatan.
 	input.ID = 0
-	input.Sumber = "SIRAPI"
+	input.Sumber = ""
 	if c.Request.Method != http.MethodPost && c.Param("id") == "khanza" {
 		input.Sumber = "Khanza"
 		if input.Asli == nil {
@@ -146,6 +162,7 @@ func bacaInput(c *gin.Context) (jadwal_operasi.Input, bool) {
 		return input, true
 	}
 	if c.Request.Method != http.MethodPost {
+		input.Sumber = "SIRAPI"
 		id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil || id == 0 {
 			tulisError(c, jadwal_operasi.ErrValidasi)
@@ -173,10 +190,7 @@ func (h *Handler) simpan(c *gin.Context) {
 	if c.Request.Method == http.MethodPost {
 		status = http.StatusCreated
 	}
-	pesan := "Perubahan jadwal lokal disimpan di SIRAPI"
-	if input.ID == 0 {
-		pesan = "Jadwal operasi berhasil disimpan langsung di SIMRS"
-	}
+	pesan := "Jadwal operasi berhasil disimpan langsung di SIMRS"
 	httpresponse.Success(c, status, gin.H{"pesan": pesan, "waktu": time.Now().UTC()})
 }
 
@@ -193,9 +207,6 @@ func (h *Handler) hapus(c *gin.Context) {
 		tulisError(c, err)
 		return
 	}
-	pesan := "Jadwal dihapus dari daftar aktif SIRAPI"
-	if input.Sumber == "Khanza" {
-		pesan = "Jadwal berhasil dihapus dari SIMRS"
-	}
+	pesan := "Jadwal berhasil dihapus dari SIMRS"
 	httpresponse.Success(c, http.StatusOK, gin.H{"pesan": pesan})
 }

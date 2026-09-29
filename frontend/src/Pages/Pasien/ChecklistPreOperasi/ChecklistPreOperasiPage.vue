@@ -38,11 +38,11 @@ const {
       </header>
       <p class="pre-info">
         Checklist baru langsung disimpan ke SIMRS.
-        Edit dan hapus langsung berlaku pada sumber data baris yang dipilih.
+        Edit dan hapus berlaku pada data SIMRS. Arsip lokal hanya dapat dibaca.
       </p>
       <form :key="String(patient.no_rawat)" v-show="formVisible" class="pre-form" @submit.prevent="simpan">
         <p v-if="editing" class="pre-info" role="status">
-          Mengedit checklist {{ editing.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }} tanggal {{ editing.tanggal }}.
+          Mengedit checklist {{ editing.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }} tanggal {{ editing.tanggal }}.
         </p>
         <FormInput
           v-model="tanggal"
@@ -132,7 +132,7 @@ const {
             </template>
           </Column>
           <Column header="Sumber" style="min-width: 140px">
-            <template #body="{ data: r }">{{ r.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</template>
+            <template #body="{ data: r }">{{ r.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}</template>
           </Column>
           <Column header="Aksi" style="min-width: 225px">
             <template #body="{ data: r }">
@@ -162,7 +162,7 @@ const {
       @update:visible="value => { if (!value) detail = null }"
     >
       <template v-if="detail">
-        <p>{{ detail.no_rawat }} · {{ detail.tanggal }} · {{ detail.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}</p>
+        <p>{{ detail.no_rawat }} · {{ detail.tanggal }} · {{ detail.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}</p>
         <section v-for="kelompok in kelompokChecklist" :key="kelompok.judul" class="pre-section">
           <h4>{{ kelompok.judul }}</h4>
           <dl class="pre-detail">
@@ -189,7 +189,7 @@ const {
       :style="{ width: '460px', maxWidth: '95vw' }"
       @update:visible="value => { if (!value && !saving) hapusTarget = null }"
     >
-      <p>Hapus checklist tanggal {{ hapusTarget?.tanggal }} dari {{ hapusTarget?.sumber === 'SIRAPI' ? 'SIRAPI' : 'SIMRS terintegrasi' }}?</p>
+      <p>Hapus checklist tanggal {{ hapusTarget?.tanggal }} dari {{ hapusTarget?.sumber === 'SIRAPI' ? 'Arsip lokal' : 'SIMRS' }}?</p>
       <p v-if="hapusTarget?.sumber === 'Khanza'">Data akan dihapus langsung dari SIMRS dan tidak dapat dipulihkan melalui halaman ini.</p>
       <template #footer>
         <button class="clinical-button secondary" :disabled="saving" @click="hapusTarget = null">Batal</button>

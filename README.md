@@ -113,7 +113,7 @@ DB_PASSWORD=root
 MIGRATION_ALLOWED_HOST=127.0.0.1
 MIGRATION_ALLOWED_DATABASE=simrs-golang
 
-# Database SIMRS Khanza: hanya dibaca oleh SIRAPI
+# Database SIMRS: CRUD pada tabel transaksi yang sudah tersedia
 SIMRS_DB_HOST=127.0.0.1
 SIMRS_DB_PORT=3306
 SIMRS_DB_DATABASE=simrs
@@ -122,7 +122,7 @@ SIMRS_DB_PASSWORD=
 ```
 
 Gunakan alamat, username, dan password MySQL sesuai komputer masing-masing.
-Untuk `SIMRS_DB_*`, gunakan user MySQL read-only jika tersedia.
+Untuk `SIMRS_DB_*`, gunakan user MySQL dengan SELECT, INSERT, UPDATE, DELETE pada tabel transaksi yang diperlukan. Jangan berikan izin migrasi/DDL (CREATE, ALTER, DROP).
 
 Konfigurasi E-Klaim, BPJS, dan WhatsApp Gateway boleh dikosongkan saat
 instalasi awal. Modul yang memerlukan servis tersebut baru dapat digunakan
@@ -357,7 +357,7 @@ Dokumentasi lanjutan:
 
 - Jangan mengubah `simrs-lama` kecuali diminta secara khusus.
 - Jangan pernah mengarahkan `DB_*` ke database SIMRS Khanza.
-- `SIMRS_DB_*` hanya digunakan untuk membaca data SIMRS lama.
+- `SIMRS_DB_*` digunakan untuk CRUD transaksi pada tabel SIMRS yang sudah tersedia, tanpa migration/seeder/DDL. `DB_*` khusus login, hak akses, menu, konfigurasi, dan audit.
 - Jangan commit file `.env`, password, token, signature, atau kredensial.
 - Endpoint API tidak menggunakan prefix `/v1`.
 - Gunakan Bahasa Indonesia untuk module dan response baru jika memungkinkan.

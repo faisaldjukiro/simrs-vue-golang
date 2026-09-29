@@ -32,7 +32,9 @@ Gunakan component bersama seperti `FormInput.vue`, `InputPencarian.vue`, dan
 Aturan penting backend:
 
 - Migration hanya boleh menuju database lokal `DB_*`.
-- Database SIMRS lama `SIMRS_DB_*` hanya boleh dibaca.
+- `DB_*` hanya untuk login, hak akses, konfigurasi, menu, dan log aplikasi.
+- CRUD transaksi pasien memakai tabel yang sudah ada di `SIMRS_DB_*`; jangan membuat tabel transaksi tandingan di `DB_*`.
+- Migration/seeder/DDL ke `SIMRS_DB_*` dilarang; larangan ini tidak melarang CRUD transaksi aplikasi.
 - Jangan memakai prefix `/v1`.
 - Gunakan Bahasa Indonesia untuk penamaan module dan response API jika memungkinkan.
 - Kerjakan bertahap dan jelaskan perubahan dengan Bahasa Indonesia.

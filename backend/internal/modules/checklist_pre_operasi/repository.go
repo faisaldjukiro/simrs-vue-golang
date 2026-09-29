@@ -11,6 +11,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"simrs-backend/internal/shared/arsiplokal"
 	"simrs-backend/internal/shared/khanzamutasi"
 
 	"github.com/go-sql-driver/mysql"
@@ -209,27 +210,18 @@ func (r *Repositori) Simpan(ctx context.Context, input Input, user uint64, admin
 	if input.Sumber == "Khanza" {
 		return r.mutasiKhanza(ctx, input, false)
 	}
-	payload, err := json.Marshal(input.Data)
-	if err != nil {
-		return err
+
+	if input.ID != 0 || input.Sumber == "SIRAPI" {
+		return fmt.Errorf("%w: arsip lokal hanya baca; rekonsiliasi diperlukan", ErrValidasi)
 	}
-	var hasil sql.Result
-	if input.ID == 0 {
-		// Izin eksplisit user: catatan baru langsung ke tabel Khanza.
-		// Nama kolom dari daftar tetap, bukan input client; sesuai 27 field referensi.
-		kolom := []string{"no_rawat", "tanggal"}
-		args := []any{input.NoRawat, input.Tanggal}
-		for _, bidang := range BidangForm {
-			kolom = append(kolom, bidang.Kode)
-			args = append(args, input.Data[bidang.Kode])
-		}
-		placeholder := strings.TrimSuffix(strings.Repeat("?,", len(kolom)), ",")
-		hasil, err = r.simrs.ExecContext(ctx,
-			"INSERT INTO checklist_pre_operasi ("+strings.Join(kolom, ",")+") VALUES ("+placeholder+")",
-			args...)
-	} else {
-		hasil, err = r.lokal.ExecContext(ctx, "UPDATE sirapi_checklist_pre_operasi SET tanggal=?,data_checklist=?,versi=versi+1,diubah_oleh=? WHERE id=? AND no_rawat=? AND versi=? AND deleted_at IS NULL AND (dibuat_oleh=? OR ?)", input.Tanggal, payload, user, input.ID, input.NoRawat, input.Versi, user, admin)
+	kolom := []string{"no_rawat", "tanggal"}
+	args := []any{input.NoRawat, input.Tanggal}
+	for _, bidang := range BidangForm {
+		kolom = append(kolom, bidang.Kode)
+		args = append(args, input.Data[bidang.Kode])
 	}
+	placeholder := strings.TrimSuffix(strings.Repeat("?,", len(kolom)), ",")
+	hasil, err := r.simrs.ExecContext(ctx, "INSERT INTO checklist_pre_operasi ("+strings.Join(kolom, ",")+") VALUES ("+placeholder+")", args...)
 	var mysqlErr *mysql.MySQLError
 	if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
 		return ErrKonflik
@@ -248,18 +240,7 @@ func (r *Repositori) Hapus(ctx context.Context, input Input, user uint64, admin 
 	if input.Sumber == "Khanza" {
 		return r.mutasiKhanza(ctx, input, true)
 	}
-	if input.ID == 0 || input.NoRawat == "" || input.Versi < 1 {
-		return fmt.Errorf("%w: pilih catatan yang akan dihapus", ErrValidasi)
-	}
-	hasil, err := r.lokal.ExecContext(ctx, "UPDATE sirapi_checklist_pre_operasi SET deleted_at=NOW(),diubah_oleh=?,versi=versi+1 WHERE id=? AND no_rawat=? AND versi=? AND deleted_at IS NULL AND (dibuat_oleh=? OR ?)", user, input.ID, input.NoRawat, input.Versi, user, admin)
-	if err != nil {
-		return err
-	}
-	jumlah, err := hasil.RowsAffected()
-	if err == nil && jumlah == 0 {
-		return ErrKonflik
-	}
-	return err
+	return fmt.Errorf("%w: arsip lokal hanya baca; rekonsiliasi diperlukan", ErrValidasi)
 }
 
 func (r *Repositori) Daftar(ctx context.Context, noRawat string, user uint64, admin bool) (Hasil, error) {
@@ -268,37 +249,42 @@ func (r *Repositori) Daftar(ctx context.Context, noRawat string, user uint64, ad
 		return hasil, fmt.Errorf("%w: nomor rawat wajib diisi", ErrValidasi)
 	}
 	rows, err := r.lokal.QueryContext(ctx, "SELECT id,no_rawat,DATE_FORMAT(tanggal,'%Y-%m-%d %H:%i:%s'),data_checklist,dibuat_oleh,versi FROM sirapi_checklist_pre_operasi WHERE no_rawat=? AND deleted_at IS NULL ORDER BY tanggal DESC", noRawat)
-	if err != nil {
+	if err != nil && !arsiplokal.TabelTidakAda(err) {
 		return hasil, err
 	}
-	for rows.Next() {
-		var item Catatan
-		var payload []byte
-		var pembuat uint64
-		if err := rows.Scan(&item.ID, &item.NoRawat, &item.Tanggal, &payload, &pembuat, &item.Versi); err != nil {
-			rows.Close()
+	if err == nil {
+		for rows.Next() {
+			var item Catatan
+			var payload []byte
+			var pembuat uint64
+			if err := rows.Scan(&item.ID, &item.NoRawat, &item.Tanggal, &payload, &pembuat, &item.Versi); err != nil {
+				rows.Close()
+				return hasil, err
+			}
+			if err := json.Unmarshal(payload, &item.Data); err != nil {
+				rows.Close()
+				return hasil, err
+			}
+			item.Sumber = "SIRAPI"
+			item.BisaUbah = false
+			item.Pembuat = fmt.Sprint(pembuat)
+			hasil.Catatan = append(hasil.Catatan, item)
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
 			return hasil, err
 		}
-		if err := json.Unmarshal(payload, &item.Data); err != nil {
-			rows.Close()
-			return hasil, err
-		}
-		item.Sumber = "SIRAPI"
-		item.BisaUbah = admin || pembuat == user
-		item.Pembuat = fmt.Sprint(pembuat)
-		hasil.Catatan = append(hasil.Catatan, item)
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		return hasil, err
 	}
 	lama, err := r.riwayatLama(ctx, noRawat)
 	if err != nil {
 		// Jangan samarkan kegagalan riwayat sebagai daftar kosong.
-		hasil.Peringatan = "Riwayat SIMRS belum dapat dibaca. Yang ditampilkan hanya catatan SIRAPI."
+		return hasil, err
 	} else {
 		hasil.Catatan = append(hasil.Catatan, lama...)
+	}
+	if len(hasil.Catatan) > len(lama) {
+		hasil.Peringatan = "Ada arsip lokal yang belum direkonsiliasi. Arsip hanya baca; penyimpanan baru langsung ke SIMRS."
 	}
 	sort.SliceStable(hasil.Catatan, func(i, j int) bool { return hasil.Catatan[i].Tanggal > hasil.Catatan[j].Tanggal })
 	return hasil, nil

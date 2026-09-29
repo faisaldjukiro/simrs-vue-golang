@@ -1,2 +1,3 @@
--- Hanya DB_* lokal. Tidak ada perubahan struktur di Khanza.
-ALTER TABLE sirapi_rujukan_internal ADD COLUMN dikirim_pada DATETIME NULL;
+-- Migrasi struktur transaksi lokal dihentikan. Nomor versi dipertahankan
+-- untuk kompatibilitas riwayat migration; tidak membuat atau mengubah tabel.
+SELECT 1;

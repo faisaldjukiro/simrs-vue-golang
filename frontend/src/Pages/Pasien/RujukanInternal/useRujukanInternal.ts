@@ -54,7 +54,7 @@ export function useRujukanInternal(props: PropsRujukanInternal) {
   }
 
   async function edit(row: RujukanInternal) {
-    if (terkunci.value) return
+    if (terkunci.value || row.sumber !== 'Khanza') return
     editing.value = { ...row }
     poli.value = { kode: row.kd_poli, nama: row.nama_poli }
     dokter.value = { kode: row.kd_dokter, nama: row.nama_dokter }
@@ -68,6 +68,7 @@ export function useRujukanInternal(props: PropsRujukanInternal) {
 
   function mintaKonfirmasi(aksi: 'hapus' | 'kirim', row: RujukanInternal) {
     if (terkunci.value) return
+    if (aksi === 'hapus' && row.sumber !== 'Khanza') return
     if (aksi === 'kirim' && (row.sumber !== 'SIRAPI' || row.konflik_khanza)) return
     errorAksi.value = ''
     konfirmasi.value = { aksi, row: { ...row } }

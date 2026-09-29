@@ -1,0 +1,49 @@
+.edukasi-page {
+  min-width: 0;
+}
+
+.edukasi-identitas-grid,
+.edukasi-materi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.edukasi-materi-grid {
+  margin-top: 20px;
+}
+
+.edukasi-catatan {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.edukasi-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.edukasi-filter > p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.edukasi-page .clinical-table-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .edukasi-identitas-grid,
+  .edukasi-materi-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .edukasi-filter > * {
+    flex: 1 1 150px;
+  }
+}

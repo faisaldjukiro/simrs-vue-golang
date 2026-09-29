@@ -1,0 +1,114 @@
+package edukasipasienhttp
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
+	"log"
+	"net/http"
+	"simrs-backend/internal/modules/autentikasi"
+	"simrs-backend/internal/modules/edukasi_pasien"
+	"simrs-backend/internal/shared/httpresponse"
+	"time"
+)
+
+type Handler struct {
+	repo *edukasi_pasien.Repositori
+}
+
+func NewHandler(repo *edukasi_pasien.Repositori) *Handler { return &Handler{repo: repo} }
+func (h *Handler) Register(g *gin.RouterGroup) {
+	g.GET("", h.proses)
+	g.GET("/referensi", h.proses)
+	g.POST("", h.proses)
+	g.PUT("", h.proses)
+	g.DELETE("", h.proses)
+}
+func (h *Handler) proses(c *gin.Context) {
+	v, ada := c.Get("authenticated_user")
+	u, ok := v.(autentikasi.Pengguna)
+	if !ada || !ok || u.ID == 0 {
+		httpresponse.Error(c, 401, "UNAUTHENTICATED", "Sesi login tidak valid")
+		return
+	}
+	admin := false
+	for _, p := range u.Permissions {
+		if p == "*" {
+			admin = true
+		}
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 20*time.Second)
+	defer cancel()
+	if c.Request.Method == http.MethodGet && c.FullPath() == "/api/edukasi-pasien/referensi" {
+		hasil, err := h.repo.Referensi(ctx, c.Query("jenis"), c.Query("q"), u.Username, admin)
+		if err != nil {
+			tulisError(c, err)
+			return
+		}
+		httpresponse.Success(c, 200, hasil)
+		return
+	}
+	if c.Request.Method == http.MethodGet {
+		hasil, err := h.repo.Daftar(ctx, c.Query("no_rawat"), u.Username, admin)
+		if err != nil {
+			tulisError(c, err)
+			return
+		}
+		httpresponse.Success(c, 200, hasil)
+		return
+	}
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 128*1024)
+	var in edukasi_pasien.Input
+	if c.ShouldBindJSON(&in) != nil {
+		tulisError(c, edukasi_pasien.ErrValidasi)
+		return
+	}
+	if err := h.repo.Mutasi(ctx, in, c.Request.Method, u.Username, admin); err != nil {
+		tulisError(c, err)
+		return
+	}
+	pesan := "Catatan edukasi pasien berhasil disimpan di SIMRS"
+	if c.Request.Method == http.MethodDelete {
+		pesan = "Catatan edukasi pasien berhasil dihapus dari SIMRS"
+	}
+	httpresponse.Success(c, 200, gin.H{"pesan": pesan})
+}
+func tulisError(c *gin.Context, err error) {
+	status, kode, pesan := 500, "EDUKASI_PASIEN_ERROR", "Catatan edukasi pasien belum dapat diproses. Periksa koneksi, izin CRUD, dan tabel SIMRS, lalu muat ulang riwayat."
+	switch {
+	case errors.Is(err, edukasi_pasien.ErrValidasi):
+		status, kode, pesan = 422, "VALIDATION_ERROR", err.Error()
+	case errors.Is(err, edukasi_pasien.ErrAkses):
+		status, kode, pesan = 403, "FORBIDDEN", err.Error()
+	case errors.Is(err, edukasi_pasien.ErrKonflik):
+		status, kode, pesan = 409, "CONFLICT", err.Error()
+	}
+	if status == 500 {
+		var dbErr *mysql.MySQLError
+		if errors.As(err, &dbErr) {
+			// Jangan mencatat SQL, nilai input, kredensial, atau identitas pasien.
+			log.Printf("edukasi_pasien method=%s mysql_code=%d", c.Request.Method, dbErr.Number)
+			switch dbErr.Number {
+			case 1044, 1045, 1142, 1143:
+				pesan = "Akun koneksi SIMRS tidak memiliki izin database yang diperlukan. Periksa izin SELECT/INSERT/UPDATE/DELETE."
+			case 1146:
+				pesan = "Tabel yang diperlukan Edukasi Pasien tidak ditemukan pada koneksi SIMRS. Periksa database tujuan dan tabel catatan_edukasi, petugas, ruangan, serta reg_periksa."
+			case 1054, 1136, 1364:
+				pesan = "Struktur tabel SIMRS tidak sesuai kolom Edukasi Pasien. Periksa SHOW CREATE TABLE catatan_edukasi; jangan membuat tabel pengganti."
+			case 1406, 1265, 1366, 1292:
+				status = 422
+				pesan = "Isi catatan tidak sesuai tipe atau panjang kolom SIMRS. Periksa durasi, tanggal/jam, metode, dan panjang teks terhadap struktur catatan_edukasi."
+			case 1452:
+				status = 422
+				pesan = "Referensi catatan ditolak oleh SIMRS. Periksa nomor rawat, petugas, dan ruangan yang dipilih."
+			}
+			kode = fmt.Sprintf("EDUKASI_MYSQL_%d", dbErr.Number)
+			pesan += fmt.Sprintf(" (MySQL %d)", dbErr.Number)
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			status, kode, pesan = 504, "EDUKASI_TIMEOUT", "SIMRS belum merespons dalam batas waktu. Muat ulang riwayat sebelum mencoba simpan kembali."
+		}
+	}
+	httpresponse.Error(c, status, kode, pesan)
+}

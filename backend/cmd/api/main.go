@@ -43,6 +43,8 @@ import (
 	datahaishttp "simrs-backend/internal/modules/data_hais/delivery/http"
 	"simrs-backend/internal/modules/diagnosa_pasien"
 	diagnosapasienhttp "simrs-backend/internal/modules/diagnosa_pasien/delivery/http"
+	"simrs-backend/internal/modules/edukasi_pasien"
+	edukasipasienhttp "simrs-backend/internal/modules/edukasi_pasien/delivery/http"
 	"simrs-backend/internal/modules/ews_ranap"
 	ewsranaphttp "simrs-backend/internal/modules/ews_ranap/delivery/http"
 	"simrs-backend/internal/modules/idrg"
@@ -272,6 +274,7 @@ func main() {
 		PEWSAnak:                pewsanakhttp.NewHandler(pews_anak.NewRepositori(simrsDB)),
 		NEWSAnak:                newsanakhttp.NewHandler(news_anak.NewRepositori(simrsDB)),
 		DataHais:                datahaishttp.NewHandler(data_hais.NewRepositori(db, simrsDB)),
+		EdukasiPasien:           edukasipasienhttp.NewHandler(edukasi_pasien.NewRepositori(simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,
