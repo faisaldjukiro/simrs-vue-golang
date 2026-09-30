@@ -1,0 +1,47 @@
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+body {
+  margin: 0;
+  color: #111;
+  background: #fff;
+  font: 10pt/1.35 Arial, sans-serif;
+}
+
+.kop {
+  display: grid;
+  grid-template-columns: 22mm minmax(0, 1fr) 22mm;
+  align-items: center;
+  gap: 4mm;
+  padding-bottom: 4mm;
+  border-bottom: 3px double #111;
+}
+
+.kop img {
+  width: 22mm;
+  height: 22mm;
+  object-fit: contain;
+}
+
+.identitas-rs { text-align: center; }
+.identitas-rs h1 { margin: 0 0 2mm; font-size: 15pt; text-transform: uppercase; }
+.identitas-rs p { margin: 1mm 0; font-size: 9pt; }
+h2 { text-align: center; font-size: 12pt; margin: 5mm 0; }
+.identitas-pasien { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 6mm; margin-bottom: 3mm; }
+.ringkasan { margin: 2mm 0; white-space: pre-wrap; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 4mm; font-size: 9pt; }
+th, td { border: 1px solid #555; padding: 2mm; vertical-align: top; overflow-wrap: anywhere; white-space: pre-wrap; }
+th { text-align: left; background: #eee; }
+th:first-child, td:first-child { text-align: center; }
+thead { display: table-header-group; }
+tr, .tanda-tangan, .kop { break-inside: avoid; }
+.tanda-tangan { margin-top: 5mm; }
+.tanggal-ttd { text-align: right; }
+.pihak { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; text-align: center; }
+.penanda-tangan p { margin: 1mm 0; }
+.ruang-ttd { height: 17mm; }
+@media screen {
+  body { max-width: 186mm; margin: 20px auto; padding: 12mm; }
+}

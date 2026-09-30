@@ -32,6 +32,7 @@ import ObservasiRanapPage from '../../Pages/RawatInap/ObservasiRanap/ObservasiRa
 import PewsAnakPage from '../../Pages/RawatInap/PewsAnak/PewsAnakPage.vue'
 import NewsAnakPage from '../../Pages/RawatInap/NewsAnak/NewsAnakPage.vue'
 import DataHaisPage from '../../Pages/RawatInap/DataHais/DataHaisPage.vue'
+import PerencanaanPemulanganPage from '../../Pages/RawatInap/PerencanaanPemulangan/PerencanaanPemulanganPage.vue'
 import EdukasiPasienPage from '../../Pages/RawatInap/EdukasiPasien/EdukasiPasienPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
@@ -77,6 +78,7 @@ const halamanSidebar = {
   pews_anak: PewsAnakPage,
   news_anak: NewsAnakPage,
   data_hais: DataHaisPage,
+  perencanaan_pemulangan: PerencanaanPemulanganPage,
   edukasi_pasien: EdukasiPasienPage,
   jadwal_operasi: TabOperasiPage,
   checklist_pre_operasi: ChecklistPreOperasiPage,

@@ -74,6 +74,8 @@ import (
 	observasiranaphttp "simrs-backend/internal/modules/observasi_ranap/delivery/http"
 	"simrs-backend/internal/modules/penanganan_dokter_petugas"
 	penanganandokterpetugashttp "simrs-backend/internal/modules/penanganan_dokter_petugas/delivery/http"
+	"simrs-backend/internal/modules/perencanaan_pemulangan"
+	pemulanganhttp "simrs-backend/internal/modules/perencanaan_pemulangan/delivery/http"
 	"simrs-backend/internal/modules/permintaan_laboratorium"
 	permintaanlaboratoriumhttp "simrs-backend/internal/modules/permintaan_laboratorium/delivery/http"
 	"simrs-backend/internal/modules/permintaan_radiologi"
@@ -275,6 +277,7 @@ func main() {
 		NEWSAnak:                newsanakhttp.NewHandler(news_anak.NewRepositori(simrsDB)),
 		DataHais:                datahaishttp.NewHandler(data_hais.NewRepositori(db, simrsDB)),
 		EdukasiPasien:           edukasipasienhttp.NewHandler(edukasi_pasien.NewRepositori(simrsDB)),
+		PerencanaanPemulangan:   pemulanganhttp.NewHandler(perencanaan_pemulangan.NewRepositori(simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,
