@@ -42,7 +42,12 @@ export function useVentilator(props) {
   function emptySetting(id = 0) { return { id_pemakaian: id, waktu_setting: localDateTime(), mode: '', fio2: '', peep: '', tidal_volume: '', frekuensi_set: '', pressure_control: '', pressure_support: '', petugas: '', catatan: '' } }
   function emptyMonitoring(id = 0) { return { id_pemakaian: id, waktu_monitoring: localDateTime(), kesadaran: '', tekanan_darah: '', nadi: '', respirasi: '', suhu: '', spo2: '', tahap: 'Monitoring', petugas: '', catatan: '' } }
   function emptyVAP(id = 0) { return { id_pemakaian: id, waktu_checklist: localDateTime(), elevasi_kepala: false, perawatan_mulut: false, suction: false, evaluasi_sedasi: false, sat: false, sbt: false, pencegahan_dvt: false, pencegahan_ulkus: false, tekanan_cuff: '', petugas: '', catatan: '' } }
-  function number(value) { return value === '' || value === null ? 0 : Number(value) }
+  function number(value) {
+    if (value == null || String(value).trim() === '') return null
+    const angka = Number(String(value).trim().replace(',', '.'))
+    if (!Number.isFinite(angka)) throw new Error('Isian pengukuran harus berupa angka atau dikosongkan.')
+    return angka
+  }
   function formatDateTime(value) { if (!value) return '-'; const [date, time = ''] = String(value).replace('T', ' ').split(' '); const [year, month, day] = date.split('-'); return `${day}/${month}/${year} ${time.slice(0, 5)}` }
   function yes(value) { return value ? 'Ya' : 'Tidak' }
   function resetClinicalForms(id) { Object.assign(setting, emptySetting(id)); Object.assign(monitoring, emptyMonitoring(id)); Object.assign(vap, emptyVAP(id)) }

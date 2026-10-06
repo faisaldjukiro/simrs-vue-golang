@@ -31,6 +31,8 @@ const {
   tanggalGagal,
   rupiah,
   tampilkanData,
+  excel,
+  sedangEkspor,
 } = useMonitoringDataKlaim(props)
 </script>
 
@@ -88,9 +90,21 @@ const {
         <span v-if="tanggalGagal.length" class="warning">{{ tanggalGagal.length }} tanggal gagal diproses VClaim</span>
       </div>
 
+      <p v-if="hasil.peringatan_simrs" class="patient-error" role="alert">{{ hasil.peringatan_simrs }}</p>
+      <div class="klaim-export-tools">
+        <span>{{ daftarTampil.length }} klaim sesuai pencarian. Dokter berasal dari SIMRS; seluruh DPJP ranap ditampilkan.</span>
+        <button type="button" class="clinical-button secondary"
+          :disabled="sedangMemuat || sedangEkspor || !daftarTampil.length" @click="excel">
+          <LoaderCircle v-if="sedangEkspor" class="spin" :size="17" />
+          <FileSpreadsheet v-else :size="17" />
+          {{ sedangEkspor ? 'Menyiapkan Excel...' : 'Excel (.xlsx)' }}
+        </button>
+      </div>
+      <p class="klaim-export-note">Ekspor Excel (.xlsx) mencakup seluruh hasil pencarian, bukan hanya halaman aktif. Nomor SEP dan kartu tetap sebagai teks, serta biaya sebagai angka.</p>
+
       <label class="bpjs-claim-search">
         <Search :size="18" />
-        <input v-model="pencarian" type="search" placeholder="Cari No. SEP, No. RM, pasien, poli, atau INA-CBG..." />
+        <input v-model="pencarian" type="search" placeholder="Cari SEP, RM, pasien, dokter, no. rawat, poli, atau INA-CBG..." />
       </label>
 
       <DataTable
@@ -155,6 +169,16 @@ const {
         <Column header="Top Up">
           <template #body="{ data }"><strong>{{ rupiah(data.biaya?.byTopup) }}</strong></template>
         </Column>
+        <Column header="Dokter / DPJP SIMRS" style="min-width:280px">
+          <template #body="{ data }">
+            <div class="bpjs-claim-cell klaim-dokter">
+              <strong>{{ data.dokter_simrs?.nama_dokter || '—' }}</strong>
+              <span v-if="data.dokter_simrs?.no_rawat">{{ data.dokter_simrs.no_rawat }}</span>
+              <span>{{ data.dokter_simrs?.sumber }}</span>
+              <span v-if="data.dokter_simrs?.keterangan">{{ data.dokter_simrs.keterangan }}</span>
+            </div>
+          </template>
+        </Column>
       </DataTable>
     </template>
 
@@ -171,3 +195,23 @@ const {
     </div>
   </section>
 </template>
+
+<style scoped>
+.klaim-export-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+.klaim-export-tools span,
+.klaim-export-note {
+  color: var(--muted);
+  font-size: 12px;
+}
+.bpjs-claim-module :deep(.bpjs-claim-table.data-table-wrap .klaim-dokter strong) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+</style>

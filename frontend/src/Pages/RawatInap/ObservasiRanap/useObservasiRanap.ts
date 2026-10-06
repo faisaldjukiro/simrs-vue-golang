@@ -4,7 +4,7 @@ import { useNotifikasi } from '../../../lib/shared/useNotifikasi'
 import { bidangObservasi } from '../../../types/observasiRanap'
 import type { CatatanObservasi, HasilObservasi, PropsObservasi } from '../../../types/observasiRanap'
 
-export function useObservasiRanap(props: PropsObservasi) {
+export function useObservasiRanap(props: PropsObservasi, setelahBerubah?: () => void) {
   const notifikasi = useNotifikasi()
   const loading = ref(false)
   const saving = ref(false)
@@ -146,6 +146,7 @@ export function useObservasiRanap(props: PropsObservasi) {
       hapusTarget.value = null
       reset()
       notifikasi.sukses(hasil.pesan)
+      setelahBerubah?.()
       await muat()
     } catch (e) {
       if (konteks === generasi) errorSimpan.value = e instanceof Error ? e.message : 'Observasi gagal disimpan.'

@@ -1,8 +1,10 @@
-import { computed, ref } from "vue"
+import { computed, onBeforeUnmount, ref, watch } from "vue"
 import { monitoringDataKlaim } from "../../../lib/faisal/api"
 import { useNotifikasi } from "../../../lib/shared/useNotifikasi"
+import type { FilterKlaim, HasilMonitoringKlaim } from '../../../types/monitoringDataKlaim'
+import { unduhExcelKlaim } from './excelKlaim'
 
-export function useMonitoringDataKlaim(props) {
+export function useMonitoringDataKlaim(props: { token: string }) {
   const notifikasi = useNotifikasi()
   const hariIni = new Date()
   const tanggalMulai = ref(new Date(hariIni.getFullYear(), hariIni.getMonth(), hariIni.getDate()))
@@ -11,7 +13,19 @@ export function useMonitoringDataKlaim(props) {
   const statusKlaim = ref('3')
   const pencarian = ref('')
   const sedangMemuat = ref(false)
-  const hasil = ref(null)
+  const sedangEkspor = ref(false)
+  const hasil = ref<HasilMonitoringKlaim | null>(null)
+  const filterHasil = ref<FilterKlaim | null>(null)
+  let generasi = 0
+  watch(() => props.token, () => {
+    generasi++
+    hasil.value = null
+    filterHasil.value = null
+    sedangMemuat.value = false
+    sedangEkspor.value = false
+    pesanError.value = ''
+  })
+  onBeforeUnmount(() => { generasi++ })
   const pesanError = ref('')
   
   const pilihanJenisPelayanan = [
@@ -46,6 +60,9 @@ export function useMonitoringDataKlaim(props) {
       item?.Inacbg?.kode,
       item?.Inacbg?.nama,
       item?.status,
+      item?.dokter_simrs?.nama_dokter,
+      item?.dokter_simrs?.no_rawat,
+      item?.dokter_simrs?.keterangan,
     ].some((nilai) => String(nilai || '').toLowerCase().includes(kataKunci)))
   })
   
@@ -105,31 +122,55 @@ export function useMonitoringDataKlaim(props) {
     }
   
     sedangMemuat.value = true
+    const konteks = generasi
+    hasil.value = null
+    filterHasil.value = null
     pesanError.value = ''
     try {
-      hasil.value = await monitoringDataKlaim(props.token, {
+      const filter: FilterKlaim = {
         tanggal_mulai: tanggalApi(tanggalMulai.value),
         tanggal_selesai: tanggalApi(tanggalSelesai.value),
         jenis_pelayanan: jenisPelayanan.value,
         status_klaim: statusKlaim.value,
-      })
+      }
+      const data = await monitoringDataKlaim(props.token, filter)
+      if (konteks !== generasi) return
+      hasil.value = data
+      filterHasil.value = filter
   
       if (daftarKlaim.value.length === 0) {
         notifikasi.peringatan('Data klaim tidak ditemukan pada filter yang dipilih.', 'Data Kosong')
       } else if (tanggalGagal.value.length > 0) {
         notifikasi.peringatan(`${daftarKlaim.value.length} klaim ditemukan, tetapi ${tanggalGagal.value.length} tanggal gagal diproses BPJS.`, 'Selesai dengan Peringatan')
+      } else if (hasil.value.peringatan_simrs) {
+        notifikasi.peringatan(hasil.value.peringatan_simrs)
       } else {
         notifikasi.sukses(`${daftarKlaim.value.length} data klaim berhasil ditampilkan.`)
       }
     } catch (error) {
+      if (konteks !== generasi) return
       hasil.value = null
       pesanError.value = error.message || 'Data klaim BPJS gagal dimuat.'
       notifikasi.gagal(pesanError.value)
     } finally {
-      sedangMemuat.value = false
+      if (konteks === generasi) sedangMemuat.value = false
+    }
+  }
+  async function excel() {
+    if (sedangMemuat.value || sedangEkspor.value || !hasil.value || !filterHasil.value || !daftarTampil.value.length) return
+    const konteks = generasi
+    sedangEkspor.value = true
+    try {
+      await unduhExcelKlaim(daftarTampil.value, hasil.value, filterHasil.value, pencarian.value, () => konteks === generasi)
+    } catch (e) {
+      if (konteks === generasi) notifikasi.gagal(e instanceof Error ? e.message : 'Ekspor gagal.')
+    } finally {
+      if (konteks === generasi) sedangEkspor.value = false
     }
   }
   return {
+    excel,
+    sedangEkspor,
     tanggalMulai,
     tanggalSelesai,
     jenisPelayanan,

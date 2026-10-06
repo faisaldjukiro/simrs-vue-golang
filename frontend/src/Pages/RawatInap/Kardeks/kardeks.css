@@ -1,0 +1,19 @@
+.kardeks-page { min-width: 0; }
+.kardeks-content { padding: 16px; min-width: 0; color: var(--text); }
+.kardeks-content p { font-size: 13px; line-height: 1.5; }
+.kardeks-filter { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; padding: 16px; }
+.kardeks-filter > * { flex: 0 1 240px; }
+.kardeks-matrix { overflow: auto; max-height: 600px; border: 1px solid var(--line); border-radius: 10px; }
+.kardeks-matrix table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+.kardeks-matrix td, .kardeks-matrix th { min-width: 105px; padding: 10px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); vertical-align: top; }
+.kardeks-matrix th { background: var(--surface-soft); text-align: left; font-size: 12px; }
+.kardeks-matrix thead th { position: sticky; top: 0; z-index: 2; }
+.kardeks-matrix tr > th:first-child { position: sticky; left: 0; min-width: 150px; z-index: 1; }
+.kardeks-matrix thead th:first-child { z-index: 3; }
+.kardeks-matrix tbody tr:nth-child(even) td { background: var(--surface-soft); }
+.kardeks-matrix small { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.kardeks-matrix td > div + div { border-top: 1px solid var(--line); margin-top: 5px; padding-top: 5px; }
+.kardeks-bagian { margin-top: 24px; }
+.kardeks-teks { white-space: pre-wrap; overflow-wrap: anywhere; }
+.kardeks-grafik { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 16px 0; }
+.kardeks-grafik svg { display: block; width: 100%; max-height: 280px; color: var(--text); }

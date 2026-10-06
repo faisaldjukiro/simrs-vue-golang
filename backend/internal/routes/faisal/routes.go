@@ -25,6 +25,7 @@ import (
 	idrghttp "simrs-backend/internal/modules/idrg/delivery/http"
 	implementasikeperawatanhttp "simrs-backend/internal/modules/implementasi_keperawatan/delivery/http"
 	jadwaloperasihttp "simrs-backend/internal/modules/jadwal_operasi/delivery/http"
+	kardekshttp "simrs-backend/internal/modules/kardeks/delivery/http"
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	laporan10penyakithttp "simrs-backend/internal/modules/laporan_10_penyakit/delivery/http"
 	laporanborlostoihttp "simrs-backend/internal/modules/laporan_bor_los_toi/delivery/http"
@@ -63,6 +64,7 @@ type Dependencies struct {
 	DataHais                *datahaishttp.Handler
 	EdukasiPasien           *edukasipasienhttp.Handler
 	PerencanaanPemulangan   *pemulanganhttp.Handler
+	Kardeks                 *kardekshttp.Handler
 	ChecklistPreOperasi     *checklistpreoperasihttp.Handler
 	AktivitasLog            *aktivitasloghttp.Handler
 	Autentikasi             *autentikasihttp.Handler
@@ -152,6 +154,9 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 	rujukanRanapGroup := protectedAPI.Group("/rujukan-internal-ranap")
 	rujukanRanapGroup.Use(dependencies.Autentikasi.WajibPermission("kamar_inap", "daftar_pasien_ranap"))
 	dependencies.RujukanInternalRanap.Register(rujukanRanapGroup)
+	kardeksGroup := protectedAPI.Group("/kardeks")
+	kardeksGroup.Use(dependencies.Autentikasi.WajibPermission("kamar_inap", "daftar_pasien_ranap"))
+	dependencies.Kardeks.Register(kardeksGroup)
 	daftarRouteSidebar := []struct {
 		path     string
 		register func(*gin.RouterGroup)

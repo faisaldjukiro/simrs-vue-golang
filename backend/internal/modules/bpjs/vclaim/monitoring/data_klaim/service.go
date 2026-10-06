@@ -42,6 +42,7 @@ type MetaData struct {
 }
 
 type Hasil struct {
+	PeringatanSIMRS  string         `json:"peringatan_simrs,omitempty"`
 	MetaData         MetaData       `json:"metaData"`
 	Response         any            `json:"response,omitempty"`
 	Periode          *Periode       `json:"periode,omitempty"`

@@ -10,11 +10,12 @@ import { bidangObservasi, type PropsObservasi } from '../../../types/observasiRa
 import { useObservasiRanap } from './useObservasiRanap'
 
 const props = defineProps<PropsObservasi>()
+const emit = defineEmits<{ berubah: [] }>()
 const {
   loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing,
   hapusTarget, petugas, form, terkunci, mulai, selesai, errorFilter,
   waktuSekarang, reset, muat, cariPetugas, edit, mutasi, cetak,
-} = useObservasiRanap(props)
+} = useObservasiRanap(props, () => emit('berubah'))
 </script>
 
 <template>

@@ -32,50 +32,50 @@ type Pemakaian struct {
 }
 
 type Setting struct {
-	ID              uint64  `json:"id"`
-	IDPemakaian     uint64  `json:"id_pemakaian"`
-	Waktu           string  `json:"waktu_setting"`
-	Mode            string  `json:"mode"`
-	FiO2            float64 `json:"fio2"`
-	PEEP            float64 `json:"peep"`
-	TidalVolume     float64 `json:"tidal_volume"`
-	Frekuensi       float64 `json:"frekuensi_set"`
-	PressureControl float64 `json:"pressure_control"`
-	PressureSupport float64 `json:"pressure_support"`
-	Petugas         string  `json:"petugas"`
-	Catatan         string  `json:"catatan"`
+	ID              uint64   `json:"id"`
+	IDPemakaian     uint64   `json:"id_pemakaian"`
+	Waktu           string   `json:"waktu_setting"`
+	Mode            string   `json:"mode"`
+	FiO2            *float64 `json:"fio2"`
+	PEEP            *float64 `json:"peep"`
+	TidalVolume     *float64 `json:"tidal_volume"`
+	Frekuensi       *float64 `json:"frekuensi_set"`
+	PressureControl *float64 `json:"pressure_control"`
+	PressureSupport *float64 `json:"pressure_support"`
+	Petugas         string   `json:"petugas"`
+	Catatan         string   `json:"catatan"`
 }
 
 type Monitoring struct {
-	ID           uint64  `json:"id"`
-	IDPemakaian  uint64  `json:"id_pemakaian"`
-	Waktu        string  `json:"waktu_monitoring"`
-	Kesadaran    string  `json:"kesadaran"`
-	TekananDarah string  `json:"tekanan_darah"`
-	Nadi         int     `json:"nadi"`
-	Respirasi    int     `json:"respirasi"`
-	Suhu         float64 `json:"suhu"`
-	SpO2         float64 `json:"spo2"`
-	Tahap        string  `json:"tahap"`
-	Petugas      string  `json:"petugas"`
-	Catatan      string  `json:"catatan"`
+	ID           uint64   `json:"id"`
+	IDPemakaian  uint64   `json:"id_pemakaian"`
+	Waktu        string   `json:"waktu_monitoring"`
+	Kesadaran    string   `json:"kesadaran"`
+	TekananDarah string   `json:"tekanan_darah"`
+	Nadi         *int     `json:"nadi"`
+	Respirasi    *int     `json:"respirasi"`
+	Suhu         *float64 `json:"suhu"`
+	SpO2         *float64 `json:"spo2"`
+	Tahap        string   `json:"tahap"`
+	Petugas      string   `json:"petugas"`
+	Catatan      string   `json:"catatan"`
 }
 
 type ChecklistVAP struct {
-	ID              uint64  `json:"id"`
-	IDPemakaian     uint64  `json:"id_pemakaian"`
-	Waktu           string  `json:"waktu_checklist"`
-	ElevasiKepala   bool    `json:"elevasi_kepala"`
-	PerawatanMulut  bool    `json:"perawatan_mulut"`
-	Suction         bool    `json:"suction"`
-	EvaluasiSedasi  bool    `json:"evaluasi_sedasi"`
-	SAT             bool    `json:"sat"`
-	SBT             bool    `json:"sbt"`
-	PencegahanDVT   bool    `json:"pencegahan_dvt"`
-	PencegahanUlkus bool    `json:"pencegahan_ulkus"`
-	TekananCuff     float64 `json:"tekanan_cuff"`
-	Petugas         string  `json:"petugas"`
-	Catatan         string  `json:"catatan"`
+	ID              uint64   `json:"id"`
+	IDPemakaian     uint64   `json:"id_pemakaian"`
+	Waktu           string   `json:"waktu_checklist"`
+	ElevasiKepala   bool     `json:"elevasi_kepala"`
+	PerawatanMulut  bool     `json:"perawatan_mulut"`
+	Suction         bool     `json:"suction"`
+	EvaluasiSedasi  bool     `json:"evaluasi_sedasi"`
+	SAT             bool     `json:"sat"`
+	SBT             bool     `json:"sbt"`
+	PencegahanDVT   bool     `json:"pencegahan_dvt"`
+	PencegahanUlkus bool     `json:"pencegahan_ulkus"`
+	TekananCuff     *float64 `json:"tekanan_cuff"`
+	Petugas         string   `json:"petugas"`
+	Catatan         string   `json:"catatan"`
 }
 
 type DataPasien struct {

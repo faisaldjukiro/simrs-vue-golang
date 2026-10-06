@@ -136,7 +136,7 @@ func (r *Repositori) DataPasien(ctx context.Context, noRawat string) (DataPasien
 	return out, nil
 }
 func (r *Repositori) daftarSetting(ctx context.Context, id uint64) ([]Setting, error) {
-	rows, e := r.db.QueryContext(ctx, `SELECT id,id_pemakaian,DATE_FORMAT(waktu_setting,'%Y-%m-%d %H:%i:%s'),mode_ventilator,COALESCE(fio2_persen,0),COALESCE(peep_cmh2o,0),COALESCE(tidal_volume_ml,0),COALESCE(frekuensi_set,0),COALESCE(pressure_control_cmh2o,0),COALESCE(pressure_support_cmh2o,0),COALESCE(petugas,''),COALESCE(catatan,'') FROM setting_ventilator WHERE id_pemakaian=? ORDER BY waktu_setting DESC`, id)
+	rows, e := r.db.QueryContext(ctx, `SELECT id,id_pemakaian,DATE_FORMAT(waktu_setting,'%Y-%m-%d %H:%i:%s'),mode_ventilator,fio2_persen,peep_cmh2o,tidal_volume_ml,frekuensi_set,pressure_control_cmh2o,pressure_support_cmh2o,COALESCE(petugas,''),COALESCE(catatan,'') FROM setting_ventilator WHERE id_pemakaian=? ORDER BY waktu_setting DESC`, id)
 	if e != nil {
 		return nil, e
 	}
@@ -152,7 +152,7 @@ func (r *Repositori) daftarSetting(ctx context.Context, id uint64) ([]Setting, e
 	return d, rows.Err()
 }
 func (r *Repositori) daftarMonitoring(ctx context.Context, id uint64) ([]Monitoring, error) {
-	rows, e := r.db.QueryContext(ctx, `SELECT id,id_pemakaian,DATE_FORMAT(waktu_monitoring,'%Y-%m-%d %H:%i:%s'),COALESCE(kesadaran,''),COALESCE(tekanan_darah,''),COALESCE(nadi_per_menit,0),COALESCE(respirasi_per_menit,0),COALESCE(suhu_celsius,0),COALESCE(spo2_persen,0),COALESCE(tahap,''),COALESCE(petugas,''),COALESCE(catatan,'') FROM monitoring_ventilator WHERE id_pemakaian=? ORDER BY waktu_monitoring DESC`, id)
+	rows, e := r.db.QueryContext(ctx, `SELECT id,id_pemakaian,DATE_FORMAT(waktu_monitoring,'%Y-%m-%d %H:%i:%s'),COALESCE(kesadaran,''),COALESCE(tekanan_darah,''),nadi_per_menit,respirasi_per_menit,suhu_celsius,spo2_persen,COALESCE(tahap,''),COALESCE(petugas,''),COALESCE(catatan,'') FROM monitoring_ventilator WHERE id_pemakaian=? ORDER BY waktu_monitoring DESC`, id)
 	if e != nil {
 		return nil, e
 	}
@@ -168,7 +168,7 @@ func (r *Repositori) daftarMonitoring(ctx context.Context, id uint64) ([]Monitor
 	return d, rows.Err()
 }
 func (r *Repositori) daftarVAP(ctx context.Context, id uint64) ([]ChecklistVAP, error) {
-	rows, e := r.db.QueryContext(ctx, `SELECT id,id_pemakaian,DATE_FORMAT(waktu_pemeriksaan,'%Y-%m-%d %H:%i:%s'),elevasi_kepala_30_derajat,perawatan_mulut,suction_sekret,evaluasi_sedasi,spontaneous_awakening_trial,spontaneous_breathing_trial,profilaksis_dvt,profilaksis_ulkus_stres,COALESCE(tekanan_cuff_cmh2o,0),COALESCE(petugas,''),COALESCE(catatan,'') FROM checklist_vap WHERE id_pemakaian=? ORDER BY waktu_pemeriksaan DESC`, id)
+	rows, e := r.db.QueryContext(ctx, `SELECT id,id_pemakaian,DATE_FORMAT(waktu_pemeriksaan,'%Y-%m-%d %H:%i:%s'),elevasi_kepala_30_derajat,perawatan_mulut,suction_sekret,evaluasi_sedasi,spontaneous_awakening_trial,spontaneous_breathing_trial,profilaksis_dvt,profilaksis_ulkus_stres,tekanan_cuff_cmh2o,COALESCE(petugas,''),COALESCE(catatan,'') FROM checklist_vap WHERE id_pemakaian=? ORDER BY waktu_pemeriksaan DESC`, id)
 	if e != nil {
 		return nil, e
 	}

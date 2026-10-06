@@ -53,6 +53,8 @@ import (
 	implementasikeperawatanhttp "simrs-backend/internal/modules/implementasi_keperawatan/delivery/http"
 	"simrs-backend/internal/modules/jadwal_operasi"
 	jadwaloperasihttp "simrs-backend/internal/modules/jadwal_operasi/delivery/http"
+	"simrs-backend/internal/modules/kardeks"
+	kardekshttp "simrs-backend/internal/modules/kardeks/delivery/http"
 	"simrs-backend/internal/modules/kelola_menu"
 	kelolamenuhttp "simrs-backend/internal/modules/kelola_menu/delivery/http"
 	"simrs-backend/internal/modules/laporan_10_penyakit"
@@ -170,7 +172,7 @@ func main() {
 		SecretKey:  bpjsConfig.SecretKey,
 		UserKey:    bpjsConfig.UserKey,
 		BaseURL:    bpjsConfig.VClaimURL,
-	}))
+	}), dataklaim.NewRepositoriDokter(simrsDB))
 	idrgRepositori := idrg.NewRepositori(simrsDB)
 	idrgHandler := idrghttp.NewHandler(idrgRepositori, idrg.NewLayanan(idrgRepositori, eklaimConfig))
 	kelolaMenuHandler := kelolamenuhttp.NewHandler(kelola_menu.NewRepositori(db))
@@ -278,6 +280,7 @@ func main() {
 		DataHais:                datahaishttp.NewHandler(data_hais.NewRepositori(db, simrsDB)),
 		EdukasiPasien:           edukasipasienhttp.NewHandler(edukasi_pasien.NewRepositori(simrsDB)),
 		PerencanaanPemulangan:   pemulanganhttp.NewHandler(perencanaan_pemulangan.NewRepositori(simrsDB)),
+		Kardeks:                 kardekshttp.NewHandler(kardeks.NewRepositori(simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,

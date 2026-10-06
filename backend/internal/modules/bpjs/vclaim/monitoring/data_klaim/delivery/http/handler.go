@@ -12,10 +12,11 @@ import (
 
 type Handler struct {
 	layanan *dataklaim.Layanan
+	dokter  *dataklaim.RepositoriDokter
 }
 
-func NewHandler(layanan *dataklaim.Layanan) *Handler {
-	return &Handler{layanan: layanan}
+func NewHandler(layanan *dataklaim.Layanan, dokter *dataklaim.RepositoriDokter) *Handler {
+	return &Handler{layanan: layanan, dokter: dokter}
 }
 
 func (h *Handler) Register(g *gin.RouterGroup) {
@@ -45,5 +46,6 @@ func (h *Handler) Data(c *gin.Context) {
 		return
 	}
 
+	h.dokter.Lengkapi(c.Request.Context(), &hasil)
 	httpresponse.Success(c, http.StatusOK, hasil)
 }
