@@ -11,6 +11,7 @@ export interface CatatanEdukasi {
   nama_ruangan: string
   sumber: string
   bisa_ubah: boolean
+  foto_url: string
 }
 
 export interface HasilEdukasi {

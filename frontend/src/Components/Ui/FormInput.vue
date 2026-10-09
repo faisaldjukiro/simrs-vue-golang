@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useAttrs, useId } from 'vue'
+import { computed, ref, useAttrs, useId } from 'vue'
 import Select from './Select.vue'
 
 defineOptions({ inheritAttrs: false })
@@ -7,6 +7,7 @@ defineOptions({ inheritAttrs: false })
 const model = defineModel({ default: '' })
 const attrs = useAttrs()
 const generatedId = useId()
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const props = defineProps({
   label: { type: String, required: true },
@@ -25,6 +26,7 @@ const props = defineProps({
   disabled: Boolean,
   hint: { type: String, default: '' },
   error: { type: String, default: '' },
+  fileName: { type: String, default: '' },
 })
 
 const inputId = computed(() => props.id || generatedId)
@@ -70,6 +72,24 @@ const inheritedAttrs = computed(() => {
       v-bind="inheritedAttrs"
     />
 
+    <div v-else-if="type === 'file'" class="form-input-element berkas-file-picker">
+      <input
+        :id="inputId"
+        ref="fileInput"
+        type="file"
+        class="berkas-file-native"
+        tabindex="-1"
+        :required="required"
+        :disabled="disabled"
+        v-bind="inheritedAttrs"
+      />
+      <button type="button" class="berkas-file-button" :disabled="disabled"
+        :aria-label="`Pilih file: ${label}`" @click.prevent="fileInput?.click()">
+        Choose File
+      </button>
+      <span class="berkas-file-name" :title="fileName" aria-live="polite">{{ fileName || 'No file chosen' }}</span>
+    </div>
+
     <input
       v-else
       :id="inputId"
@@ -89,3 +109,5 @@ const inheritedAttrs = computed(() => {
     <small v-else-if="hint" class="form-input-message">{{ hint }}</small>
   </label>
 </template>
+
+<style src="@/Components/Ui/file-picker.css" scoped></style>

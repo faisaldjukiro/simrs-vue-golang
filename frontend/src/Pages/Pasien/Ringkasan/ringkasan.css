@@ -1,0 +1,387 @@
+.ringkasan-pasien {
+  container-type: inline-size;
+  min-width: 0;
+  margin-top: 12px;
+  color: var(--text);
+}
+
+.ringkasan-pasien .clinical-history-card {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.ringkasan-intro .clinical-section-header {
+  background: var(--surface);
+  gap: 16px;
+}
+
+.ringkasan-intro .clinical-section-header h3 {
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.ringkasan-intro .clinical-section-header p {
+  font-size: 13px;
+}
+
+.ringkasan-intro .clinical-section-header span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.ringkasan-pasien .clinical-button {
+  min-height: 40px;
+  font-size: 13px;
+}
+
+.ringkasan-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 12px 20px;
+  background: var(--surface-soft);
+  overflow-wrap: anywhere;
+}
+
+.ringkasan-meta p,
+.ringkasan-kelompok-header p,
+.ringkasan-kartu p {
+  margin: 0;
+}
+
+.ringkasan-meta p > span {
+  color: var(--muted);
+  margin-right: 8px;
+}
+
+.ringkasan-petunjuk {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--muted);
+  margin: 16px 0 0;
+}
+
+.ringkasan-petunjuk svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.ringkasan-kelompok {
+  margin-top: 24px;
+  min-width: 0;
+}
+
+.ringkasan-kelompok-header {
+  margin-bottom: 12px;
+}
+
+.ringkasan-kelompok-header h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.ringkasan-kelompok-header p {
+  color: var(--muted);
+}
+
+.ringkasan-monitoring {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ringkasan-kartu {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 12px;
+}
+
+.ringkasan-pasien .ringkasan-kartu-aktif {
+  border-color: #0d9488;
+}
+
+.ringkasan-kartu-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ringkasan-kartu-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ringkasan-ikon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.ringkasan-metrik {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ringkasan-jumlah {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ringkasan-jumlah strong {
+  font-size: 30px;
+  font-weight: 650;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringkasan-jumlah span {
+  color: var(--muted);
+}
+
+.ringkasan-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+  background: var(--surface-soft);
+}
+
+.ringkasan-status.tersedia::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #0d9488;
+}
+
+.ringkasan-kartu > .clinical-button {
+  width: 100%;
+  justify-content: space-between;
+  margin-top: auto;
+  min-height: 40px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.ringkasan-kartu > .clinical-button:disabled {
+  opacity: 1;
+  color: var(--muted);
+}
+
+.ringkasan-info-sumber {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ringkasan-info-sumber summary {
+  cursor: pointer;
+  width: fit-content;
+}
+
+.ringkasan-info-sumber p {
+  padding-top: 8px;
+  font-size: 12px;
+}
+
+.ringkasan-progres {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  font-size: 12px;
+}
+
+.ringkasan-progres > strong {
+  font-weight: 600;
+}
+
+.ringkasan-progres-item {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ringkasan-progres-item span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.ringkasan-progres-item b {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringkasan-detail {
+  margin-top: 24px;
+  scroll-margin-top: 24px;
+}
+
+.ringkasan-detail:focus-visible,
+.ringkasan-pasien summary:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 3px;
+}
+
+.ringkasan-detail h4 {
+  margin: 24px 0 8px;
+  font-size: 14px;
+}
+
+.ringkasan-detail summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.ringkasan-catatan {
+  border-left: 3px solid var(--line);
+  padding: 8px 12px;
+  color: var(--muted);
+  background: var(--surface-soft);
+}
+
+.ringkasan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.ringkasan-card,
+.ringkasan-state {
+  padding: 20px;
+  min-width: 0;
+}
+
+.ringkasan-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  margin: 0;
+}
+
+.ringkasan-pasien p,
+.ringkasan-list {
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.ringkasan-pasien small,
+.ringkasan-pasien dt,
+.ringkasan-sumber {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ringkasan-judul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ringkasan-angka {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.ringkasan-angka > div {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.ringkasan-pasien dd {
+  font-size: 14px;
+  margin: 6px 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ringkasan-list {
+  list-style: none;
+  padding: 0;
+}
+
+.ringkasan-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ringkasan-list strong,
+.ringkasan-list small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.ringkasan-scroll {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.ringkasan-teks {
+  white-space: pre-wrap;
+}
+
+.ringkasan-vital + .ringkasan-vital {
+  border-top: 1px solid var(--line);
+}
+
+@container (min-width: 1000px) {
+  .ringkasan-enam-kartu {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 680px) {
+  .ringkasan-monitoring,
+  .ringkasan-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ringkasan-card {
+    padding: 16px;
+  }
+}
+
+@container (max-width: 400px) {
+  .ringkasan-angka {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

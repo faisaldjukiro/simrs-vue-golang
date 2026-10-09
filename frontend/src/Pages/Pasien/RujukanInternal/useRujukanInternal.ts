@@ -6,7 +6,7 @@ import type { PropsRujukanInternal, ReferensiRujukan, RujukanInternal } from '..
 export function useRujukanInternal(props: PropsRujukanInternal) {
   const notifikasi = useNotifikasi()
   const ranap = computed(() => props.moduleName === 'Rawat Inap')
-  const judul = computed(() => ranap.value ? 'Rujuk Internal Rawat Inap' : 'Rujuk Internal Poli')
+  const judul = computed(() => ranap.value ? 'Rujuk Internal' : 'Rujuk Internal Poli')
   const modulValid = computed(() => ['Rawat Jalan', 'IGD/UGD', 'Rawat Inap'].includes(props.moduleName))
   const loading = ref(false)
   const saving = ref(false)

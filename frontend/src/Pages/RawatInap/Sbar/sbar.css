@@ -1,0 +1,33 @@
+.sbar-instruksi {
+  grid-column: 1 / -1;
+}
+
+.sbar-note,
+.sbar-profesi {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.sbar-history-tools {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  align-items: end;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.sbar-history-tools .sbar-note {
+  margin: 0;
+}
+
+.sbar-table-actions {
+  flex-wrap: wrap;
+  width: 155px;
+}
+
+@media (max-width: 760px) {
+  .sbar-history-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

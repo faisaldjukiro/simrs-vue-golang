@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue'
 import PatientIdentityHeader from './PatientIdentityHeader.vue'
 import FormInput from '../Ui/FormInput.vue'
 import CpptPage from '../../Pages/RawatInap/Cppt/CpptPage.vue'
+import SbarPage from '../../Pages/RawatInap/Sbar/SbarPage.vue'
 import PenangananDokterPetugasPage from '../../Pages/Pasien/PenangananDokterPetugas/PenangananDokterPetugasPage.vue'
 import PermintaanRadiologiPage from '../../Pages/Pasien/PermintaanRadiologi/PermintaanRadiologiPage.vue'
 import PermintaanLaboratoriumPage from '../../Pages/Pasien/PermintaanLaboratorium/PermintaanLaboratoriumPage.vue'
@@ -34,6 +35,7 @@ import NewsAnakPage from '../../Pages/RawatInap/NewsAnak/NewsAnakPage.vue'
 import DataHaisPage from '../../Pages/RawatInap/DataHais/DataHaisPage.vue'
 import PerencanaanPemulanganPage from '../../Pages/RawatInap/PerencanaanPemulangan/PerencanaanPemulanganPage.vue'
 import KardeksPage from '../../Pages/RawatInap/Kardeks/KardeksPage.vue'
+import RingkasanPage from '../../Pages/Pasien/Ringkasan/RingkasanPage.vue'
 import EdukasiPasienPage from '../../Pages/RawatInap/EdukasiPasien/EdukasiPasienPage.vue'
 
 const { ArrowLeft, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Search, ShieldX, WifiOff } = LucideIcons
@@ -73,6 +75,7 @@ function pulihkanSidebarAktif() {
 }
 
 const halamanSidebar = {
+  sbar: SbarPage,
   lanjutan_risiko_jatuh_dewasa: RisikoJatuhDewasaPage,
   lanjutan_risiko_jatuh_anak: RisikoJatuhAnakPage,
   observasi_ranap: ObservasiRanapPage,
@@ -107,6 +110,7 @@ const halamanSidebar = {
 
 const daftarSidebarAktif = computed(() => {
   const sumberModul = props.sidebar.filter((item) => {
+    if (item.kode === 'sbar' && props.moduleName !== 'Rawat Inap') return false
     if (item.kode === 'rujukan_internal_poli' && !['Rawat Jalan', 'IGD/UGD'].includes(props.moduleName)) return false
     if (item.kode === 'rujukan_internal_ranap' && props.moduleName !== 'Rawat Inap') return false
     const daftarModul = Array.isArray(item.daftar_modul) ? item.daftar_modul : []
@@ -168,14 +172,11 @@ const propertiHalamanAktif = computed(() => {
   return properti
 })
 
-const ringkasan = computed(() => [
-  ['No. Rawat', props.patient.no_rawat],
-  ['No. Rekam Medis', props.patient.no_rekam_medis],
-  ['No. Registrasi', props.patient.no_registrasi],
-  ['Jam Registrasi', props.patient.jam_registrasi],
-  ['No. SEP', props.patient.no_sep],
-  ['Status Bayar', props.patient.status_bayar],
-])
+function bukaDariRingkasan(kode: string) {
+  if (aksesSidebarTersedia.value && daftarSidebarAktif.value.some(item => item.kode === kode)) {
+    kodeSidebarAktif.value = kode
+  }
+}
 
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -286,12 +287,14 @@ watch(kodeSidebarAktif, (kode) => {
           :patient="patient"
         />
 
-        <section v-if="kodeSidebarAktif === 'ringkasan'" class="patient-workspace-summary" aria-label="Ringkasan kunjungan">
-          <article v-for="item in ringkasan" :key="item[0]">
-            <span>{{ item[0] }}</span>
-            <strong>{{ item[1] || '-' }}</strong>
-          </article>
-        </section>
+        <RingkasanPage
+          v-if="kodeSidebarAktif === 'ringkasan'"
+          :token="token"
+          :patient="patient"
+          :module-name="moduleName"
+          :kode-sidebar="daftarSidebarAktif.map(item => item.kode)"
+          @buka="bukaDariRingkasan"
+        />
 
         <component
           :is="komponenSidebarAktif"

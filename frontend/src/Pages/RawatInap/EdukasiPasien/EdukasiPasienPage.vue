@@ -14,6 +14,7 @@ const {
   loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing,
   hapusTarget, petugas, ruangan, bolehPilihPetugas, form, terkunci, mulai, selesai, errorFilter,
   waktuSekarang, reset, muat, cariReferensi, edit, mutasi, cetak,
+  foto, kunciFoto, pratinjauFoto, fotoGagal, detail, detailFotoGagal, pilihFoto, batalFoto,
 } = useEdukasiPasien(props)
 </script>
 
@@ -60,6 +61,22 @@ const {
               :disabled="terkunci" />
             <FormInput v-model="form.keterangan" label="Keterangan" jenis="textarea" :rows="5" :maxlength="255"
               :disabled="terkunci" />
+          </div>
+          <div class="edukasi-foto">
+            <FormInput :key="kunciFoto" label="Foto Edukasi (Opsional)" type="file"
+              :file-name="foto?.name || ''"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png" :disabled="terkunci"
+              hint="Satu foto JPG/PNG, maksimal 10 MB dan 40 megapiksel. Foto dikirim saat menyimpan catatan."
+              @change="pilihFoto" />
+            <template v-if="pratinjauFoto">
+              <img v-if="!fotoGagal" :src="pratinjauFoto" alt="Pratinjau foto edukasi" class="edukasi-foto-preview"
+                @error="fotoGagal = true" />
+              <p v-else class="patient-error" role="alert">Foto tidak dapat ditampilkan. Periksa file atau koneksi server berkas.</p>
+              <button v-if="foto" type="button" class="clinical-button secondary" :disabled="terkunci" @click="batalFoto">
+                <X :size="15" /> Batalkan Pilihan Foto
+              </button>
+            </template>
+            <p v-if="editing?.data.foto && !foto" class="edukasi-catatan">Foto tersimpan tetap digunakan. Pilih file untuk menggantinya.</p>
           </div>
           <p v-if="!loading && !error && !bolehPilihPetugas && !petugas.kode" class="patient-error" role="alert">
             Akun login belum terhubung dengan data petugas. Hubungi administrator untuk melengkapi pemetaan akun.
@@ -146,6 +163,12 @@ const {
             </div>
           </template>
         </Column>
+        <Column header="Foto" style="min-width:130px">
+          <template #body="{ data: r }">
+            <button v-if="r.foto_url" type="button" class="clinical-button secondary" @click="detail = r">Lihat Foto</button>
+            <span v-else>{{ r.data.foto ? 'Foto tidak tersedia' : 'Tanpa foto' }}</span>
+          </template>
+        </Column>
         <Column header="Aksi" style="min-width:140px">
           <template #body="{ data: r }">
             <div v-if="r.bisa_ubah" class="clinical-table-actions">
@@ -161,6 +184,14 @@ const {
         </Column>
       </DataTable>
     </article>
+
+    <Dialog :visible="!!detail" modal header="Foto Edukasi Pasien" :style="{ width: '760px', maxWidth: '95vw' }"
+      @update:visible="!$event && (detail = null)">
+      <p>{{ detail?.data.tgl_perawatan }} {{ detail?.data.jam_rawat }} WITA · {{ detail?.nama_petugas }}</p>
+      <img v-if="detail?.foto_url && !detailFotoGagal" :src="detail.foto_url" alt="Foto dokumentasi edukasi pasien"
+        class="edukasi-foto-detail" @error="detailFotoGagal = true" />
+      <p v-else role="alert">Foto tidak dapat dimuat. Periksa koneksi server berkas.</p>
+    </Dialog>
 
     <Dialog :visible="!!hapusTarget" modal header="Hapus Catatan Edukasi?" :closable="!saving"
       :style="{ width: '480px', maxWidth: '95vw' }" @update:visible="!saving && (hapusTarget = null)">

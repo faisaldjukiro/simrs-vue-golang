@@ -78,15 +78,13 @@ INSERT INTO sidebar_pasien
 VALUES
     ('Cppt/Soap', 'FileSignature', JSON_ARRAY('IGD/UGD', 'Rawat Inap'), 1, TRUE, NOW(), NOW()),
     ('Penanganan Dokter & Petugas', 'Users', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 2, TRUE, NOW(), NOW()),
-    ('SBAR', 'MessageSquareText', JSON_ARRAY('Rawat Inap'), 3, TRUE, NOW(), NOW()),
+    ('SBAR & Verifikasi', 'MessageSquareText', JSON_ARRAY('Rawat Inap'), 3, TRUE, NOW(), NOW()),
     ('Diagnosa', 'Stethoscope', JSON_ARRAY('Rawat Inap'), 4, TRUE, NOW(), NOW()),
     ('Riwayat Perawatan', 'History', JSON_ARRAY('Rawat Inap'), 5, TRUE, NOW(), NOW()),
     ('Input Resep', 'Pill', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 6, TRUE, NOW(), NOW()),
     ('Copy Resep', 'Copy', JSON_ARRAY('IGD/UGD', 'Rawat Jalan', 'Rawat Inap'), 7, TRUE, NOW(), NOW()),
     ('Resep Luar', 'Receipt', JSON_ARRAY('Rawat Inap'), 8, TRUE, NOW(), NOW()),
-    ('Verifikasi SBAR', 'ShieldCheck', JSON_ARRAY('Rawat Inap'), 9, TRUE, NOW(), NOW()),
-    ('Rujuk Internal Rawat Inap', 'ArrowRightToLine', JSON_ARRAY('Rawat Inap'), 10, TRUE, NOW(), NOW()),
-    ('Surat Konsultasi Ke Poli', 'Send', JSON_ARRAY('Rawat Inap'), 11, TRUE, NOW(), NOW()),
+    ('Rujuk Internal', 'ArrowRightToLine', JSON_ARRAY('Rawat Inap'), 10, TRUE, NOW(), NOW()),
     ('Lembar Konsultasi', 'ClipboardList', JSON_ARRAY('Rawat Inap'), 12, TRUE, NOW(), NOW()),
     ('EWS Ranap', 'Activity', JSON_ARRAY('Rawat Inap'), 13, TRUE, NOW(), NOW()),
     ('Permintaan Stok Pasien', 'PackagePlus', JSON_ARRAY('Rawat Inap'), 14, TRUE, NOW(), NOW()),
@@ -143,6 +141,9 @@ VALUES
 UPDATE sidebar_pasien
 SET kode_sidebar = CONCAT('sidebar_lama_', LPAD(id, 4, '0'));
 
+UPDATE sidebar_pasien SET kode_sidebar = 'sbar'
+WHERE nama_sidebar = 'SBAR & Verifikasi';
+
 UPDATE sidebar_pasien SET kode_sidebar = 'cppt_soap'
 WHERE nama_sidebar = 'Cppt/Soap';
 
@@ -177,7 +178,7 @@ UPDATE sidebar_pasien SET kode_sidebar = 'edukasi_pasien'
 WHERE nama_sidebar = 'Edukasi Pasien';
 
 UPDATE sidebar_pasien SET kode_sidebar = 'rujukan_internal_ranap'
-WHERE nama_sidebar = 'Rujuk Internal Rawat Inap';
+WHERE nama_sidebar = 'Rujuk Internal';
 UPDATE sidebar_pasien SET kode_sidebar = 'penanganan_dokter_petugas'
 WHERE nama_sidebar = 'Penanganan Dokter & Petugas';
 UPDATE sidebar_pasien SET kode_sidebar = 'diagnosa'

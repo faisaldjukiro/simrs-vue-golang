@@ -1,10 +1,8 @@
 package berkasdigitalhttp
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
-	"io"
+
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
@@ -14,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"simrs-backend/internal/modules/berkas_digital"
+	"simrs-backend/internal/shared/berkasrawat"
 	"simrs-backend/internal/shared/httpresponse"
 )
 
@@ -127,53 +126,10 @@ func (h *Handler) tulisError(c *gin.Context, err error) {
 func (h *Handler) kirimKeServerKhanza(c *gin.Context, fileHeader *multipart.FileHeader, namaFile, noRawat, kode string) error {
 	file, err := fileHeader.Open()
 	if err != nil {
-		return fmt.Errorf("file upload tidak dapat dibaca")
+		return errors.New("file upload tidak dapat dibaca")
 	}
 	defer file.Close()
-
-	var body bytes.Buffer
-	writer := multipart.NewWriter(&body)
-	if err := writer.WriteField("no_rawat", noRawat); err != nil {
-		return fmt.Errorf("payload upload tidak dapat disiapkan")
-	}
-	if err := writer.WriteField("kode", kode); err != nil {
-		return fmt.Errorf("payload upload tidak dapat disiapkan")
-	}
-	part, err := writer.CreateFormFile("file", namaFile)
-	if err != nil {
-		return fmt.Errorf("payload file tidak dapat disiapkan")
-	}
-	if _, err := io.Copy(part, file); err != nil {
-		return fmt.Errorf("file upload tidak dapat dibaca")
-	}
-	if err := writer.Close(); err != nil {
-		return fmt.Errorf("payload upload tidak dapat ditutup")
-	}
-
-	request, err := http.NewRequestWithContext(c.Request.Context(), http.MethodPost, h.uploadURL, &body)
-	if err != nil {
-		return fmt.Errorf("request upload ke SIMRS tidak valid")
-	}
-	request.Header.Set("Content-Type", writer.FormDataContentType())
-	request.Header.Set("Accept", "text/plain")
-
-	response, err := h.client.Do(request)
-	if err != nil {
-		return fmt.Errorf("upload ke server berkas SIMRS gagal: %w", err)
-	}
-	defer response.Body.Close()
-	responseBody, _ := io.ReadAll(io.LimitReader(response.Body, 2048))
-	pesan := strings.TrimSpace(string(responseBody))
-	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return fmt.Errorf("server berkas SIMRS menolak upload: HTTP %d %s", response.StatusCode, pesan)
-	}
-	if pesan != "UPLOAD_BERHASIL" {
-		if pesan == "" {
-			pesan = "respon kosong"
-		}
-		return fmt.Errorf("server berkas SIMRS gagal upload: %s", pesan)
-	}
-	return nil
+	return berkasrawat.Kirim(c.Request.Context(), h.client, h.uploadURL, file, namaFile, noRawat, kode)
 }
 
 func (h *Handler) namaFileAman(noRawat, kode, namaAsli string) string {

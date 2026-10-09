@@ -27,6 +27,11 @@ func (h *Handler) Register(group *gin.RouterGroup) {
 	group.PUT("", func(c *gin.Context) { h.mutasi(c, "ubah") })
 	group.DELETE("", func(c *gin.Context) { h.mutasi(c, "hapus") })
 	group.POST("/kirim", func(c *gin.Context) { h.mutasi(c, "kirim") })
+	group.GET("/konsultasi", h.konsultasi)
+	group.GET("/konsultasi/asal", h.konsultasi)
+	group.POST("/konsultasi", h.konsultasi)
+	group.PUT("/konsultasi", h.konsultasi)
+	group.POST("/konsultasi/jawaban", h.konsultasi)
 }
 
 func (h *Handler) Daftar(c *gin.Context) {

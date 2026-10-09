@@ -184,6 +184,21 @@ func (r *Repositori) Mutasi(ctx context.Context, jenis string, asal Rujukan, bar
 	if aktual != asal.Input {
 		return ErrBerubah
 	}
+	// Surat konsultasi memiliki rekam jawaban sendiri; jangan putuskan rujukannya.
+	var tabelKonsul, suratTerkait int
+	err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='surat_konsul'`).Scan(&tabelKonsul)
+	if err != nil {
+		return err
+	}
+	if tabelKonsul > 0 {
+		err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM surat_konsul WHERE no_rawat=? AND kd_dokter_tujuan=? AND kd_poli_tujuan=?`, asal.NoRawat, aktual.KodeDokter, aktual.KodePoli).Scan(&suratTerkait)
+		if err != nil {
+			return err
+		}
+		if suratTerkait > 0 {
+			return fmt.Errorf("%w: rujukan sudah terhubung ke surat konsultasi dan tidak boleh diubah/dihapus", ErrBerubah)
+		}
+	}
 	if baru != nil {
 		_, _, err = periksaReferensi(ctx, referensi, *baru)
 		if err != nil {

@@ -18,6 +18,7 @@ import (
 var ErrValidasi = errors.New("catatan edukasi tidak valid")
 var ErrAkses = errors.New("catatan hanya boleh diubah oleh petugas pencatat atau administrator")
 var ErrKonflik = errors.New("catatan sudah ada, berubah, atau hilang; muat ulang riwayat")
+var ErrFotoTerunggah = errors.New("foto sudah terkirim ke server berkas, tetapi penyimpanan catatan belum berhasil dikonfirmasi; muat ulang riwayat sebelum mencoba kembali")
 
 const tabel = "catatan_edukasi"
 
@@ -34,6 +35,7 @@ type Catatan struct {
 	BisaUbah    bool              `json:"bisa_ubah"`
 	NamaPetugas string            `json:"nama_petugas"`
 	NamaRuangan string            `json:"nama_ruangan"`
+	FotoURL     string            `json:"foto_url"`
 }
 
 type Hasil struct {
@@ -52,7 +54,7 @@ type Repositori struct{ simrs *sql.DB }
 func NewRepositori(simrs *sql.DB) *Repositori { return &Repositori{simrs: simrs} }
 
 func Kolom() []string {
-	return []string{"tgl_perawatan", "jam_rawat", "kd_ruangan", "nip", "metode", "durasi", "materi", "penerima", "keterangan"}
+	return []string{"tgl_perawatan", "jam_rawat", "kd_ruangan", "nip", "metode", "durasi", "materi", "penerima", "keterangan", "foto"}
 }
 
 func Validasi(in *Input) error {
@@ -76,7 +78,7 @@ func Validasi(in *Input) error {
 	}
 	// Sesuai struktur catatan_edukasi SIMRS yang dikonfirmasi pengguna.
 	// Tolak kelebihan panjang, jangan memotong isi catatan klinis.
-	for k, batas := range map[string]int{"kd_ruangan": 30, "nip": 20, "durasi": 30, "materi": 50, "penerima": 30, "keterangan": 255} {
+	for k, batas := range map[string]int{"kd_ruangan": 30, "nip": 20, "durasi": 30, "materi": 50, "penerima": 30, "keterangan": 255, "foto": 255} {
 		in.Data[k] = strings.TrimSpace(in.Data[k])
 		if utf8.RuneCountInString(in.Data[k]) > batas {
 			return fmt.Errorf("%w: %s maksimal %d karakter", ErrValidasi, k, batas)
@@ -229,7 +231,13 @@ func (r *Repositori) lengkapiNama(ctx context.Context, catatan []Catatan) error 
 	return nil
 }
 
-func (r *Repositori) Mutasi(ctx context.Context, in Input, metode, username string, admin bool) (err error) {
+func (r *Repositori) Mutasi(ctx context.Context, in Input, metode, username string, admin bool) error {
+	return r.MutasiDenganFoto(ctx, in, metode, username, admin, nil)
+}
+
+// Unggah hanya dipanggil setelah validasi, penguncian snapshot, dan mutasi SQL berhasil.
+// File di server berkas tidak ikut transaksi MySQL; kegagalan sesudah upload dilaporkan khusus.
+func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, username string, admin bool, unggah func() (string, error)) (err error) {
 	if in.NoRawat == "" || len(in.NoRawat) > 17 {
 		return ErrValidasi
 	}
@@ -240,6 +248,16 @@ func (r *Repositori) Mutasi(ctx context.Context, in Input, metode, username stri
 		return fmt.Errorf("%w: arsip lokal hanya baca; rekonsiliasi diperlukan", ErrValidasi)
 	}
 	if metode != "DELETE" {
+		if in.Data == nil {
+			return ErrValidasi
+		}
+		// Klien JSON lama boleh mempertahankan foto, tetapi tidak boleh memasang path lain.
+		if _, ada := in.Data["foto"]; !ada && metode == "PUT" {
+			in.Data["foto"] = in.Asli["foto"]
+		}
+		if in.Data["foto"] != "" && (metode == "POST" || in.Data["foto"] != in.Asli["foto"]) {
+			return fmt.Errorf("%w: foto baru wajib dikirim sebagai file upload", ErrValidasi)
+		}
 		if err = Validasi(&in); err != nil {
 			return err
 		}
@@ -287,12 +305,87 @@ func (r *Repositori) Mutasi(ctx context.Context, in Input, metode, username stri
 	defer func() {
 		var e *mysql.MySQLError
 		if errors.Is(err, khanzamutasi.ErrKonflik) || (errors.As(err, &e) && e.Number == 1062) {
-			err = ErrKonflik
+			if errors.Is(err, ErrFotoTerunggah) {
+				err = errors.Join(ErrKonflik, ErrFotoTerunggah)
+			} else {
+				err = ErrKonflik
+			}
 		}
 	}()
-	if metode == "POST" {
-		_, err = r.simrs.ExecContext(ctx, "INSERT INTO "+tabel+" ("+strings.Join(kolom, ",")+") VALUES ("+strings.TrimSuffix(strings.Repeat("?,", len(kolom)), ",")+")", baru...)
+	tx, err := r.simrs.BeginTx(ctx, nil)
+	if err != nil {
 		return err
 	}
-	return khanzamutasi.Jalankan(ctx, r.simrs, tabel, kolom, lama, baru, metode == "DELETE")
+	defer tx.Rollback()
+	if unggah != nil {
+		var engine string
+		if err = tx.QueryRowContext(ctx, `SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?`, tabel).Scan(&engine); err != nil {
+			return err
+		}
+		if !strings.EqualFold(engine, "InnoDB") {
+			return fmt.Errorf("%w: penyimpanan foto memerlukan tabel catatan_edukasi dengan transaksi InnoDB", ErrValidasi)
+		}
+	}
+	where, args := khanzamutasi.Kondisi(kolom, lama)
+	if metode != "POST" {
+		rows, e := tx.QueryContext(ctx, "SELECT 1 FROM "+tabel+" WHERE "+where+" LIMIT 2 FOR UPDATE", args...)
+		if e != nil {
+			return e
+		}
+		jumlah := 0
+		for rows.Next() {
+			jumlah++
+		}
+		e = rows.Err()
+		rows.Close()
+		if e != nil {
+			return e
+		}
+		if jumlah != 1 {
+			return ErrKonflik
+		}
+	}
+	switch metode {
+	case "POST":
+		_, err = tx.ExecContext(ctx, "INSERT INTO "+tabel+" ("+strings.Join(kolom, ",")+") VALUES ("+strings.TrimSuffix(strings.Repeat("?,", len(kolom)), ",")+")", baru...)
+	case "DELETE":
+		_, err = tx.ExecContext(ctx, "DELETE FROM "+tabel+" WHERE "+where+" LIMIT 1", args...)
+	default:
+		set := make([]string, len(kolom))
+		for i, k := range kolom {
+			set[i] = k + "=?"
+		}
+		_, err = tx.ExecContext(ctx, "UPDATE "+tabel+" SET "+strings.Join(set, ",")+" WHERE "+where+" LIMIT 1", append(append([]any(nil), baru...), args...)...)
+	}
+	if err != nil {
+		return err
+	}
+	if unggah != nil && metode != "DELETE" {
+		lokasi, e := unggah()
+		if e != nil {
+			return e
+		}
+		defer func() {
+			if err != nil {
+				err = errors.Join(err, ErrFotoTerunggah)
+			}
+		}()
+		if lokasi == "" || len(lokasi) > 255 {
+			return fmt.Errorf("%w: lokasi foto tidak valid", ErrValidasi)
+		}
+		whereFoto, argsFoto := khanzamutasi.Kondisi(kolom, baru)
+		hasil, e := tx.ExecContext(ctx, "UPDATE "+tabel+" SET foto=? WHERE "+whereFoto+" LIMIT 1", append([]any{lokasi}, argsFoto...)...)
+		err = e
+		if err != nil {
+			return err
+		}
+		jumlah, e := hasil.RowsAffected()
+		if e != nil {
+			return e
+		}
+		if jumlah != 1 {
+			return ErrKonflik
+		}
+	}
+	return tx.Commit()
 }

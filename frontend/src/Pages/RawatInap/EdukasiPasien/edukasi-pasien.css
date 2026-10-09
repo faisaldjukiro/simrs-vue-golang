@@ -20,6 +20,36 @@
   line-height: 1.5;
 }
 
+.edukasi-foto {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+  min-width: 0;
+}
+
+.edukasi-foto .clinical-button {
+  justify-self: start;
+}
+
+.edukasi-foto-preview,
+.edukasi-foto-detail {
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.edukasi-foto-preview {
+  max-height: 220px;
+}
+
+.edukasi-foto-detail {
+  width: 100%;
+  max-height: 70vh;
+}
+
 .edukasi-filter {
   display: flex;
   flex-wrap: wrap;

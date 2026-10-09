@@ -44,10 +44,12 @@ import (
 	resephttp "simrs-backend/internal/modules/resep/delivery/http"
 	resumepasienhttp "simrs-backend/internal/modules/resume_pasien/delivery/http"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
+	ringkasanpasienhttp "simrs-backend/internal/modules/ringkasan_pasien/delivery/http"
 	risikojatuhanakhttp "simrs-backend/internal/modules/risiko_jatuh_anak/delivery/http"
 	risikojatuhhttp "simrs-backend/internal/modules/risiko_jatuh_dewasa/delivery/http"
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	rujukaninternalhttp "simrs-backend/internal/modules/rujukan_internal/delivery/http"
+	sbarhttp "simrs-backend/internal/modules/sbar/delivery/http"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
 	ventilatorhttp "simrs-backend/internal/modules/ventilator/delivery/http"
 	whatsappgatewayhttp "simrs-backend/internal/modules/whatsapp_gateway/delivery/http"
@@ -55,6 +57,7 @@ import (
 )
 
 type Dependencies struct {
+	SBAR                    *sbarhttp.Handler
 	JadwalOperasi           *jadwaloperasihttp.Handler
 	RisikoJatuhDewasa       *risikojatuhhttp.Handler
 	RisikoJatuhAnak         *risikojatuhanakhttp.Handler
@@ -65,6 +68,7 @@ type Dependencies struct {
 	EdukasiPasien           *edukasipasienhttp.Handler
 	PerencanaanPemulangan   *pemulanganhttp.Handler
 	Kardeks                 *kardekshttp.Handler
+	RingkasanPasien         *ringkasanpasienhttp.Handler
 	ChecklistPreOperasi     *checklistpreoperasihttp.Handler
 	AktivitasLog            *aktivitasloghttp.Handler
 	Autentikasi             *autentikasihttp.Handler
@@ -161,7 +165,9 @@ func Register(router *gin.Engine, dependencies Dependencies) {
 		path     string
 		register func(*gin.RouterGroup)
 	}{
+		{"/sbar", dependencies.SBAR.Register},
 		{"/cppt", dependencies.CPPT.Register},
+		{"/ringkasan-pasien", dependencies.RingkasanPasien.Register},
 		{"/checklist-pre-operasi", dependencies.ChecklistPreOperasi.Register},
 		{"/jadwal-operasi", dependencies.JadwalOperasi.Register},
 		{"/risiko-jatuh-dewasa", dependencies.RisikoJatuhDewasa.Register},

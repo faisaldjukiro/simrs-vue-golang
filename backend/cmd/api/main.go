@@ -90,6 +90,8 @@ import (
 	resumepasienhttp "simrs-backend/internal/modules/resume_pasien/delivery/http"
 	"simrs-backend/internal/modules/resume_pasien_ranap"
 	resumepasienranaphttp "simrs-backend/internal/modules/resume_pasien_ranap/delivery/http"
+	"simrs-backend/internal/modules/ringkasan_pasien"
+	ringkasanpasienhttp "simrs-backend/internal/modules/ringkasan_pasien/delivery/http"
 	"simrs-backend/internal/modules/risiko_jatuh_anak"
 	risikojatuhanakhttp "simrs-backend/internal/modules/risiko_jatuh_anak/delivery/http"
 	"simrs-backend/internal/modules/risiko_jatuh_dewasa"
@@ -98,6 +100,8 @@ import (
 	riwayatperawatanhttp "simrs-backend/internal/modules/riwayat_perawatan/delivery/http"
 	"simrs-backend/internal/modules/rujukan_internal"
 	rujukaninternalhttp "simrs-backend/internal/modules/rujukan_internal/delivery/http"
+	"simrs-backend/internal/modules/sbar"
+	sbarhttp "simrs-backend/internal/modules/sbar/delivery/http"
 	"simrs-backend/internal/modules/triase_igd"
 	triaseigdhttp "simrs-backend/internal/modules/triase_igd/delivery/http"
 	"simrs-backend/internal/modules/ventilator"
@@ -278,9 +282,11 @@ func main() {
 		PEWSAnak:                pewsanakhttp.NewHandler(pews_anak.NewRepositori(simrsDB)),
 		NEWSAnak:                newsanakhttp.NewHandler(news_anak.NewRepositori(simrsDB)),
 		DataHais:                datahaishttp.NewHandler(data_hais.NewRepositori(db, simrsDB)),
-		EdukasiPasien:           edukasipasienhttp.NewHandler(edukasi_pasien.NewRepositori(simrsDB)),
+		EdukasiPasien:           edukasipasienhttp.NewHandler(edukasi_pasien.NewRepositori(simrsDB), config.BerkasDigitalUploadURL(), config.BerkasDigitalLokasiPrefix(), config.SIMRSWebBaseURL()),
 		PerencanaanPemulangan:   pemulanganhttp.NewHandler(perencanaan_pemulangan.NewRepositori(simrsDB)),
+		SBAR:                    sbarhttp.NewHandler(sbar.NewRepositori(simrsDB)),
 		Kardeks:                 kardekshttp.NewHandler(kardeks.NewRepositori(simrsDB)),
+		RingkasanPasien:         ringkasanpasienhttp.NewHandler(ringkasan_pasien.NewRepositori(simrsDB)),
 		AwalMedisIgd:            awalMedisIgdHandler,
 		ResumePasien:            resumePasienHandler,
 		ResumePasienRanap:       resumePasienRanapHandler,

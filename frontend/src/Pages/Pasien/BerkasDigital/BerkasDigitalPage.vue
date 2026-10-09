@@ -245,3 +245,4 @@ const {
 </template>
 
 <style src="./berkas-digital.css" scoped></style>
+<style src="@/Components/Ui/file-picker.css" scoped></style>

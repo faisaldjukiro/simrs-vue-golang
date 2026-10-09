@@ -71,3 +71,47 @@ form, tetapi constraint tabel SIMRS tetap berlaku. Reset mempertahankan pilihan
 petugas, ruangan, dan metode dalam kunjungan yang sama. Error MySQL dikategorikan
 dengan kode numerik tanpa menampilkan SQL atau isi catatan pasien. Struktur
 database server dan penyebab error simpan sebelumnya belum terverifikasi langsung.
+
+## Foto Edukasi Pasien
+
+Kolom `catatan_edukasi.foto` (`varchar(255)`, nullable) ditambahkan pengguna
+langsung pada SIMRS. Aplikasi tidak menjalankan DDL atau migration untuk kolom
+ini. Nilai NULL dibaca sebagai foto kosong. Deploy backend dan frontend bersama.
+
+Form Edukasi menyediakan satu foto opsional JPG/PNG, maksimal 10 MB dan
+40 megapiksel, pratinjau, penggantian foto, dan tombol Lihat Foto di riwayat.
+Edit tanpa file pengganti mempertahankan foto sebelumnya. Reset atau pindah
+pasien membuang pilihan file yang belum disimpan.
+
+Upload memakai `BERKAS_DIGITAL_UPLOAD_URL` dan `BERKAS_DIGITAL_LOKASI_PREFIX`
+yang sama dengan Berkas Digital. Default endpoint adalah
+`<SIMRS_WEB_BASE_URL>/berkasrawat/uploadsep.php`, dengan prefix `pages/upload`.
+Backend mengirim multipart `file`, `no_rawat`, dan `kode=edukasi`, serta
+mengharuskan respons sukses `UPLOAD_BERHASIL`. Nama file unik dibuat server;
+kolom `foto` berisi lokasi relatif, bukan isi gambar. Tidak membuat baris
+tambahan di `berkas_digital_perawatan`.
+
+Upload dijalankan setelah validasi akses, snapshot edit, dan penulisan catatan
+dalam transaksi InnoDB. Upload gagal membatalkan perubahan catatan. File pada
+server berkas tidak ikut transaksi database: jika upload berhasil lalu database
+gagal, API meminta petugas memuat ulang riwayat sebelum mencoba lagi. File lama
+saat penggantian atau penghapusan catatan tidak dihapus secara fisik otomatis.
+
+Pengujian integrasi melalui Postman pada lingkungan uji:
+
+1. Gunakan Bearer token dan `GET {{api_url}}/api/edukasi-pasien?no_rawat={{no_rawat}}`.
+2. Untuk foto baru, kirim `POST {{api_url}}/api/edukasi-pasien` dengan Body
+   **form-data**: `foto` bertipe File dan `payload` bertipe Text berisi JSON
+   `{ "no_rawat": "<nomor rawat uji>", "data": { "tgl_perawatan": "2026-10-08",
+   "jam_rawat": "10:00:00", "nip": "<kode petugas uji>", "kd_ruangan": "",
+   "metode": "Lisan", "durasi": "10 menit", "materi": "Materi uji",
+   "penerima": "Pasien", "keterangan": "", "foto": "" } }`.
+   Jangan mengisi header Content-Type manual; Postman membuat boundary multipart.
+3. Untuk mengganti foto, gunakan `PUT` pada URL yang sama; sertakan
+   `sumber: "SIMRS"` dan `asli` yang berisi seluruh `data` hasil GET, termasuk
+   `foto`. `data` berisi nilai yang diperbarui dan lokasi foto lama.
+4. GET kembali, periksa `data.foto` serta `foto_url`, lalu buka foto. Uji juga
+   edit JSON tanpa file pengganti, file bukan gambar, dan server upload gagal.
+
+Verifikasi otomatis memakai driver SQL dan server HTTP tiruan; belum menguji
+upload ke server SIMRS nyata atau melakukan mutasi data pasien nyata.

@@ -11,14 +11,20 @@ import (
 	"simrs-backend/internal/modules/autentikasi"
 	"simrs-backend/internal/modules/edukasi_pasien"
 	"simrs-backend/internal/shared/httpresponse"
+	"strings"
 	"time"
 )
 
 type Handler struct {
 	repo *edukasi_pasien.Repositori
+	foto pengaturanFoto
 }
 
-func NewHandler(repo *edukasi_pasien.Repositori) *Handler { return &Handler{repo: repo} }
+var errUploadFoto = errors.New("foto gagal diupload")
+
+func NewHandler(repo *edukasi_pasien.Repositori, uploadURL, prefix, webBaseURL string) *Handler {
+	return &Handler{repo: repo, foto: pengaturanFoto{uploadURL: uploadURL, prefix: strings.Trim(prefix, "/"), webBaseURL: webBaseURL, client: &http.Client{Timeout: 60 * time.Second}}}
+}
 func (h *Handler) Register(g *gin.RouterGroup) {
 	g.GET("", h.proses)
 	g.GET("/referensi", h.proses)
@@ -39,7 +45,11 @@ func (h *Handler) proses(c *gin.Context) {
 			admin = true
 		}
 	}
-	ctx, cancel := context.WithTimeout(c.Request.Context(), 20*time.Second)
+	durasi := 20 * time.Second
+	if c.ContentType() == "multipart/form-data" {
+		durasi = 90 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), durasi)
 	defer cancel()
 	if c.Request.Method == http.MethodGet && c.FullPath() == "/api/edukasi-pasien/referensi" {
 		hasil, err := h.repo.Referensi(ctx, c.Query("jenis"), c.Query("q"), u.Username, admin)
@@ -56,16 +66,36 @@ func (h *Handler) proses(c *gin.Context) {
 			tulisError(c, err)
 			return
 		}
+		for i := range hasil.Catatan {
+			hasil.Catatan[i].FotoURL = h.urlFoto(hasil.Catatan[i].Data["foto"])
+		}
 		httpresponse.Success(c, 200, hasil)
 		return
 	}
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 128*1024)
-	var in edukasi_pasien.Input
-	if c.ShouldBindJSON(&in) != nil {
-		tulisError(c, edukasi_pasien.ErrValidasi)
+	defer func() {
+		if c.Request.MultipartForm != nil {
+			c.Request.MultipartForm.RemoveAll()
+		}
+	}()
+	in, file, err := bacaInput(c)
+	if err != nil {
+		tulisError(c, err)
 		return
 	}
-	if err := h.repo.Mutasi(ctx, in, c.Request.Method, u.Username, admin); err != nil {
+	var unggah func() (string, error)
+	if file != nil {
+		nama, err := siapkanFoto(file)
+		if err != nil {
+			tulisError(c, err)
+			return
+		}
+		if len(h.foto.prefix)+1+len(nama) > 255 {
+			tulisError(c, fmt.Errorf("%w: konfigurasi lokasi foto melebihi 255 karakter", edukasi_pasien.ErrValidasi))
+			return
+		}
+		unggah = func() (string, error) { return h.unggahFoto(ctx, file, nama, in.NoRawat) }
+	}
+	if err := h.repo.MutasiDenganFoto(ctx, in, c.Request.Method, u.Username, admin, unggah); err != nil {
 		tulisError(c, err)
 		return
 	}
@@ -84,6 +114,8 @@ func tulisError(c *gin.Context, err error) {
 		status, kode, pesan = 403, "FORBIDDEN", err.Error()
 	case errors.Is(err, edukasi_pasien.ErrKonflik):
 		status, kode, pesan = 409, "CONFLICT", err.Error()
+	case errors.Is(err, errUploadFoto):
+		status, kode, pesan = 502, "EDUKASI_FOTO_UPLOAD_ERROR", err.Error()+". Perubahan catatan dibatalkan."
 	}
 	if status == 500 {
 		var dbErr *mysql.MySQLError
@@ -109,6 +141,9 @@ func tulisError(c *gin.Context, err error) {
 		} else if errors.Is(err, context.DeadlineExceeded) {
 			status, kode, pesan = 504, "EDUKASI_TIMEOUT", "SIMRS belum merespons dalam batas waktu. Muat ulang riwayat sebelum mencoba simpan kembali."
 		}
+	}
+	if errors.Is(err, edukasi_pasien.ErrFotoTerunggah) {
+		pesan += ". " + edukasi_pasien.ErrFotoTerunggah.Error()
 	}
 	httpresponse.Error(c, status, kode, pesan)
 }

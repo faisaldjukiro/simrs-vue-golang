@@ -23,6 +23,38 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   const petugasLogin = ref<Record<string, string>>({})
   const bolehPilihPetugas = ref(false)
   const form = reactive<Record<string, string>>({})
+  const foto = ref<File | null>(null)
+  const fotoLokal = ref('')
+  const kunciFoto = ref(0)
+  const fotoGagal = ref(false)
+  const detailFotoGagal = ref(false)
+  const pratinjauFoto = computed(() => fotoLokal.value || editing.value?.foto_url || '')
+  watch(pratinjauFoto, () => { fotoGagal.value = false })
+  watch(detail, () => { detailFotoGagal.value = false })
+
+  function batalFoto() {
+    if (fotoLokal.value) URL.revokeObjectURL(fotoLokal.value)
+    fotoLokal.value = ''
+    foto.value = null
+    kunciFoto.value++
+  }
+
+  function pilihFoto(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    batalFoto()
+    if (!file) return
+    if (!['image/jpeg', 'image/png'].includes(file.type) || !/\.(jpe?g|png)$/i.test(file.name)) {
+      errorSimpan.value = 'Foto harus berupa JPG atau PNG.'
+      return
+    }
+    if (!file.size || file.size > 10 * 1024 * 1024) {
+      errorSimpan.value = 'Ukuran foto maksimal 10 MB.'
+      return
+    }
+    errorSimpan.value = ''
+    foto.value = file
+    fotoLokal.value = URL.createObjectURL(file)
+  }
   let generasi = 0
   let urutan = 0
   const errorFilter = computed(() => mulai.value && selesai.value && mulai.value > selesai.value
@@ -50,12 +82,14 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   }
 
   function reset() {
+    batalFoto()
     editing.value = null
     errorSimpan.value = ''
     if (!petugas.value.kode) petugas.value = { ...petugasLogin.value }
     const metode = form.metode || 'Audio'
     Object.keys(form).forEach(k => delete form[k])
     for (const b of bidangEdukasi) form[b.key] = ''
+    form.foto = ''
     form.metode = metode
     waktuSekarang()
   }
@@ -141,14 +175,21 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     const konteks = generasi
     saving.value = true
     try {
+      const payload = JSON.stringify({
+        no_rawat: props.patient.no_rawat,
+        sumber: hapus ? hapusTarget.value?.sumber : editing.value?.sumber,
+        data: hapus ? undefined : { ...form, nip: petugas.value.kode, kd_ruangan: ruangan.value.kode || '' },
+        asli: hapus ? hapusTarget.value?.data : editing.value?.data,
+      })
+      let body: string | FormData = payload
+      if (!hapus && foto.value) {
+        body = new FormData()
+        body.append('payload', payload)
+        body.append('foto', foto.value)
+      }
       const hasil = await api<{ pesan: string }>('', {
         method: hapus ? 'DELETE' : editing.value ? 'PUT' : 'POST',
-        body: JSON.stringify({
-          no_rawat: props.patient.no_rawat,
-          sumber: hapus ? hapusTarget.value?.sumber : editing.value?.sumber,
-          data: hapus ? undefined : { ...form, nip: petugas.value.kode, kd_ruangan: ruangan.value.kode || '' },
-          asli: hapus ? hapusTarget.value?.data : editing.value?.data,
-        }),
+        body,
       })
       if (konteks !== generasi) return
       hapusTarget.value = null
@@ -180,12 +221,13 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     reset()
     void muat()
   }, { immediate: true })
-  onBeforeUnmount(() => { generasi++ })
+  onBeforeUnmount(() => { generasi++; batalFoto() })
 
   return {
     loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing, detail,
     hapusTarget, petugas, ruangan, petugasLogin, bolehPilihPetugas, form, terkunci,
     mulai, selesai, errorFilter, cetak,
     waktuSekarang, reset, muat, cariReferensi, edit, mutasi,
+    foto, kunciFoto, pratinjauFoto, fotoGagal, detailFotoGagal, pilihFoto, batalFoto,
   }
 }
