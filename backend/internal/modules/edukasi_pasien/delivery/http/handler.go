@@ -115,6 +115,8 @@ func tulisError(c *gin.Context, err error) {
 		status, kode, pesan = 403, "FORBIDDEN", err.Error()
 	case errors.Is(err, edukasi_pasien.ErrKonflik):
 		status, kode, pesan = 409, "CONFLICT", err.Error()
+	case errors.Is(err, edukasi_pasien.ErrDuplikat):
+		status, kode, pesan = 409, "EDUKASI_WAKTU_DUPLIKAT", err.Error()
 	case errors.Is(err, errUploadFoto):
 		status, kode, pesan = 502, "EDUKASI_FOTO_UPLOAD_ERROR", err.Error()+". Perubahan catatan dibatalkan."
 	}

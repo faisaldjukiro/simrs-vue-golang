@@ -17,7 +17,8 @@ import (
 
 var ErrValidasi = errors.New("catatan edukasi tidak valid")
 var ErrAkses = errors.New("catatan hanya boleh diubah oleh petugas pencatat atau administrator")
-var ErrKonflik = errors.New("catatan sudah ada, berubah, atau hilang; muat ulang riwayat")
+var ErrKonflik = errors.New("catatan berubah, hilang, atau tidak unik; muat ulang riwayat")
+var ErrDuplikat = errors.New("catatan pada waktu tersebut sudah ada atau tabel masih membatasi satu catatan per hari; muat ulang riwayat. Jika jam berbeda, hubungi administrator untuk memperbarui kunci tabel edukasi")
 var ErrFotoTerunggah = errors.New("foto sudah terkirim ke server berkas, tetapi penyimpanan catatan belum berhasil dikonfirmasi; muat ulang riwayat sebelum mencoba kembali")
 
 const tabel = "catatan_edukasi"
@@ -382,11 +383,17 @@ func (r *Repositori) MutasiDenganBukti(ctx context.Context, in Input, metode, us
 
 	defer func() {
 		var e *mysql.MySQLError
-		if errors.Is(err, khanzamutasi.ErrKonflik) || (errors.As(err, &e) && e.Number == 1062) {
+		var konflik error
+		if errors.As(err, &e) && e.Number == 1062 {
+			konflik = ErrDuplikat
+		} else if errors.Is(err, khanzamutasi.ErrKonflik) {
+			konflik = ErrKonflik
+		}
+		if konflik != nil {
 			if errors.Is(err, ErrFotoTerunggah) {
-				err = errors.Join(ErrKonflik, ErrFotoTerunggah)
+				err = errors.Join(konflik, ErrFotoTerunggah)
 			} else {
-				err = ErrKonflik
+				err = konflik
 			}
 		}
 	}()

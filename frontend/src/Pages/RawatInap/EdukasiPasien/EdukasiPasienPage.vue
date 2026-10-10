@@ -14,7 +14,7 @@ import KameraEdukasi from './KameraEdukasi.vue'
 const props = defineProps<PropsEdukasi>()
 const {
   loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing,
-  hapusTarget, petugas, ruangan, bolehPilihPetugas, form, terkunci, mulai, selesai, errorFilter,
+  hapusTarget, petugas, ruangan, bolehPilihPetugas, form, terkunci, mulai, selesai, errorFilter, langkahJam,
   waktuSekarang, reset, muat, cariReferensi, edit, mutasi, cetak, printing, cetakAktif,
   fotoPetugas, fotoPenerima, kameraAktif, detail, detailFotoGagal, detailFotoPenerimaGagal,
   fotoPenerimaTersedia, namaPenerimaTersedia,
@@ -52,8 +52,8 @@ const {
           <h4 class="edukasi-subjudul">Pelaksanaan Edukasi</h4>
           <div class="edukasi-identitas-grid">
             <FormInput v-model="form.tgl_perawatan" label="Tanggal Edukasi" type="date" required :disabled="terkunci" />
-            <FormInput v-model="form.jam_rawat" label="Jam Edukasi (WITA)" type="time" step="1" required
-              :disabled="terkunci" />
+            <FormInput v-model="form.jam_rawat" label="Jam Edukasi (WITA)" type="time" :step="langkahJam" required
+              :disabled="terkunci" hint="Tanggal boleh sama untuk edukasi pada jam atau menit berbeda. Isi sesuai waktu pelaksanaan." />
             <InputPencarian v-model="petugas" label="Petugas" :search="q => cariReferensi('petugas', q)"
               :disabled="terkunci || !bolehPilihPetugas" required />
             <InputPencarian v-model="ruangan" label="Ruangan" :search="q => cariReferensi('ruangan', q)"
@@ -302,7 +302,7 @@ const {
       </DataTable>
     </article>
 
-    <Dialog :visible="!!detailCatatan" modal header="Detail Edukasi Pasien" :style="{ width: '860px', maxWidth: '95vw' }"
+    <Dialog :visible="!!detailCatatan" modal header="Detail Edukasi Pasien" class="user-dialog" :style="{ width: '860px', maxWidth: '95vw' }"
       @update:visible="!$event && (detailCatatan = null)">
       <template v-if="detailCatatan">
         <p>Petugas: {{ detailCatatan.nama_petugas || detailCatatan.data.nip }} · Ruangan: {{ detailCatatan.nama_ruangan || detailCatatan.data.kd_ruangan || '-' }}</p>
@@ -326,7 +326,7 @@ const {
       </template>
     </Dialog>
 
-    <Dialog :visible="!!detail" modal header="Foto Edukasi Pasien" :style="{ width: '760px', maxWidth: '95vw' }"
+    <Dialog :visible="!!detail" modal header="Foto Edukasi Pasien" class="user-dialog" :style="{ width: '760px', maxWidth: '95vw' }"
       @update:visible="!$event && (detail = null)">
       <p>{{ detail?.data.tgl_perawatan }} {{ detail?.data.jam_rawat }} WITA · {{ detail?.nama_petugas }}</p>
       <h4>Petugas Pemberi Edukasi — {{ detail?.nama_petugas || '-' }}</h4>
@@ -339,7 +339,7 @@ const {
       <p v-else>{{ detail?.data.foto_penerima && detail.data.foto_penerima !== '-' ? 'Foto penerima tidak dapat dimuat. Periksa koneksi server berkas.' : 'Foto penerima belum dilampirkan.' }}</p>
     </Dialog>
 
-    <Dialog :visible="!!hapusTarget" modal header="Hapus Catatan Edukasi?" :closable="!saving"
+    <Dialog :visible="!!hapusTarget" modal header="Hapus Catatan Edukasi?" class="user-dialog" :closable="!saving"
       :style="{ width: '480px', maxWidth: '95vw' }" @update:visible="!saving && (hapusTarget = null)">
       <p>Catatan {{ hapusTarget?.data.tgl_perawatan }} pukul {{ hapusTarget?.data.jam_rawat }} akan dihapus dari SIMRS.
         Tindakan ini tidak dapat dibatalkan.</p>

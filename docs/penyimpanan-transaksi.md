@@ -72,6 +72,38 @@ petugas, ruangan, dan metode dalam kunjungan yang sama. Error MySQL dikategorika
 dengan kode numerik tanpa menampilkan SQL atau isi catatan pasien. Struktur
 database server dan penyebab error simpan sebelumnya belum terverifikasi langsung.
 
+## Beberapa edukasi pada tanggal yang sama
+
+Kunci unik yang dituju adalah `(no_rawat, tgl_perawatan, jam_rawat)`.
+Satu kunjungan dapat memiliki edukasi pukul 08:15 dan 08:30 pada tanggal yang sama.
+Input baru memakai jam-menit dan disimpan sebagai TIME (`08:15:00`). Detik pada
+catatan lama dipertahankan saat diedit; snapshot asli tidak dipotong.
+Edit/hapus tetap mencocokkan seluruh snapshot termasuk tanggal dan jam, sehingga
+catatan lain pada hari yang sama tidak ikut berubah. Aplikasi tidak menaikkan
+jam secara otomatis untuk menghindari bentrok; waktu harus sesuai pelaksanaan.
+
+Pengguna menjalankan pemeriksaan berikut di Navicat pada database SIMRS:
+
+```sql
+SHOW INDEX FROM catatan_edukasi WHERE Non_unique = 0;
+```
+
+Jika PRIMARY saat ini hanya `(no_rawat, tgl_perawatan)`, ubah dengan query manual:
+
+```sql
+ALTER TABLE catatan_edukasi
+  DROP PRIMARY KEY,
+  ADD PRIMARY KEY (no_rawat, tgl_perawatan, jam_rawat);
+```
+
+Query mempertahankan isi catatan. Jangan jalankan ulang jika PRIMARY sudah
+memuat ketiga kolom. Indeks UNIQUE lain yang hanya berisi nomor rawat/tanggal
+juga dapat membatasi satu catatan per hari; periksa hasil SHOW INDEX sebelum
+menyesuaikan indeks tersebut. Aplikasi tidak menjalankan DDL atau migration SIMRS.
+API menolak duplikat dengan HTTP 409 `EDUKASI_WAKTU_DUPLIKAT`, terpisah dari
+konflik snapshot edit/hapus. Dua permintaan dengan waktu sama tetap dilindungi
+oleh kunci unik database. Perubahan ini baru efektif setelah kunci tabel diperbarui.
+
 ## Foto Edukasi Pasien
 
 Kolom `catatan_edukasi.foto` (`varchar(255)`, nullable) ditambahkan pengguna

@@ -88,6 +88,8 @@ export function useEdukasiPasien(props: PropsEdukasi) {
       .includes(keyword.value.trim().toLocaleLowerCase()),
   ).map(r => ({ ...r, kunci: r.sumber + ':' + r.data.tgl_perawatan + ' ' + r.data.jam_rawat })))
   const terkunci = computed(() => loading.value || saving.value || !!error.value)
+  // Pertahankan detik catatan lama saat diedit; catatan baru diisi per menit.
+  const langkahJam = computed(() => form.jam_rawat?.length === 8 && !form.jam_rawat.endsWith(':00') ? 1 : 60)
   const terverifikasi = computed(() => form.status_verifikasi === 'Terverifikasi')
   const kekuranganVerifikasi = computed(() => [
     ...bidangAsesmen,
@@ -145,7 +147,7 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   function waktuSekarang() {
     const sekarang = new Date(Date.now() + 8 * 3600000).toISOString()
     form.tgl_perawatan = sekarang.slice(0, 10)
-    form.jam_rawat = sekarang.slice(11, 19)
+    form.jam_rawat = sekarang.slice(11, 16)
   }
 
   function reset() {
@@ -236,6 +238,7 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     editing.value = { ...row, data: { ...row.data } }
     formVisible.value = true
     Object.assign(form, row.data)
+    if (form.jam_rawat?.endsWith(':00')) form.jam_rawat = form.jam_rawat.slice(0, 5)
     form.tanggal_verifikasi = (row.data.tanggal_verifikasi || '').replace(' ', 'T')
     verifikator.value = { kode: row.data.nip_verifikator, nama: row.nama_verifikator }
     petugas.value = { kode: row.data.nip, nama: row.nama_petugas }
@@ -254,6 +257,17 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     if (!hapus && (!petugas.value.kode || !form.tgl_perawatan || !form.jam_rawat)) {
       errorSimpan.value = 'Lengkapi tanggal, jam, dan petugas.'
       return
+    }
+    if (!hapus) {
+      const jam = (nilai: string) => nilai.length === 5 ? nilai + ':00' : nilai
+      const bentrok = records.value.some(r => r.sumber === 'SIMRS' &&
+        r.data.tgl_perawatan === form.tgl_perawatan && jam(r.data.jam_rawat) === jam(form.jam_rawat) &&
+        !(editing.value?.sumber === r.sumber && editing.value.data.tgl_perawatan === r.data.tgl_perawatan &&
+          editing.value.data.jam_rawat === r.data.jam_rawat))
+      if (bentrok) {
+        errorSimpan.value = 'Catatan pada tanggal dan jam tersebut sudah ada. Gunakan Edit untuk memperbaruinya, atau isi waktu pelaksanaan edukasi yang berbeda.'
+        return
+      }
     }
     if (!hapus && terverifikasi.value) {
       if (jenisBukti.value === 'foto' && (!fotoPenerimaTersedia.value || !namaPenerimaTersedia.value)) {
@@ -342,7 +356,7 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   return {
     loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing, detail,
     hapusTarget, petugas, ruangan, petugasLogin, bolehPilihPetugas, form, terkunci,
-    mulai, selesai, errorFilter, cetak, printing, cetakAktif,
+    mulai, selesai, errorFilter, cetak, printing, cetakAktif, langkahJam,
     waktuSekarang, reset, muat, cariReferensi, edit, mutasi,
     fotoPetugas, fotoPenerima, kameraAktif, detailFotoGagal, detailFotoPenerimaGagal,
     fotoPenerimaTersedia, namaPenerimaTersedia,
