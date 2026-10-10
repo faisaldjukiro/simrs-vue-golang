@@ -22,8 +22,10 @@ table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 
 th, td { border: 1px solid #555; padding: 1.5mm 2mm; vertical-align: top; text-align: left; overflow-wrap: anywhere; white-space: pre-wrap; }
 th { width: 32%; background: #eee; font-weight: normal; }
 tr { break-inside: avoid; }
-.dokumentasi { break-inside: avoid; }
-.dokumentasi img { display: block; max-width: 100%; max-height: 65mm; object-fit: contain; }
+.dokumentasi { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; break-inside: avoid; text-align: center; }
+.dokumentasi img { display: block; width: 100%; height: 50mm; object-fit: contain; margin-bottom: 2mm; }
+.paraf-pihak { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin-top: 5mm; break-inside: avoid; text-align: center; }
+.paraf-pihak img { display: block; width: 60mm; max-width: 100%; height: 20mm; object-fit: contain; margin: 0 auto; }
 @media screen {
   body { max-width: 186mm; margin: 20px auto; padding: 12mm; }
   .lembar-edukasi + .lembar-edukasi { margin-top: 12mm; }

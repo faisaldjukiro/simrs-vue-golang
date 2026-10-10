@@ -6,16 +6,22 @@ import DataTable from '../../../Components/Ui/DataTable.vue'
 import FormInput from '../../../Components/Ui/FormInput.vue'
 import InputPencarian from '../../../Components/Ui/InputPencarian.vue'
 import TableSearch from '../../../Components/Ui/TableSearch.vue'
-import { bidangEdukasi, bidangAsesmen, pilihanPemahaman, pilihanStatusVerifikasi, type PropsEdukasi } from '../../../types/edukasiPasien'
+import { bidangEdukasi, bidangAsesmen, pilihanPelaksanaan, pilihanMateri, pilihanPemahaman, pilihanStatusVerifikasi, type PropsEdukasi } from '../../../types/edukasiPasien'
 import { useEdukasiPasien } from './useEdukasiPasien'
+import ParafEdukasi from './ParafEdukasi.vue'
+import KameraEdukasi from './KameraEdukasi.vue'
 
 const props = defineProps<PropsEdukasi>()
 const {
   loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing,
   hapusTarget, petugas, ruangan, bolehPilihPetugas, form, terkunci, mulai, selesai, errorFilter,
   waktuSekarang, reset, muat, cariReferensi, edit, mutasi, cetak, printing, cetakAktif,
-  foto, kunciFoto, pratinjauFoto, fotoGagal, detail, detailFotoGagal, pilihFoto, batalFoto,
+  fotoPetugas, fotoPenerima, kameraAktif, detail, detailFotoGagal, detailFotoPenerimaGagal,
+  fotoPenerimaTersedia, namaPenerimaTersedia,
   detailCatatan, bidangDetail, verifikator, terverifikasi, ubahStatusVerifikasi, waktuVerifikasiSekarang,
+  pilihanBidang, nilaiPilihan, pilihBidang, materiTerpilih, pilihMateri,
+  parafTersedia, parafPenerimaTersedia, parafDibatalkan, kekuranganVerifikasi,
+  jenisBukti, pilihJenisBukti, buktiGanda,
 } = useEdukasiPasien(props)
 </script>
 
@@ -55,9 +61,26 @@ const {
             <FormInput v-model="form.metode" label="Metode" jenis="select"
               :options="['Audio', 'Demonstrasi', 'Lisan', 'Tulisan', 'Visual'].map(v => ({ label: v, value: v }))"
               required :disabled="terkunci" />
-            <FormInput v-model="form.durasi" label="Durasi" :maxlength="30" :disabled="terkunci" />
-            <FormInput v-model="form.penerima" label="Penerima Edukasi" :maxlength="30" :disabled="terkunci" />
+            <div v-for="bidang in pilihanPelaksanaan" :key="bidang.key" class="edukasi-pilihan-bidang">
+              <FormInput :model-value="nilaiPilihan(bidang)" :label="bidang.label" jenis="select"
+                :options="pilihanBidang(bidang)" :disabled="terkunci"
+                @update:model-value="pilihBidang(bidang, $event)" />
+              <FormInput v-if="nilaiPilihan(bidang) === '__lainnya__'" v-model="form[bidang.key]"
+                :label="bidang.label + ' Lainnya'" :maxlength="bidang.maxlength"
+                :disabled="terkunci" />
+            </div>
           </div>
+          <fieldset class="edukasi-pilihan-materi" :disabled="terkunci">
+            <legend>Materi Edukasi yang Diberikan</legend>
+            <p class="edukasi-petunjuk">Boleh pilih lebih dari satu. Materi lain atau penjelasan tambahan dapat ditulis pada isian Materi Edukasi.</p>
+            <div class="edukasi-checkbox-grid">
+              <label v-for="materi in pilihanMateri" :key="materi" class="edukasi-checkbox">
+                <input type="checkbox" :checked="materiTerpilih.includes(materi)" :disabled="terkunci"
+                  @change="pilihMateri(materi, ($event.target as HTMLInputElement).checked)" />
+                <span>{{ materi }}</span>
+              </label>
+            </div>
+          </fieldset>
           <div class="edukasi-materi-grid">
             <FormInput v-model="form.materi" label="Materi Edukasi" jenis="textarea" :rows="5" :maxlength="65535"
               :disabled="terkunci" />
@@ -66,12 +89,16 @@ const {
           </div>
           <section class="edukasi-bagian" aria-labelledby="asesmen-edukasi-title">
             <h4 id="asesmen-edukasi-title" class="edukasi-subjudul">Asesmen Kebutuhan Belajar</h4>
-            <p class="edukasi-petunjuk">Isi berdasarkan penerima edukasi. Biarkan kosong bila belum dikaji.</p>
+            <p class="edukasi-petunjuk">Isi berdasarkan penerima edukasi. Asesmen wajib lengkap sebelum verifikasi. Bila belum dapat dinilai, jelaskan alasannya melalui pilihan Lainnya.</p>
             <div class="edukasi-identitas-grid">
-              <FormInput v-for="bidang in bidangAsesmen" :key="bidang.key" v-model="form[bidang.key]"
-                :label="bidang.label" :jenis="bidang.pilihan ? 'select' : bidang.jenis || 'input'"
-                :options="[{ label: 'Belum dikaji', value: '' }, ...(bidang.pilihan || []).map(v => ({ label: v, value: v }))]"
-                :rows="3" :maxlength="bidang.maxlength" :disabled="terkunci" />
+              <div v-for="bidang in bidangAsesmen" :key="bidang.key" class="edukasi-pilihan-bidang">
+                <FormInput :model-value="nilaiPilihan(bidang)" :label="bidang.label" jenis="select"
+                  :options="pilihanBidang(bidang)" :disabled="terkunci"
+                  @update:model-value="pilihBidang(bidang, $event)" />
+                <FormInput v-if="nilaiPilihan(bidang) === '__lainnya__'" v-model="form[bidang.key]"
+                  :label="bidang.label + ' Lainnya'" :jenis="bidang.jenis || 'input'"
+                  :rows="3" :maxlength="bidang.maxlength" :disabled="terkunci" />
+              </div>
             </div>
           </section>
           <section class="edukasi-bagian" aria-labelledby="verifikasi-edukasi-title">
@@ -89,29 +116,63 @@ const {
                 :required="terverifikasi" :disabled="terkunci || !terverifikasi || !bolehPilihPetugas" />
             </div>
             <FormInput class="edukasi-catatan-verifikasi" v-model="form.catatan_verifikasi" label="Catatan Hasil Verifikasi"
-              jenis="textarea" :rows="4" :maxlength="65535" :disabled="terkunci"
-              hint="Catat respons penerima edukasi, pemahaman yang dinilai, serta kebutuhan penjelasan ulang bila ada." />
+              jenis="textarea" :rows="4" :maxlength="65535" :required="terverifikasi" :disabled="terkunci"
+              hint="Catat cara memeriksa pemahaman, respons penerima, hasil penilaian, dan rencana edukasi ulang bila belum memahami." />
             <button v-if="terverifikasi" type="button" class="clinical-button secondary" :disabled="terkunci" @click="waktuVerifikasiSekarang">
               <RefreshCw :size="15" /> Waktu Verifikasi Sekarang
             </button>
             <p class="edukasi-petunjuk">Verifikator mengikuti petugas login. Administrator dapat memilih petugas verifikator.</p>
           </section>
-          <div class="edukasi-foto">
-            <FormInput :key="kunciFoto" label="Foto Edukasi (Opsional)" type="file"
-              :file-name="foto?.name || ''"
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png" :disabled="terkunci"
-              hint="Satu foto JPG/PNG, maksimal 10 MB dan 40 megapiksel. Foto dikirim saat menyimpan catatan."
-              @change="pilihFoto" />
-            <template v-if="pratinjauFoto">
-              <img v-if="!fotoGagal" :src="pratinjauFoto" alt="Pratinjau foto edukasi" class="edukasi-foto-preview"
-                @error="fotoGagal = true" />
-              <p v-else class="patient-error" role="alert">Foto tidak dapat ditampilkan. Periksa file atau koneksi server berkas.</p>
-              <button v-if="foto" type="button" class="clinical-button secondary" :disabled="terkunci" @click="batalFoto">
-                <X :size="15" /> Batalkan Pilihan Foto
-              </button>
-            </template>
-            <p v-if="editing?.data.foto && !foto" class="edukasi-catatan">Foto tersimpan tetap digunakan. Pilih file untuk menggantinya.</p>
+          <section class="edukasi-bagian" aria-labelledby="bukti-edukasi-title">
+            <h4 id="bukti-edukasi-title" class="edukasi-subjudul">Bukti Edukasi</h4>
+            <FormInput :model-value="jenisBukti" label="Jenis Bukti" jenis="select" :disabled="terkunci"
+              :options="[{ label: 'Belum dipilih', value: '' }, { label: 'Paraf petugas dan penerima', value: 'paraf' }, { label: 'Foto petugas dan penerima', value: 'foto' }]"
+              @update:model-value="pilihJenisBukti" />
+            <p class="edukasi-petunjuk">Pilih dua paraf atau dua foto: petugas dan penerima edukasi. Bukti wajib lengkap saat verifikasi. Mengganti jenis bukti mengosongkan bukti sebelumnya pada form; perubahan berlaku setelah disimpan.</p>
+            <p v-if="buktiGanda" class="patient-error" role="alert">Catatan ini memuat paraf dan foto. Pilih satu jenis bukti sebelum menyimpan atau mencetak ulang.</p>
+            <FormInput v-if="jenisBukti" v-model="form.nama_penerima" label="Nama Penerima Edukasi" :maxlength="100"
+              :required="terverifikasi" :disabled="terkunci || !namaPenerimaTersedia"
+              hint="Nama pasien atau keluarga yang menerima edukasi." />
+          <div v-if="jenisBukti === 'foto'" class="edukasi-foto">
+            <p v-if="!loading && !error && (!fotoPenerimaTersedia || !namaPenerimaTersedia)" class="patient-error" role="alert">
+              Penyimpanan foto penerima belum tersedia. Hubungi administrator untuk melengkapi kolom foto_penerima dan nama_penerima.
+            </p>
+            <div class="edukasi-identitas-grid">
+              <KameraEdukasi label="Foto Petugas Pemberi Edukasi" :nama="petugas.nama || ''"
+                :pratinjau="fotoPetugas.pratinjau" :baru="!!fotoPetugas.file" :aktif="kameraAktif === 'petugas'"
+                :disabled="terkunci || !petugas.kode" @buka="kameraAktif = 'petugas'"
+                @tutup="kameraAktif === 'petugas' && (kameraAktif = '')" @tangkap="fotoPetugas.tangkap" @batal="fotoPetugas.batal" />
+              <KameraEdukasi label="Foto Penerima Edukasi" :nama="form.nama_penerima || ''"
+                :pratinjau="fotoPenerima.pratinjau" :baru="!!fotoPenerima.file" :aktif="kameraAktif === 'penerima'"
+                :disabled="terkunci || !fotoPenerimaTersedia || !form.nama_penerima?.trim()" @buka="kameraAktif = 'penerima'"
+                @tutup="kameraAktif === 'penerima' && (kameraAktif = '')" @tangkap="fotoPenerima.tangkap" @batal="fotoPenerima.batal" />
+            </div>
+            <p class="edukasi-petunjuk">Izinkan akses kamera saat diminta browser. Foto tersimpan tetap digunakan sampai diganti dan catatan disimpan.</p>
           </div>
+          <section v-if="jenisBukti === 'paraf'" class="edukasi-bagian" aria-labelledby="paraf-edukasi-title">
+            <h4 id="paraf-edukasi-title" class="edukasi-subjudul">Paraf Petugas dan Penerima Edukasi</h4>
+            <p v-if="!loading && !error && (!parafTersedia || !parafPenerimaTersedia)" class="patient-error" role="alert">
+              Penyimpanan paraf petugas dan penerima belum lengkap. Hubungi administrator untuk mengaktifkannya atau pilih foto sebagai bukti edukasi.
+            </p>
+            <p class="edukasi-petunjuk">Lengkapi nama penerima dan seluruh isian sebelum membubuhkan kedua paraf. Perubahan catatan membatalkan kedua paraf sebelumnya.</p>
+            <div class="edukasi-identitas-grid">
+              <div>
+                <h4 class="edukasi-subjudul">Petugas Pemberi Edukasi</h4>
+                <ParafEdukasi v-model="form.paraf_petugas" :nama="petugas.nama || ''" label="Kotak paraf petugas pemberi edukasi"
+                  :disabled="terkunci || !parafTersedia || !petugas.kode" />
+              </div>
+              <div>
+                <h4 class="edukasi-subjudul">Penerima Edukasi</h4>
+                <ParafEdukasi v-model="form.paraf_penerima" :nama="form.nama_penerima || ''" label="Kotak paraf penerima edukasi"
+                  :disabled="terkunci || !parafPenerimaTersedia || !form.nama_penerima?.trim()" />
+              </div>
+            </div>
+            <p v-if="parafDibatalkan && (!form.paraf_petugas || !form.paraf_penerima)" class="patient-error" role="status">Isi catatan berubah. Silakan gambar ulang paraf petugas dan penerima edukasi.</p>
+          </section>
+            <p v-if="terverifikasi && kekuranganVerifikasi.length" class="edukasi-petunjuk" role="status">
+              Belum lengkap untuk verifikasi: {{ kekuranganVerifikasi.join(', ') }}.
+            </p>
+          </section>
           <p v-if="!loading && !error && !bolehPilihPetugas && !petugas.kode" class="patient-error" role="alert">
             Akun login belum terhubung dengan data petugas. Hubungi administrator untuk melengkapi pemetaan akun.
           </p>
@@ -215,8 +276,8 @@ const {
               <button type="button" title="Lihat detail edukasi" @click="detailCatatan = r">
                 <Eye :size="15" aria-hidden="true" /> Detail
               </button>
-              <button type="button" :disabled="!r.foto_url"
-                :title="r.foto_url ? 'Lihat foto edukasi' : r.data.foto ? 'Foto tidak tersedia' : 'Belum ada foto'"
+              <button type="button" :disabled="!r.foto_url && !r.foto_penerima_url"
+                title="Lihat foto petugas dan penerima edukasi"
                 @click="detail = r">
                 <Image :size="15" aria-hidden="true" /> Foto
               </button>
@@ -251,6 +312,16 @@ const {
             <dd>{{ detailCatatan.data[bidang.key] || 'Belum dicatat' }}</dd>
           </div>
           <div><dt>Nama Verifikator</dt><dd>{{ detailCatatan.nama_verifikator || 'Belum dicatat' }}</dd></div>
+          <div><dt>Paraf Petugas</dt><dd>
+            <img v-if="detailCatatan.data.paraf_petugas?.startsWith('data:image/png;base64,')"
+              :src="detailCatatan.data.paraf_petugas" alt="Paraf petugas pemberi edukasi" class="edukasi-paraf-detail" />
+            <span v-else>Belum dibubuhkan</span>
+          </dd></div>
+          <div><dt>Paraf Penerima Edukasi</dt><dd>
+            <img v-if="detailCatatan.data.paraf_penerima?.startsWith('data:image/png;base64,')"
+              :src="detailCatatan.data.paraf_penerima" alt="Paraf penerima edukasi" class="edukasi-paraf-detail" />
+            <span v-else>Belum dibubuhkan</span>
+          </dd></div>
         </dl>
       </template>
     </Dialog>
@@ -258,9 +329,14 @@ const {
     <Dialog :visible="!!detail" modal header="Foto Edukasi Pasien" :style="{ width: '760px', maxWidth: '95vw' }"
       @update:visible="!$event && (detail = null)">
       <p>{{ detail?.data.tgl_perawatan }} {{ detail?.data.jam_rawat }} WITA · {{ detail?.nama_petugas }}</p>
-      <img v-if="detail?.foto_url && !detailFotoGagal" :src="detail.foto_url" alt="Foto dokumentasi edukasi pasien"
+      <h4>Petugas Pemberi Edukasi — {{ detail?.nama_petugas || '-' }}</h4>
+      <img v-if="detail?.foto_url && !detailFotoGagal" :src="detail.foto_url" alt="Foto petugas pemberi edukasi"
         class="edukasi-foto-detail" @error="detailFotoGagal = true" />
       <p v-else role="alert">Foto tidak dapat dimuat. Periksa koneksi server berkas.</p>
+      <h4>Penerima Edukasi — {{ detail?.data.nama_penerima || '-' }}</h4>
+      <img v-if="detail?.foto_penerima_url && !detailFotoPenerimaGagal" :src="detail.foto_penerima_url" alt="Foto penerima edukasi"
+        class="edukasi-foto-detail" @error="detailFotoPenerimaGagal = true" />
+      <p v-else>{{ detail?.data.foto_penerima && detail.data.foto_penerima !== '-' ? 'Foto penerima tidak dapat dimuat. Periksa koneksi server berkas.' : 'Foto penerima belum dilampirkan.' }}</p>
     </Dialog>
 
     <Dialog :visible="!!hapusTarget" modal header="Hapus Catatan Edukasi?" :closable="!saving"

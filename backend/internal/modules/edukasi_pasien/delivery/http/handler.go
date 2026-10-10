@@ -47,7 +47,7 @@ func (h *Handler) proses(c *gin.Context) {
 	}
 	durasi := 20 * time.Second
 	if c.ContentType() == "multipart/form-data" {
-		durasi = 90 * time.Second
+		durasi = 150 * time.Second
 	}
 	ctx, cancel := context.WithTimeout(c.Request.Context(), durasi)
 	defer cancel()
@@ -68,6 +68,7 @@ func (h *Handler) proses(c *gin.Context) {
 		}
 		for i := range hasil.Catatan {
 			hasil.Catatan[i].FotoURL = h.urlFoto(hasil.Catatan[i].Data["foto"])
+			hasil.Catatan[i].FotoPenerimaURL = h.urlFoto(hasil.Catatan[i].Data["foto_penerima"])
 		}
 		httpresponse.Success(c, 200, hasil)
 		return
@@ -77,13 +78,13 @@ func (h *Handler) proses(c *gin.Context) {
 			c.Request.MultipartForm.RemoveAll()
 		}
 	}()
-	in, file, err := bacaInput(c)
+	in, files, err := bacaInput(c)
 	if err != nil {
 		tulisError(c, err)
 		return
 	}
-	var unggah func() (string, error)
-	if file != nil {
+	unggah := map[string]func() (string, error){}
+	for key, file := range files {
 		nama, err := siapkanFoto(file)
 		if err != nil {
 			tulisError(c, err)
@@ -93,9 +94,9 @@ func (h *Handler) proses(c *gin.Context) {
 			tulisError(c, fmt.Errorf("%w: konfigurasi lokasi foto melebihi 255 karakter", edukasi_pasien.ErrValidasi))
 			return
 		}
-		unggah = func() (string, error) { return h.unggahFoto(ctx, file, nama, in.NoRawat) }
+		unggah[key] = func() (string, error) { return h.unggahFoto(ctx, file, nama, in.NoRawat) }
 	}
-	if err := h.repo.MutasiDenganFoto(ctx, in, c.Request.Method, u.Username, admin, unggah); err != nil {
+	if err := h.repo.MutasiDenganBukti(ctx, in, c.Request.Method, u.Username, admin, unggah); err != nil {
 		tulisError(c, err)
 		return
 	}

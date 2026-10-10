@@ -1,0 +1,5 @@
+.edukasi-kamera { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); color: var(--text); }
+.edukasi-kamera h4 { margin: 0 0 8px; font-size: 14px; }
+.edukasi-kamera p { font-size: 12px; overflow-wrap: anywhere; }
+.edukasi-kamera video, .edukasi-kamera img { display: block; width: 100%; max-height: 280px; object-fit: contain; margin: 12px 0; border-radius: 6px; background: var(--surface); }
+.edukasi-kamera-aksi { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }

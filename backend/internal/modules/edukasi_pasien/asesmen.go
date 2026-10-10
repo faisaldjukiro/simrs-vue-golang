@@ -6,7 +6,33 @@ import (
 	"time"
 )
 
-func validasiAsesmen(in *Input) error {
+func validasiAsesmen(in *Input, fotoBaru map[string]bool) error {
+	fotoPetugas := fotoBaru["foto"] || (in.Data["foto"] != "" && in.Data["foto"] != "-")
+	fotoPenerima := fotoBaru["foto_penerima"] || (in.Data["foto_penerima"] != "" && in.Data["foto_penerima"] != "-")
+	adaFoto := fotoPetugas || fotoPenerima
+	adaParaf := in.Data["paraf_petugas"] != "" || in.Data["paraf_penerima"] != ""
+	if adaFoto && adaParaf {
+		return fmt.Errorf("%w: pilih dua paraf atau dua foto, tidak boleh bersamaan", ErrValidasi)
+	}
+	if in.Data["status_verifikasi"] == "Terverifikasi" {
+		if adaFoto && (!fotoPetugas || !fotoPenerima) {
+			return fmt.Errorf("%w: lengkapi foto petugas dan penerima edukasi", ErrValidasi)
+		}
+		if strings.TrimSpace(in.Data["nama_penerima"]) == "" {
+			return fmt.Errorf("%w: lengkapi nama penerima edukasi", ErrValidasi)
+		}
+	}
+	if in.Data["status_verifikasi"] == "Terverifikasi" && !adaFoto {
+		if in.Data["paraf_petugas"] == "" || in.Data["paraf_penerima"] == "" {
+			return fmt.Errorf("%w: lengkapi paraf petugas dan penerima, atau gunakan foto edukasi", ErrValidasi)
+		}
+	}
+	for _, pihak := range []struct{ key, nama string }{{"paraf_petugas", "petugas"}, {"paraf_penerima", "penerima"}} {
+		if err := validasiParaf(in.Data[pihak.key]); err != nil {
+			return fmt.Errorf("%w (%s edukasi)", err, pihak.nama)
+		}
+	}
+
 	for _, k := range []string{"materi", "catatan_verifikasi"} {
 		in.Data[k] = strings.TrimSpace(in.Data[k])
 		if len(in.Data[k]) > 65535 {
@@ -24,6 +50,17 @@ func validasiAsesmen(in *Input) error {
 			return fmt.Errorf("%w: waktu dan petugas verifikasi hanya diisi saat status Terverifikasi", ErrValidasi)
 		}
 	case "Terverifikasi":
+		for _, bidang := range []struct{ key, label string }{
+			{"kemampuan_membaca", "kemampuan membaca"}, {"tingkat_pendidikan", "tingkat pendidikan"},
+			{"bahasa", "bahasa"}, {"hambatan_emosional", "hambatan emosional"}, {"motivasi", "motivasi"},
+			{"keterbatasan_fisik", "keterbatasan fisik"}, {"keterbatasan_kognitif", "keterbatasan kognitif"},
+			{"kesediaan_menerima", "kesediaan menerima informasi"}, {"nilai_budaya", "nilai budaya / keyakinan"},
+			{"materi", "materi edukasi"}, {"penerima", "penerima edukasi"}, {"catatan_verifikasi", "catatan hasil verifikasi"},
+		} {
+			if strings.TrimSpace(in.Data[bidang.key]) == "" {
+				return fmt.Errorf("%w: lengkapi %s sebelum verifikasi", ErrValidasi, bidang.label)
+			}
+		}
 		if in.Data["tingkat_pemahaman"] == "" || in.Data["tanggal_verifikasi"] == "" || in.Data["nip_verifikator"] == "" {
 			return fmt.Errorf("%w: lengkapi tingkat pemahaman, waktu, dan petugas verifikasi", ErrValidasi)
 		}

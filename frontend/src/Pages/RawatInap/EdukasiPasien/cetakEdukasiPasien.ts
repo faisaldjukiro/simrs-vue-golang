@@ -10,6 +10,15 @@ export async function cetakEdukasiPasien(
   kop: KopPemulangan,
   masihAktif: () => boolean,
 ) {
+  const adaFoto = (r: CatatanEdukasi) => !!(r.foto_url || r.foto_penerima_url ||
+    [r.data.foto, r.data.foto_penerima].some(v => v && v !== '-'))
+  if (catatan.some(r => (r.data.paraf_petugas || r.data.paraf_penerima) && adaFoto(r))) {
+    throw new Error('Catatan masih memuat paraf dan foto. Edit catatan, pilih satu bukti edukasi, lalu simpan sebelum mencetak.')
+  }
+  if (catatan.some(r => (r.data.foto && r.data.foto !== '-' && !r.foto_url) ||
+    (r.data.foto_penerima && r.data.foto_penerima !== '-' && !r.foto_penerima_url))) {
+    throw new Error('Foto bukti edukasi tidak tersedia. Periksa server berkas sebelum mencetak.')
+  }
   const doc = win.document
   const namaPasien = pasien.nama_pasien || pasien.nm_pasien || '-'
   const noRekamMedis = pasien.no_rekam_medis || pasien.no_rkm_medis || '-'
@@ -26,7 +35,7 @@ export async function cetakEdukasiPasien(
     return node
   }
   const gambar: Promise<void>[] = []
-  function muatGambar(src: string, alt: string, wajib: boolean) {
+  function muatGambar(src: string, alt: string, wajib: boolean, pesanGagal = 'Logo kop belum dapat dimuat. Periksa file di public/img lalu coba cetak kembali.') {
     const img = doc.createElement('img')
     img.alt = alt
     gambar.push(new Promise<void>((resolve, reject) => {
@@ -39,7 +48,7 @@ export async function cetakEdukasiPasien(
         img.onload = null
         img.onerror = null
         if (ok) resolve()
-        else if (wajib) reject(new Error('Logo kop belum dapat dimuat. Periksa file di public/img lalu coba cetak kembali.'))
+        else if (wajib) reject(new Error(pesanGagal))
         else {
           img.replaceWith(elemen('p', 'Foto dokumentasi tersimpan, tetapi tidak dapat dimuat.'))
           resolve()
@@ -99,13 +108,38 @@ export async function cetakEdukasiPasien(
       ...bidangVerifikasi.filter(b => b.key !== 'nip_verifikator'),
       { key: 'nama_verifikator', label: 'Nama Verifikator' },
     ])
-    if (r.foto_url || r.data.foto) {
+    if (adaFoto(r)) {
       const dokumentasi = elemen('section', '', 'dokumentasi')
-      dokumentasi.append(elemen('h3', 'Foto Dokumentasi'))
-      dokumentasi.append(r.foto_url
-        ? muatGambar(r.foto_url, 'Foto dokumentasi edukasi pasien', false)
-        : elemen('p', 'Foto dokumentasi tersimpan, tetapi tidak tersedia.'))
+      for (const [label, url, nama] of [
+        ['Foto Petugas Pemberi Edukasi', r.foto_url, r.nama_petugas],
+        ['Foto Penerima Edukasi', r.foto_penerima_url, r.data.nama_penerima],
+      ]) {
+        const pihak = elemen('div')
+        pihak.append(elemen('h3', label))
+        pihak.append(url
+          ? muatGambar(url, label, true, 'Foto bukti edukasi tidak dapat dimuat. Periksa koneksi server berkas lalu cetak kembali.')
+          : elemen('p', 'Foto belum dilampirkan'))
+        pihak.append(elemen('strong', nama || '-'))
+        dokumentasi.append(pihak)
+      }
       lembar.append(dokumentasi)
+    } else if (r.data.paraf_petugas || r.data.paraf_penerima) {
+      const paraf = elemen('section', '', 'paraf-pihak')
+      for (const [label, gambarParaf, nama] of [
+        ['Petugas Pemberi Edukasi', r.data.paraf_petugas, r.nama_petugas],
+        ['Penerima Edukasi', r.data.paraf_penerima, r.data.nama_penerima],
+      ]) {
+        const pihak = elemen('div')
+        pihak.append(elemen('h3', label))
+        pihak.append(gambarParaf
+          ? muatGambar(gambarParaf, 'Paraf ' + label, true, 'Paraf tidak dapat dimuat. Muat ulang catatan sebelum mencetak.')
+          : elemen('p', 'Paraf belum dibubuhkan'))
+        pihak.append(elemen('strong', nama || '-'))
+        paraf.append(pihak)
+      }
+      lembar.append(paraf)
+    } else {
+      lembar.append(elemen('p', 'Bukti edukasi belum dilampirkan.'))
     }
     doc.body.append(lembar)
   }

@@ -1,10 +1,11 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { useBuktiEdukasi } from './useBuktiEdukasi'
 import { cetakEdukasiPasien } from './cetakEdukasiPasien'
 import type { KopPemulangan } from '../../../types/perencanaanPemulangan'
 import { request } from '../../../lib/shared/http'
 import { useNotifikasi } from '../../../lib/shared/useNotifikasi'
 import { bidangEdukasi, bidangAsesmen, bidangVerifikasi } from '../../../types/edukasiPasien'
-import type { CatatanEdukasi, HasilEdukasi, PropsEdukasi } from '../../../types/edukasiPasien'
+import type { BidangAsesmen, CatatanEdukasi, HasilEdukasi, PropsEdukasi } from '../../../types/edukasiPasien'
 
 export function useEdukasiPasien(props: PropsEdukasi) {
   const notifikasi = useNotifikasi()
@@ -28,39 +29,52 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   const ruangan = ref<Record<string, string>>({})
   const petugasLogin = ref<Record<string, string>>({})
   const bolehPilihPetugas = ref(false)
+  const parafTersedia = ref(false)
+  const parafDibatalkan = ref(false)
+  const parafPenerimaTersedia = ref(false)
+  const fotoPenerimaTersedia = ref(false)
+  const namaPenerimaTersedia = ref(false)
+  let mengisiForm = false
   const form = reactive<Record<string, string>>({})
-  const foto = ref<File | null>(null)
-  const fotoLokal = ref('')
-  const kunciFoto = ref(0)
-  const fotoGagal = ref(false)
+  const isianLainnya = reactive<Record<string, boolean>>({})
+  function pilihanBidang(bidang: BidangAsesmen) {
+    return [
+      { label: 'Belum dicatat', value: '' },
+      ...(bidang.pilihan || []).map(value => ({ label: value, value })),
+      { label: 'Lainnya / tulis sendiri', value: '__lainnya__' },
+    ]
+  }
+  function nilaiPilihan(bidang: BidangAsesmen) {
+    const nilai = form[bidang.key] || ''
+    return isianLainnya[bidang.key] || (nilai && !bidang.pilihan?.includes(nilai)) ? '__lainnya__' : nilai
+  }
+  function pilihBidang(bidang: BidangAsesmen, nilai: string) {
+    if (terkunci.value) return
+    isianLainnya[bidang.key] = nilai === '__lainnya__'
+    form[bidang.key] = nilai === '__lainnya__' ? '' : nilai
+  }
+  const materiTerpilih = computed(() => (form.materi || '').split('\n').map(v => v.trim()).filter(Boolean))
+  function pilihMateri(materi: string, dipilih: boolean) {
+    if (terkunci.value) return
+    const baris = (form.materi || '').split('\n')
+    const nilai = dipilih
+      ? materiTerpilih.value.includes(materi) ? form.materi : [form.materi, materi].filter(Boolean).join('\n')
+      : baris.filter(v => v.trim() !== materi).join('\n')
+    if (nilai.length > 65535) {
+      notifikasi.peringatan('Materi terlalu panjang. Ringkas isian sebelum menambahkan pilihan.')
+      return
+    }
+    form.materi = nilai
+  }
+  const bukti = useBuktiEdukasi(form,
+    key => (key === 'foto' ? editing.value?.foto_url : editing.value?.foto_penerima_url) || '',
+    () => terkunci.value, pesan => { errorSimpan.value = pesan })
+  const { jenis: jenisBukti, fotoPetugas, fotoPenerima, kameraAktif, buktiGanda,
+    batalFoto, pilihJenis: pilihJenisBukti } = bukti
   const detailFotoGagal = ref(false)
-  const pratinjauFoto = computed(() => fotoLokal.value || editing.value?.foto_url || '')
-  watch(pratinjauFoto, () => { fotoGagal.value = false })
-  watch(detail, () => { detailFotoGagal.value = false })
-
-  function batalFoto() {
-    if (fotoLokal.value) URL.revokeObjectURL(fotoLokal.value)
-    fotoLokal.value = ''
-    foto.value = null
-    kunciFoto.value++
-  }
-
-  function pilihFoto(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0]
-    batalFoto()
-    if (!file) return
-    if (!['image/jpeg', 'image/png'].includes(file.type) || !/\.(jpe?g|png)$/i.test(file.name)) {
-      errorSimpan.value = 'Foto harus berupa JPG atau PNG.'
-      return
-    }
-    if (!file.size || file.size > 10 * 1024 * 1024) {
-      errorSimpan.value = 'Ukuran foto maksimal 10 MB.'
-      return
-    }
-    errorSimpan.value = ''
-    foto.value = file
-    fotoLokal.value = URL.createObjectURL(file)
-  }
+  const detailFotoPenerimaGagal = ref(false)
+  watch(detail, () => { detailFotoGagal.value = false; detailFotoPenerimaGagal.value = false })
+  watch(formVisible, value => { if (!value) kameraAktif.value = '' })
   let generasi = 0
   let urutan = 0
   const errorFilter = computed(() => mulai.value && selesai.value && mulai.value > selesai.value
@@ -69,11 +83,35 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     !errorFilter.value &&
     (!mulai.value || r.data.tgl_perawatan >= mulai.value) &&
     (!selesai.value || r.data.tgl_perawatan <= selesai.value) &&
-    [r.nama_petugas, r.nama_ruangan, r.nama_verifikator, r.sumber, ...Object.values(r.data)].join(' ').toLocaleLowerCase()
+    [r.nama_petugas, r.nama_ruangan, r.nama_verifikator, r.sumber,
+      ...Object.entries(r.data).filter(([k]) => !k.startsWith('paraf_')).map(([, v]) => v)].join(' ').toLocaleLowerCase()
       .includes(keyword.value.trim().toLocaleLowerCase()),
   ).map(r => ({ ...r, kunci: r.sumber + ':' + r.data.tgl_perawatan + ' ' + r.data.jam_rawat })))
   const terkunci = computed(() => loading.value || saving.value || !!error.value)
   const terverifikasi = computed(() => form.status_verifikasi === 'Terverifikasi')
+  const kekuranganVerifikasi = computed(() => [
+    ...bidangAsesmen,
+    { key: 'materi', label: 'Materi Edukasi' }, { key: 'penerima', label: 'Penerima Edukasi' },
+    { key: 'catatan_verifikasi', label: 'Catatan Hasil Verifikasi' },
+    { key: 'tingkat_pemahaman', label: 'Tingkat Pemahaman' },
+    { key: 'tanggal_verifikasi', label: 'Waktu Verifikasi' },
+    { key: 'nama_penerima', label: 'Nama Penerima' },
+  ].filter(b => !form[b.key]?.trim()).map(b => b.label)
+    .concat(jenisBukti.value === 'foto' ? [
+      ...(!fotoPetugas.ada ? ['Foto Petugas'] : []),
+      ...(!fotoPenerima.ada ? ['Foto Penerima'] : []),
+    ] : [
+      ...(!form.paraf_petugas ? ['Paraf Petugas'] : []),
+      ...(!form.paraf_penerima ? ['Paraf Penerima'] : []),
+    ]))
+  watch(() => [JSON.stringify(Object.keys(form).filter(k => !['paraf_petugas', 'paraf_penerima', 'foto', 'foto_penerima'].includes(k)).map(k => [k, form[k]])),
+    petugas.value.kode, ruangan.value.kode, verifikator.value.kode], () => {
+    if (!mengisiForm && (form.paraf_petugas || form.paraf_penerima)) {
+      form.paraf_petugas = ''
+      form.paraf_penerima = ''
+      parafDibatalkan.value = true
+    }
+  }, { flush: 'sync' })
 
   function waktuVerifikasiSekarang() {
     form.tanggal_verifikasi = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19)
@@ -92,6 +130,7 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   }
 
   const bidangDetail = [
+    { key: 'nama_penerima', label: 'Nama Penerima' },
     { key: 'tgl_perawatan', label: 'Tanggal Edukasi' }, { key: 'jam_rawat', label: 'Jam Edukasi (WITA)' },
     ...bidangEdukasi, ...bidangAsesmen, ...bidangVerifikasi,
   ]
@@ -110,7 +149,9 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   }
 
   function reset() {
-    batalFoto()
+    mengisiForm = true
+    bukti.reset()
+    Object.keys(isianLainnya).forEach(k => delete isianLainnya[k])
     editing.value = null
     errorSimpan.value = ''
     if (!petugas.value.kode) petugas.value = { ...petugasLogin.value }
@@ -120,8 +161,14 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     form.status_verifikasi = 'Belum diverifikasi'
     verifikator.value = {}
     form.foto = ''
+    form.foto_penerima = ''
+    form.paraf_petugas = ''
+    form.paraf_penerima = ''
+    parafDibatalkan.value = false
+    jenisBukti.value = ''
     form.metode = metode
     waktuSekarang()
+    mengisiForm = false
   }
 
   async function muat() {
@@ -135,6 +182,10 @@ export function useEdukasiPasien(props: PropsEdukasi) {
       records.value = hasil.catatan
       petugasLogin.value = hasil.petugas_login
       bolehPilihPetugas.value = hasil.boleh_pilih_petugas
+      parafTersedia.value = hasil.paraf_tersedia === true
+      parafPenerimaTersedia.value = hasil.paraf_penerima_tersedia === true
+      fotoPenerimaTersedia.value = hasil.foto_penerima_tersedia === true
+      namaPenerimaTersedia.value = hasil.nama_penerima_tersedia === true
       if (!editing.value && !petugas.value.kode) petugas.value = { ...hasil.petugas_login }
     } catch (e) {
       if (konteks === generasi && id === urutan) error.value = e instanceof Error ? e.message : 'Gagal memuat edukasi.'
@@ -181,6 +232,7 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   function edit(row: CatatanEdukasi) {
     if (terkunci.value || !row.bisa_ubah) return
     reset()
+    mengisiForm = true
     editing.value = { ...row, data: { ...row.data } }
     formVisible.value = true
     Object.assign(form, row.data)
@@ -188,16 +240,34 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     verifikator.value = { kode: row.data.nip_verifikator, nama: row.nama_verifikator }
     petugas.value = { kode: row.data.nip, nama: row.nama_petugas }
     ruangan.value = { kode: row.data.kd_ruangan, nama: row.nama_ruangan }
+    bukti.muatJenis()
+    mengisiForm = false
   }
 
   async function mutasi(hapus = false) {
     if (terkunci.value || (hapus && !hapusTarget.value)) return
     errorSimpan.value = ''
+    if (!hapus && buktiGanda.value) {
+      errorSimpan.value = 'Pilih dua paraf atau dua foto (petugas dan penerima), tidak boleh bersamaan.'
+      return
+    }
     if (!hapus && (!petugas.value.kode || !form.tgl_perawatan || !form.jam_rawat)) {
       errorSimpan.value = 'Lengkapi tanggal, jam, dan petugas.'
       return
     }
     if (!hapus && terverifikasi.value) {
+      if (jenisBukti.value === 'foto' && (!fotoPenerimaTersedia.value || !namaPenerimaTersedia.value)) {
+        errorSimpan.value = 'Penyimpanan foto penerima belum tersedia. Hubungi administrator untuk melengkapi kolom foto_penerima dan nama_penerima.'
+        return
+      }
+      if (jenisBukti.value === 'paraf' && (!parafTersedia.value || !parafPenerimaTersedia.value)) {
+        errorSimpan.value = 'Penyimpanan paraf belum tersedia. Pilih foto atau hubungi administrator.'
+        return
+      }
+      if (kekuranganVerifikasi.value.length) {
+        errorSimpan.value = 'Lengkapi sebelum verifikasi: ' + kekuranganVerifikasi.value.join(', ') + '.'
+        return
+      }
       if (!form.tingkat_pemahaman || !form.tanggal_verifikasi || !verifikator.value.kode) {
         errorSimpan.value = 'Lengkapi tingkat pemahaman, waktu, dan petugas verifikasi.'
         return
@@ -220,10 +290,11 @@ export function useEdukasiPasien(props: PropsEdukasi) {
         asli: hapus ? hapusTarget.value?.data : editing.value?.data,
       })
       let body: string | FormData = payload
-      if (!hapus && foto.value) {
+      if (!hapus && (fotoPetugas.file || fotoPenerima.file)) {
         body = new FormData()
         body.append('payload', payload)
-        body.append('foto', foto.value)
+        if (fotoPetugas.file) body.append('foto', fotoPetugas.file)
+        if (fotoPenerima.file) body.append('foto_penerima', fotoPenerima.file)
       }
       const hasil = await api<{ pesan: string }>('', {
         method: hapus ? 'DELETE' : editing.value ? 'PUT' : 'POST',
@@ -252,6 +323,10 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     ruangan.value = {}
     form.metode = 'Audio'
     bolehPilihPetugas.value = false
+    parafTersedia.value = false
+    parafPenerimaTersedia.value = false
+    fotoPenerimaTersedia.value = false
+    namaPenerimaTersedia.value = false
     detail.value = null
     detailCatatan.value = null
     hapusTarget.value = null
@@ -269,7 +344,11 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     hapusTarget, petugas, ruangan, petugasLogin, bolehPilihPetugas, form, terkunci,
     mulai, selesai, errorFilter, cetak, printing, cetakAktif,
     waktuSekarang, reset, muat, cariReferensi, edit, mutasi,
-    foto, kunciFoto, pratinjauFoto, fotoGagal, detailFotoGagal, pilihFoto, batalFoto,
+    fotoPetugas, fotoPenerima, kameraAktif, detailFotoGagal, detailFotoPenerimaGagal,
+    fotoPenerimaTersedia, namaPenerimaTersedia,
     detailCatatan, bidangDetail, verifikator, terverifikasi, ubahStatusVerifikasi, waktuVerifikasiSekarang,
+    pilihanBidang, nilaiPilihan, pilihBidang, materiTerpilih, pilihMateri,
+    parafTersedia, parafDibatalkan, kekuranganVerifikasi,
+    jenisBukti, pilihJenisBukti, buktiGanda, parafPenerimaTersedia,
   }
 }

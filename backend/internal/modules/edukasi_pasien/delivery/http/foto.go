@@ -21,14 +21,14 @@ import (
 )
 
 const batasFoto = 10 << 20
-const batasData = 2 << 20 // Dua kolom TEXT beserta snapshot asli dan escape JSON.
+const batasData = 4 << 20 // Isian TEXT, dua paraf, snapshot asli, dan escape JSON.
 
 type pengaturanFoto struct {
 	uploadURL, prefix, webBaseURL string
 	client                        *http.Client
 }
 
-func bacaInput(c *gin.Context) (edukasi_pasien.Input, *multipart.FileHeader, error) {
+func bacaInput(c *gin.Context) (edukasi_pasien.Input, map[string]*multipart.FileHeader, error) {
 	var in edukasi_pasien.Input
 	if c.ContentType() != "multipart/form-data" {
 		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, batasData)
@@ -37,7 +37,7 @@ func bacaInput(c *gin.Context) (edukasi_pasien.Input, *multipart.FileHeader, err
 		}
 		return in, nil, nil
 	}
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, batasFoto+batasData+(256<<10))
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 2*batasFoto+batasData+(256<<10))
 	if err := c.Request.ParseMultipartForm(1 << 20); err != nil {
 		return in, nil, fmt.Errorf("%w: foto maksimal 10 MB dan formulir harus lengkap", edukasi_pasien.ErrValidasi)
 	}
@@ -48,14 +48,20 @@ func bacaInput(c *gin.Context) (edukasi_pasien.Input, *multipart.FileHeader, err
 	if len(payload) > batasData || json.Unmarshal([]byte(payload), &in) != nil {
 		return in, nil, edukasi_pasien.ErrValidasi
 	}
-	files := c.Request.MultipartForm.File["foto"]
-	if len(files) != 1 || len(c.Request.MultipartForm.File) != 1 {
-		return in, nil, fmt.Errorf("%w: pilih satu foto JPG atau PNG", edukasi_pasien.ErrValidasi)
+	files := map[string]*multipart.FileHeader{}
+	for key, daftar := range c.Request.MultipartForm.File {
+		if (key != "foto" && key != "foto_penerima") || len(daftar) != 1 {
+			return in, nil, fmt.Errorf("%w: kirim satu foto untuk petugas dan satu foto untuk penerima", edukasi_pasien.ErrValidasi)
+		}
+		if daftar[0].Size <= 0 || daftar[0].Size > batasFoto {
+			return in, nil, fmt.Errorf("%w: setiap foto maksimal 10 MB", edukasi_pasien.ErrValidasi)
+		}
+		files[key] = daftar[0]
 	}
-	if files[0].Size <= 0 || files[0].Size > batasFoto {
-		return in, nil, fmt.Errorf("%w: foto maksimal 10 MB", edukasi_pasien.ErrValidasi)
+	if len(files) == 0 {
+		return in, nil, edukasi_pasien.ErrValidasi
 	}
-	return in, files[0], nil
+	return in, files, nil
 }
 
 func siapkanFoto(file *multipart.FileHeader) (string, error) {

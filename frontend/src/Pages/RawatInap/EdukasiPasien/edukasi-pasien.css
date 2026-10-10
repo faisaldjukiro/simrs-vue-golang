@@ -2,6 +2,17 @@
   min-width: 0;
 }
 
+.edukasi-paraf-detail {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  aspect-ratio: 3 / 1;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+
 .edukasi-identitas-grid,
 .edukasi-materi-grid {
   display: grid;
@@ -11,6 +22,50 @@
 
 .edukasi-materi-grid {
   margin-top: 20px;
+}
+
+.edukasi-pilihan-bidang {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.edukasi-pilihan-materi {
+  min-width: 0;
+  margin: 24px 0 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.edukasi-pilihan-materi legend {
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.edukasi-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+
+.edukasi-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.edukasi-checkbox input {
+  flex-shrink: 0;
+  margin-top: 3px;
+  accent-color: #0d9488;
 }
 
 .edukasi-catatan {
@@ -168,6 +223,7 @@
 
 @media (max-width: 640px) {
   .edukasi-identitas-grid,
+  .edukasi-checkbox-grid,
   .edukasi-materi-grid {
     grid-template-columns: minmax(0, 1fr);
   }

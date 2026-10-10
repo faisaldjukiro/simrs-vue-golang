@@ -180,7 +180,7 @@ func sanitasiQuery(query url.Values) map[string]any {
 
 func rahasia(key string) bool {
 	kunci := strings.ToLower(strings.ReplaceAll(key, "-", "_"))
-	for _, bagian := range []string{"password", "token", "authorization", "secret", "signature", "user_key", "consumer_key"} {
+	for _, bagian := range []string{"password", "token", "authorization", "secret", "signature", "paraf", "user_key", "consumer_key"} {
 		if strings.Contains(kunci, bagian) {
 			return true
 		}

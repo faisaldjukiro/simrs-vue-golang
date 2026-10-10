@@ -1,0 +1,20 @@
+.edukasi-paraf {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+.edukasi-paraf p { margin: 0; color: var(--muted); }
+.edukasi-paraf canvas {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  aspect-ratio: 3 / 1;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  touch-action: none;
+  cursor: crosshair;
+}
+.edukasi-paraf canvas[aria-disabled="true"] { cursor: not-allowed; }

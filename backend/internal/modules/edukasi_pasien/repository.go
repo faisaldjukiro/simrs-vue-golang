@@ -37,12 +37,17 @@ type Catatan struct {
 	NamaRuangan     string            `json:"nama_ruangan"`
 	NamaVerifikator string            `json:"nama_verifikator"`
 	FotoURL         string            `json:"foto_url"`
+	FotoPenerimaURL string            `json:"foto_penerima_url"`
 }
 
 type Hasil struct {
-	Catatan           []Catatan `json:"catatan"`
-	PetugasLogin      Pilihan   `json:"petugas_login"`
-	BolehPilihPetugas bool      `json:"boleh_pilih_petugas"`
+	FotoPenerimaTersedia  bool      `json:"foto_penerima_tersedia"`
+	NamaPenerimaTersedia  bool      `json:"nama_penerima_tersedia"`
+	ParafPenerimaTersedia bool      `json:"paraf_penerima_tersedia"`
+	ParafTersedia         bool      `json:"paraf_tersedia"`
+	Catatan               []Catatan `json:"catatan"`
+	PetugasLogin          Pilihan   `json:"petugas_login"`
+	BolehPilihPetugas     bool      `json:"boleh_pilih_petugas"`
 }
 
 type Pilihan struct {
@@ -57,10 +62,14 @@ func NewRepositori(simrs *sql.DB) *Repositori { return &Repositori{simrs: simrs}
 func Kolom() []string {
 	return []string{"tgl_perawatan", "jam_rawat", "kd_ruangan", "nip", "metode", "durasi", "materi", "penerima", "keterangan", "foto",
 		"kemampuan_membaca", "tingkat_pendidikan", "bahasa", "hambatan_emosional", "motivasi", "keterbatasan_fisik", "keterbatasan_kognitif", "kesediaan_menerima", "nilai_budaya",
-		"tingkat_pemahaman", "catatan_verifikasi", "status_verifikasi", "tanggal_verifikasi", "nip_verifikator"}
+		"tingkat_pemahaman", "catatan_verifikasi", "status_verifikasi", "tanggal_verifikasi", "nip_verifikator", "paraf_petugas", "nama_penerima", "paraf_penerima", "foto_penerima"}
 }
 
 func Validasi(in *Input) error {
+	return validasiInput(in, nil)
+}
+
+func validasiInput(in *Input, fotoBaru map[string]bool) error {
 	if strings.TrimSpace(in.NoRawat) == "" || len(in.NoRawat) > 17 || in.Data == nil {
 		return ErrValidasi
 	}
@@ -81,7 +90,7 @@ func Validasi(in *Input) error {
 	}
 	// Sesuai struktur catatan_edukasi SIMRS yang dikonfirmasi pengguna.
 	// Tolak kelebihan panjang, jangan memotong isi catatan klinis.
-	for k, batas := range map[string]int{"kd_ruangan": 30, "nip": 20, "durasi": 30, "penerima": 30, "keterangan": 255, "foto": 255,
+	for k, batas := range map[string]int{"kd_ruangan": 30, "nip": 20, "durasi": 30, "penerima": 30, "keterangan": 255, "foto": 255, "foto_penerima": 255, "nama_penerima": 100,
 		"kemampuan_membaca": 30, "tingkat_pendidikan": 30, "bahasa": 50, "hambatan_emosional": 255, "motivasi": 100, "keterbatasan_fisik": 255, "keterbatasan_kognitif": 255, "kesediaan_menerima": 30, "nilai_budaya": 255,
 		"tingkat_pemahaman": 30, "status_verifikasi": 20, "nip_verifikator": 20} {
 		in.Data[k] = strings.TrimSpace(in.Data[k])
@@ -93,7 +102,7 @@ func Validasi(in *Input) error {
 		return fmt.Errorf("%w: petugas wajib diisi", ErrValidasi)
 	}
 
-	return validasiAsesmen(in)
+	return validasiAsesmen(in, fotoBaru)
 }
 
 func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool) (Hasil, error) {
@@ -103,7 +112,15 @@ func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool
 	}
 
 	h.BolehPilihPetugas = admin
-	err := r.simrs.QueryRowContext(ctx, "SELECT nip,nama FROM petugas WHERE nip=?", username).Scan(&h.PetugasLogin.Kode, &h.PetugasLogin.Nama)
+	tersedia, err := r.kolomBuktiTersedia(ctx)
+	if err != nil {
+		return h, err
+	}
+	h.ParafTersedia = tersedia["paraf_petugas"]
+	h.ParafPenerimaTersedia = tersedia["nama_penerima"] && tersedia["paraf_penerima"]
+	h.FotoPenerimaTersedia = tersedia["foto_penerima"]
+	h.NamaPenerimaTersedia = tersedia["nama_penerima"]
+	err = r.simrs.QueryRowContext(ctx, "SELECT nip,nama FROM petugas WHERE nip=?", username).Scan(&h.PetugasLogin.Kode, &h.PetugasLogin.Nama)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return h, err
 	}
@@ -117,6 +134,10 @@ func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool
 	} {
 		selects := []string{"DATE_FORMAT(c.tgl_perawatan,'%Y-%m-%d')", "TIME_FORMAT(c.jam_rawat,'%H:%i:%s')"}
 		for _, k := range Kolom()[2:] {
+			if kolomBuktiOpsional(k) && !tersedia[k] {
+				selects = append(selects, "''")
+				continue
+			}
 			if k == "tanggal_verifikasi" {
 				selects = append(selects, "COALESCE(DATE_FORMAT(c.tanggal_verifikasi,'%Y-%m-%d %H:%i:%s'),'')")
 				continue
@@ -249,6 +270,21 @@ func (r *Repositori) Mutasi(ctx context.Context, in Input, metode, username stri
 // Unggah hanya dipanggil setelah validasi, penguncian snapshot, dan mutasi SQL berhasil.
 // File di server berkas tidak ikut transaksi MySQL; kegagalan sesudah upload dilaporkan khusus.
 func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, username string, admin bool, unggah func() (string, error)) (err error) {
+	upload := map[string]func() (string, error){}
+	if unggah != nil {
+		upload["foto"] = unggah
+	}
+	return r.MutasiDenganBukti(ctx, in, metode, username, admin, upload)
+}
+
+func (r *Repositori) MutasiDenganBukti(ctx context.Context, in Input, metode, username string, admin bool, unggah map[string]func() (string, error)) (err error) {
+	fotoBaru := map[string]bool{}
+	for k, fn := range unggah {
+		if (k != "foto" && k != "foto_penerima") || fn == nil || metode == "DELETE" {
+			return ErrValidasi
+		}
+		fotoBaru[k] = true
+	}
 	if in.NoRawat == "" || len(in.NoRawat) > 17 {
 		return ErrValidasi
 	}
@@ -262,16 +298,18 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 		if in.Data == nil {
 			return ErrValidasi
 		}
-		// Klien JSON lama boleh mempertahankan foto, tetapi tidak boleh memasang path lain.
-		if _, ada := in.Data["foto"]; !ada && metode == "PUT" {
-			in.Data["foto"] = in.Asli["foto"]
+		for _, k := range []string{"foto", "foto_penerima"} {
+			if _, ada := in.Data[k]; !ada && metode == "PUT" {
+				in.Data[k] = in.Asli[k]
+			}
+			if in.Data[k] != "" && (metode == "POST" || in.Data[k] != in.Asli[k]) {
+				return fmt.Errorf("%w: foto baru wajib dikirim sebagai file upload", ErrValidasi)
+			}
 		}
-		if in.Data["foto"] != "" && (metode == "POST" || in.Data["foto"] != in.Asli["foto"]) {
-			return fmt.Errorf("%w: foto baru wajib dikirim sebagai file upload", ErrValidasi)
-		}
-		if err = Validasi(&in); err != nil {
+		if err = validasiInput(&in, fotoBaru); err != nil {
 			return err
 		}
+
 		if !admin && (username == "" || in.Data["nip"] != username) {
 			return ErrAkses
 		}
@@ -279,7 +317,33 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 			return fmt.Errorf("%w: verifikator harus sesuai petugas login", ErrAkses)
 		}
 	}
-	kolom := append([]string{"no_rawat"}, Kolom()...)
+	tersedia, err := r.kolomBuktiTersedia(ctx)
+	if err != nil {
+		return err
+	}
+	for _, k := range []string{"paraf_petugas", "nama_penerima", "paraf_penerima", "foto_penerima"} {
+		if !tersedia[k] && (in.Data[k] != "" || in.Asli[k] != "" || fotoBaru[k]) {
+			return fmt.Errorf("%w: penyimpanan bukti belum tersedia; administrator perlu menambahkan kolom %s pada catatan_edukasi", ErrValidasi, k)
+		}
+	}
+	if metode == "PUT" {
+		for _, paraf := range []string{"paraf_petugas", "paraf_penerima"} {
+			if in.Data[paraf] == "" || in.Data[paraf] != in.Asli[paraf] {
+				continue
+			}
+			for _, k := range Kolom() {
+				if !kolomGambarBukti(k) && in.Data[k] != in.Asli[k] {
+					return fmt.Errorf("%w: isi edukasi berubah; gambar ulang paraf pemberi dan penerima", ErrValidasi)
+				}
+			}
+		}
+	}
+	kolom := []string{"no_rawat"}
+	for _, k := range Kolom() {
+		if !kolomBuktiOpsional(k) || tersedia[k] {
+			kolom = append(kolom, k)
+		}
+	}
 	lama, baru := []any{in.NoRawat}, []any{in.NoRawat}
 	for _, k := range kolom[1:] {
 		if metode != "POST" {
@@ -331,7 +395,7 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 		return err
 	}
 	defer tx.Rollback()
-	if unggah != nil {
+	if len(unggah) > 0 {
 		var engine string
 		if err = tx.QueryRowContext(ctx, `SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?`, tabel).Scan(&engine); err != nil {
 			return err
@@ -374,18 +438,30 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 	if err != nil {
 		return err
 	}
-	if unggah != nil && metode != "DELETE" {
-		lokasi, e := unggah()
-		if e != nil {
-			return e
-		}
+	if len(unggah) > 0 {
+		terunggah := false
 		defer func() {
-			if err != nil {
+			if err != nil && terunggah {
 				err = errors.Join(err, ErrFotoTerunggah)
 			}
 		}()
-		if lokasi == "" || len(lokasi) > 255 {
-			return fmt.Errorf("%w: lokasi foto tidak valid", ErrValidasi)
+		setFoto := []string{}
+		nilaiFoto := []any{}
+		for _, k := range []string{"foto", "foto_penerima"} {
+			fn := unggah[k]
+			if fn == nil {
+				continue
+			}
+			lokasi, e := fn()
+			if e != nil {
+				return e
+			}
+			terunggah = true
+			if lokasi == "" || len(lokasi) > 255 {
+				return fmt.Errorf("%w: lokasi foto tidak valid", ErrValidasi)
+			}
+			setFoto = append(setFoto, k+"=?")
+			nilaiFoto = append(nilaiFoto, lokasi)
 		}
 		whereFoto, argsFoto := khanzamutasi.Kondisi(kolom, baru)
 		// Kondisi membandingkan COALESCE(nilai,''); parameter NULL harus menjadi string kosong.
@@ -394,7 +470,7 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 				argsFoto[i] = ""
 			}
 		}
-		hasil, e := tx.ExecContext(ctx, "UPDATE "+tabel+" SET foto=? WHERE "+whereFoto+" LIMIT 1", append([]any{lokasi}, argsFoto...)...)
+		hasil, e := tx.ExecContext(ctx, "UPDATE "+tabel+" SET "+strings.Join(setFoto, ",")+" WHERE "+whereFoto+" LIMIT 1", append(nilaiFoto, argsFoto...)...)
 		err = e
 		if err != nil {
 			return err
