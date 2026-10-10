@@ -1,0 +1,30 @@
+@page { size: A4 portrait; margin: 12mm; }
+body { margin: 0; color: #111; background: #fff; font: 10pt/1.35 Arial, sans-serif; }
+.lembar-edukasi + .lembar-edukasi { break-before: page; }
+.kop {
+  display: grid;
+  grid-template-columns: 22mm minmax(0, 1fr) 22mm;
+  align-items: center;
+  gap: 4mm;
+  padding-bottom: 4mm;
+  border-bottom: 3px double #111;
+  break-inside: avoid;
+}
+.kop img { width: 22mm; height: 22mm; object-fit: contain; }
+.identitas-rs { text-align: center; }
+.identitas-rs h1 { margin: 0 0 2mm; font-size: 15pt; text-transform: uppercase; }
+.identitas-rs p { margin: 1mm 0; font-size: 9pt; }
+h2 { text-align: center; font-size: 12pt; margin: 5mm 0; }
+h3 { margin: 4mm 0 2mm; font-size: 10pt; break-after: avoid; }
+.identitas-pasien { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 6mm; margin-bottom: 3mm; }
+.identitas-pasien > div { overflow-wrap: anywhere; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9pt; }
+th, td { border: 1px solid #555; padding: 1.5mm 2mm; vertical-align: top; text-align: left; overflow-wrap: anywhere; white-space: pre-wrap; }
+th { width: 32%; background: #eee; font-weight: normal; }
+tr { break-inside: avoid; }
+.dokumentasi { break-inside: avoid; }
+.dokumentasi img { display: block; max-width: 100%; max-height: 65mm; object-fit: contain; }
+@media screen {
+  body { max-width: 186mm; margin: 20px auto; padding: 12mm; }
+  .lembar-edukasi + .lembar-edukasi { margin-top: 12mm; }
+}

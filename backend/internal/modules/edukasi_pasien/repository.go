@@ -30,12 +30,13 @@ type Input struct {
 }
 
 type Catatan struct {
-	Data        map[string]string `json:"data"`
-	Sumber      string            `json:"sumber"`
-	BisaUbah    bool              `json:"bisa_ubah"`
-	NamaPetugas string            `json:"nama_petugas"`
-	NamaRuangan string            `json:"nama_ruangan"`
-	FotoURL     string            `json:"foto_url"`
+	Data            map[string]string `json:"data"`
+	Sumber          string            `json:"sumber"`
+	BisaUbah        bool              `json:"bisa_ubah"`
+	NamaPetugas     string            `json:"nama_petugas"`
+	NamaRuangan     string            `json:"nama_ruangan"`
+	NamaVerifikator string            `json:"nama_verifikator"`
+	FotoURL         string            `json:"foto_url"`
 }
 
 type Hasil struct {
@@ -54,7 +55,9 @@ type Repositori struct{ simrs *sql.DB }
 func NewRepositori(simrs *sql.DB) *Repositori { return &Repositori{simrs: simrs} }
 
 func Kolom() []string {
-	return []string{"tgl_perawatan", "jam_rawat", "kd_ruangan", "nip", "metode", "durasi", "materi", "penerima", "keterangan", "foto"}
+	return []string{"tgl_perawatan", "jam_rawat", "kd_ruangan", "nip", "metode", "durasi", "materi", "penerima", "keterangan", "foto",
+		"kemampuan_membaca", "tingkat_pendidikan", "bahasa", "hambatan_emosional", "motivasi", "keterbatasan_fisik", "keterbatasan_kognitif", "kesediaan_menerima", "nilai_budaya",
+		"tingkat_pemahaman", "catatan_verifikasi", "status_verifikasi", "tanggal_verifikasi", "nip_verifikator"}
 }
 
 func Validasi(in *Input) error {
@@ -78,7 +81,9 @@ func Validasi(in *Input) error {
 	}
 	// Sesuai struktur catatan_edukasi SIMRS yang dikonfirmasi pengguna.
 	// Tolak kelebihan panjang, jangan memotong isi catatan klinis.
-	for k, batas := range map[string]int{"kd_ruangan": 30, "nip": 20, "durasi": 30, "materi": 50, "penerima": 30, "keterangan": 255, "foto": 255} {
+	for k, batas := range map[string]int{"kd_ruangan": 30, "nip": 20, "durasi": 30, "penerima": 30, "keterangan": 255, "foto": 255,
+		"kemampuan_membaca": 30, "tingkat_pendidikan": 30, "bahasa": 50, "hambatan_emosional": 255, "motivasi": 100, "keterbatasan_fisik": 255, "keterbatasan_kognitif": 255, "kesediaan_menerima": 30, "nilai_budaya": 255,
+		"tingkat_pemahaman": 30, "status_verifikasi": 20, "nip_verifikator": 20} {
 		in.Data[k] = strings.TrimSpace(in.Data[k])
 		if utf8.RuneCountInString(in.Data[k]) > batas {
 			return fmt.Errorf("%w: %s maksimal %d karakter", ErrValidasi, k, batas)
@@ -88,7 +93,7 @@ func Validasi(in *Input) error {
 		return fmt.Errorf("%w: petugas wajib diisi", ErrValidasi)
 	}
 
-	return nil
+	return validasiAsesmen(in)
 }
 
 func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool) (Hasil, error) {
@@ -112,6 +117,10 @@ func (r *Repositori) Daftar(ctx context.Context, no, username string, admin bool
 	} {
 		selects := []string{"DATE_FORMAT(c.tgl_perawatan,'%Y-%m-%d')", "TIME_FORMAT(c.jam_rawat,'%H:%i:%s')"}
 		for _, k := range Kolom()[2:] {
+			if k == "tanggal_verifikasi" {
+				selects = append(selects, "COALESCE(DATE_FORMAT(c.tanggal_verifikasi,'%Y-%m-%d %H:%i:%s'),'')")
+				continue
+			}
 			selects = append(selects, "COALESCE(c."+k+",'')")
 		}
 		rows, err := sumber.db.QueryContext(ctx, "SELECT "+strings.Join(selects, ",")+" FROM "+sumber.tabel+" c WHERE c.no_rawat=? ORDER BY c.tgl_perawatan DESC,c.jam_rawat DESC", no)
@@ -186,8 +195,8 @@ func (r *Repositori) Referensi(ctx context.Context, jenis, q, username string, a
 }
 
 func (r *Repositori) lengkapiNama(ctx context.Context, catatan []Catatan) error {
-	for _, ref := range []struct{ kolom, tabel, nama string }{
-		{"nip", "petugas", "nama"}, {"kd_ruangan", "ruangan", "nama_ruangan"},
+	for _, ref := range []struct{ kolom, tabel, nama, kunci string }{
+		{"nip", "petugas", "nama", "nip"}, {"kd_ruangan", "ruangan", "nama_ruangan", "kd_ruangan"}, {"nip_verifikator", "petugas", "nama", "nip"},
 	} {
 		keys := []any{}
 		seen := map[string]bool{}
@@ -202,7 +211,7 @@ func (r *Repositori) lengkapiNama(ctx context.Context, catatan []Catatan) error 
 			continue
 		}
 		marks := strings.TrimSuffix(strings.Repeat("?,", len(keys)), ",")
-		rows, err := r.simrs.QueryContext(ctx, "SELECT "+ref.kolom+","+ref.nama+" FROM "+ref.tabel+" WHERE "+ref.kolom+" IN ("+marks+")", keys...)
+		rows, err := r.simrs.QueryContext(ctx, "SELECT "+ref.kunci+","+ref.nama+" FROM "+ref.tabel+" WHERE "+ref.kunci+" IN ("+marks+")", keys...)
 		if err != nil {
 			return err
 		}
@@ -223,6 +232,8 @@ func (r *Repositori) lengkapiNama(ctx context.Context, catatan []Catatan) error 
 		for i := range catatan {
 			if ref.kolom == "nip" {
 				catatan[i].NamaPetugas = nama[catatan[i].Data["nip"]]
+			} else if ref.kolom == "nip_verifikator" {
+				catatan[i].NamaVerifikator = nama[catatan[i].Data["nip_verifikator"]]
 			} else {
 				catatan[i].NamaRuangan = nama[catatan[i].Data["kd_ruangan"]]
 			}
@@ -264,6 +275,9 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 		if !admin && (username == "" || in.Data["nip"] != username) {
 			return ErrAkses
 		}
+		if !admin && in.Data["status_verifikasi"] == "Terverifikasi" && in.Data["nip_verifikator"] != username {
+			return fmt.Errorf("%w: verifikator harus sesuai petugas login", ErrAkses)
+		}
 	}
 	kolom := append([]string{"no_rawat"}, Kolom()...)
 	lama, baru := []any{in.NoRawat}, []any{in.NoRawat}
@@ -274,7 +288,7 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 			}
 		}
 		lama = append(lama, in.Asli[k])
-		baru = append(baru, in.Data[k])
+		baru = append(baru, nilaiSimpan(k, in.Data[k]))
 	}
 	if metode != "POST" && !admin && (username == "" || in.Asli["nip"] != username) {
 		return ErrAkses
@@ -288,12 +302,12 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 	}
 
 	if metode != "DELETE" {
-		for _, ref := range []struct{ tabel, kolom string }{{"petugas", "nip"}, {"ruangan", "kd_ruangan"}} {
+		for _, ref := range []struct{ tabel, kolom, input string }{{"petugas", "nip", "nip"}, {"ruangan", "kd_ruangan", "kd_ruangan"}, {"petugas", "nip", "nip_verifikator"}} {
 			// Java tidak mewajibkan ruangan; nilai kosong tetap mengikuti aturan tabel SIMRS.
-			if ref.kolom == "kd_ruangan" && in.Data[ref.kolom] == "" {
+			if ref.input != "nip" && in.Data[ref.input] == "" {
 				continue
 			}
-			if err = r.simrs.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM "+ref.tabel+" WHERE "+ref.kolom+"=?)", in.Data[ref.kolom]).Scan(&ada); err != nil {
+			if err = r.simrs.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM "+ref.tabel+" WHERE "+ref.kolom+"=?)", in.Data[ref.input]).Scan(&ada); err != nil {
 				return err
 			}
 			if !ada {
@@ -374,6 +388,12 @@ func (r *Repositori) MutasiDenganFoto(ctx context.Context, in Input, metode, use
 			return fmt.Errorf("%w: lokasi foto tidak valid", ErrValidasi)
 		}
 		whereFoto, argsFoto := khanzamutasi.Kondisi(kolom, baru)
+		// Kondisi membandingkan COALESCE(nilai,''); parameter NULL harus menjadi string kosong.
+		for i, nilai := range argsFoto {
+			if nilai == nil {
+				argsFoto[i] = ""
+			}
+		}
 		hasil, e := tx.ExecContext(ctx, "UPDATE "+tabel+" SET foto=? WHERE "+whereFoto+" LIMIT 1", append([]any{lokasi}, argsFoto...)...)
 		err = e
 		if err != nil {

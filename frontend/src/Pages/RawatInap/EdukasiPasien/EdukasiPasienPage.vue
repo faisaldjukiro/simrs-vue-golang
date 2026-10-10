@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ChevronDown, ChevronUp, LoaderCircle, Pencil, Printer, RefreshCw, Save, Trash2, X } from '@lucide/vue'
+import { ChevronDown, ChevronUp, Eye, Image, LoaderCircle, Pencil, Printer, RefreshCw, Save, Trash2, X } from '@lucide/vue'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import DataTable from '../../../Components/Ui/DataTable.vue'
 import FormInput from '../../../Components/Ui/FormInput.vue'
 import InputPencarian from '../../../Components/Ui/InputPencarian.vue'
 import TableSearch from '../../../Components/Ui/TableSearch.vue'
-import { bidangEdukasi, type PropsEdukasi } from '../../../types/edukasiPasien'
+import { bidangEdukasi, bidangAsesmen, pilihanPemahaman, pilihanStatusVerifikasi, type PropsEdukasi } from '../../../types/edukasiPasien'
 import { useEdukasiPasien } from './useEdukasiPasien'
 
 const props = defineProps<PropsEdukasi>()
 const {
   loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing,
   hapusTarget, petugas, ruangan, bolehPilihPetugas, form, terkunci, mulai, selesai, errorFilter,
-  waktuSekarang, reset, muat, cariReferensi, edit, mutasi, cetak,
+  waktuSekarang, reset, muat, cariReferensi, edit, mutasi, cetak, printing, cetakAktif,
   foto, kunciFoto, pratinjauFoto, fotoGagal, detail, detailFotoGagal, pilihFoto, batalFoto,
+  detailCatatan, bidangDetail, verifikator, terverifikasi, ubahStatusVerifikasi, waktuVerifikasiSekarang,
 } = useEdukasiPasien(props)
 </script>
 
@@ -25,7 +26,7 @@ const {
         <div>
           <span>Pelayanan Rawat Inap</span>
           <h3>{{ editing ? 'Edit Catatan Edukasi' : 'Catatan Edukasi Pasien' }}</h3>
-          <p>Catatan edukasi dibaca dan disimpan langsung pada tabel SIMRS.</p>
+          <p>Catat pelaksanaan edukasi, kebutuhan belajar, dan hasil verifikasi pemahaman pasien atau keluarga.</p>
         </div>
         <div class="clinical-section-tools">
           <button v-if="editing" type="button" class="clinical-button secondary" :disabled="saving" @click="reset">
@@ -42,6 +43,7 @@ const {
       </header>
       <form v-show="formVisible" id="edukasi-form" class="clinical-form" @submit.prevent="mutasi()">
         <fieldset class="form-compact" :disabled="saving">
+          <h4 class="edukasi-subjudul">Pelaksanaan Edukasi</h4>
           <div class="edukasi-identitas-grid">
             <FormInput v-model="form.tgl_perawatan" label="Tanggal Edukasi" type="date" required :disabled="terkunci" />
             <FormInput v-model="form.jam_rawat" label="Jam Edukasi (WITA)" type="time" step="1" required
@@ -57,11 +59,43 @@ const {
             <FormInput v-model="form.penerima" label="Penerima Edukasi" :maxlength="30" :disabled="terkunci" />
           </div>
           <div class="edukasi-materi-grid">
-            <FormInput v-model="form.materi" label="Materi Edukasi" jenis="textarea" :rows="5" :maxlength="50"
+            <FormInput v-model="form.materi" label="Materi Edukasi" jenis="textarea" :rows="5" :maxlength="65535"
               :disabled="terkunci" />
             <FormInput v-model="form.keterangan" label="Keterangan" jenis="textarea" :rows="5" :maxlength="255"
               :disabled="terkunci" />
           </div>
+          <section class="edukasi-bagian" aria-labelledby="asesmen-edukasi-title">
+            <h4 id="asesmen-edukasi-title" class="edukasi-subjudul">Asesmen Kebutuhan Belajar</h4>
+            <p class="edukasi-petunjuk">Isi berdasarkan penerima edukasi. Biarkan kosong bila belum dikaji.</p>
+            <div class="edukasi-identitas-grid">
+              <FormInput v-for="bidang in bidangAsesmen" :key="bidang.key" v-model="form[bidang.key]"
+                :label="bidang.label" :jenis="bidang.pilihan ? 'select' : bidang.jenis || 'input'"
+                :options="[{ label: 'Belum dikaji', value: '' }, ...(bidang.pilihan || []).map(v => ({ label: v, value: v }))]"
+                :rows="3" :maxlength="bidang.maxlength" :disabled="terkunci" />
+            </div>
+          </section>
+          <section class="edukasi-bagian" aria-labelledby="verifikasi-edukasi-title">
+            <h4 id="verifikasi-edukasi-title" class="edukasi-subjudul">Pemahaman dan Verifikasi</h4>
+            <div class="edukasi-identitas-grid">
+              <FormInput v-model="form.tingkat_pemahaman" label="Tingkat Pemahaman" jenis="select"
+                :options="[{ label: 'Belum dinilai', value: '' }, ...pilihanPemahaman.map(v => ({ label: v, value: v }))]"
+                :required="terverifikasi" :disabled="terkunci" />
+              <FormInput :model-value="form.status_verifikasi" label="Status Verifikasi" jenis="select"
+                :options="[{ label: 'Belum dicatat', value: '' }, ...pilihanStatusVerifikasi.map(v => ({ label: v, value: v }))]"
+                :disabled="terkunci" @update:model-value="ubahStatusVerifikasi" />
+              <FormInput v-model="form.tanggal_verifikasi" label="Waktu Verifikasi (WITA)" type="datetime-local" step="1"
+                :required="terverifikasi" :disabled="terkunci || !terverifikasi" />
+              <InputPencarian v-model="verifikator" label="Petugas Verifikator" :search="q => cariReferensi('petugas', q)"
+                :required="terverifikasi" :disabled="terkunci || !terverifikasi || !bolehPilihPetugas" />
+            </div>
+            <FormInput class="edukasi-catatan-verifikasi" v-model="form.catatan_verifikasi" label="Catatan Hasil Verifikasi"
+              jenis="textarea" :rows="4" :maxlength="65535" :disabled="terkunci"
+              hint="Catat respons penerima edukasi, pemahaman yang dinilai, serta kebutuhan penjelasan ulang bila ada." />
+            <button v-if="terverifikasi" type="button" class="clinical-button secondary" :disabled="terkunci" @click="waktuVerifikasiSekarang">
+              <RefreshCw :size="15" /> Waktu Verifikasi Sekarang
+            </button>
+            <p class="edukasi-petunjuk">Verifikator mengikuti petugas login. Administrator dapat memilih petugas verifikator.</p>
+          </section>
           <div class="edukasi-foto">
             <FormInput :key="kunciFoto" label="Foto Edukasi (Opsional)" type="file"
               :file-name="foto?.name || ''"
@@ -114,9 +148,10 @@ const {
           <button type="button" class="clinical-button secondary" :disabled="loading || saving" @click="muat">
             <RefreshCw :size="15" /> Muat Ulang
           </button>
-          <button type="button" class="clinical-button secondary" :disabled="loading || !!error || !rows.length"
-            @click="cetak">
-            <Printer :size="15" /> Cetak
+          <button type="button" class="clinical-button secondary" :disabled="terkunci || printing || !rows.length"
+            title="Cetak semua catatan yang sesuai filter" @click="cetak()">
+            <LoaderCircle v-if="cetakAktif === 'semua'" class="spin" :size="15" />
+            <Printer v-else :size="15" /> {{ cetakAktif === 'semua' ? 'Menyiapkan...' : 'Cetak Hasil Filter' }}
           </button>
         </div>
       </header>
@@ -135,7 +170,7 @@ const {
         <strong>{{ error }}</strong>
         <button type="button" @click="muat">Coba Lagi</button>
       </div>
-      <DataTable v-else :rows="rows" data-key="kunci" paginator :rows-per-page="10"
+      <DataTable v-else class="edukasi-table" :rows="rows" data-key="kunci" paginator :rows-per-page="10"
         :rows-per-page-options="[10, 25, 50]" empty-message="Catatan edukasi tidak ditemukan.">
         <Column header="Tanggal / Jam" style="min-width:150px">
           <template #body="{ data: r }">
@@ -149,7 +184,7 @@ const {
           minWidth: bidang.key === 'materi' || bidang.key === 'keterangan' ? '250px' : '130px',
           whiteSpace: 'pre-wrap',
         }">
-          <template #body="{ data: r }">{{ r.data[bidang.key] || '—' }}</template>
+          <template #body="{ data: r }"><div class="edukasi-teks-ringkas">{{ r.data[bidang.key] || '—' }}</div></template>
         </Column>
         <Column header="Ruangan" style="min-width:180px">
           <template #body="{ data: r }">{{ r.nama_ruangan || r.data.kd_ruangan }}</template>
@@ -163,27 +198,62 @@ const {
             </div>
           </template>
         </Column>
-        <Column header="Foto" style="min-width:130px">
+        <Column header="Pemahaman / Verifikasi" style="min-width:200px">
           <template #body="{ data: r }">
-            <button v-if="r.foto_url" type="button" class="clinical-button secondary" @click="detail = r">Lihat Foto</button>
-            <span v-else>{{ r.data.foto ? 'Foto tidak tersedia' : 'Tanpa foto' }}</span>
+            <div class="clinical-table-main">
+              <strong>{{ r.data.status_verifikasi || 'Belum dicatat' }}</strong>
+              <span>{{ r.data.tingkat_pemahaman || 'Pemahaman belum dinilai' }}</span>
+              <span v-if="r.data.tanggal_verifikasi">{{ r.data.tanggal_verifikasi }} WITA</span>
+              <span v-if="r.data.nip_verifikator">{{ r.nama_verifikator || r.data.nip_verifikator }}</span>
+            </div>
           </template>
         </Column>
-        <Column header="Aksi" style="min-width:140px">
+        <Column header="Aksi" style="min-width:210px">
           <template #body="{ data: r }">
-            <div v-if="r.bisa_ubah" class="clinical-table-actions">
-              <button type="button" :disabled="terkunci" @click="edit(r)">
-                <Pencil :size="14" /> Edit
+            <div class="clinical-table-actions edukasi-actions" role="group"
+              :aria-label="`Aksi edukasi ${r.data.tgl_perawatan} ${r.data.jam_rawat}`">
+              <button type="button" title="Lihat detail edukasi" @click="detailCatatan = r">
+                <Eye :size="15" aria-hidden="true" /> Detail
               </button>
-              <button type="button" class="danger" :disabled="terkunci" @click="hapusTarget = r; errorSimpan = ''">
-                <Trash2 :size="14" /> Hapus
+              <button type="button" :disabled="!r.foto_url"
+                :title="r.foto_url ? 'Lihat foto edukasi' : r.data.foto ? 'Foto tidak tersedia' : 'Belum ada foto'"
+                @click="detail = r">
+                <Image :size="15" aria-hidden="true" /> Foto
+              </button>
+              <button v-if="r.bisa_ubah" type="button" title="Edit catatan edukasi" :disabled="terkunci" @click="edit(r)">
+                <Pencil :size="15" aria-hidden="true" /> Edit
+              </button>
+              <button v-if="r.bisa_ubah" type="button" class="danger" title="Hapus catatan edukasi" :disabled="terkunci"
+                @click="hapusTarget = r; errorSimpan = ''">
+                <Trash2 :size="15" aria-hidden="true" /> Hapus
+              </button>
+              <button type="button" class="edukasi-cetak" title="Cetak catatan edukasi ini / simpan sebagai PDF"
+                :disabled="terkunci || printing" @click="cetak(r)">
+                <LoaderCircle v-if="cetakAktif === r.kunci" class="spin" :size="15" aria-hidden="true" />
+                <Printer v-else :size="15" aria-hidden="true" />
+                {{ cetakAktif === r.kunci ? 'Menyiapkan...' : 'Cetak' }}
               </button>
             </div>
-            <span v-else class="clinical-owner-note">Hanya baca</span>
+            <span v-if="!r.bisa_ubah" class="clinical-owner-note edukasi-action-note">Hanya baca</span>
+            <span v-if="!r.foto_url" class="edukasi-action-note">{{ r.data.foto ? 'Foto tidak tersedia' : 'Tanpa foto' }}</span>
           </template>
         </Column>
       </DataTable>
     </article>
+
+    <Dialog :visible="!!detailCatatan" modal header="Detail Edukasi Pasien" :style="{ width: '860px', maxWidth: '95vw' }"
+      @update:visible="!$event && (detailCatatan = null)">
+      <template v-if="detailCatatan">
+        <p>Petugas: {{ detailCatatan.nama_petugas || detailCatatan.data.nip }} · Ruangan: {{ detailCatatan.nama_ruangan || detailCatatan.data.kd_ruangan || '-' }}</p>
+        <dl class="edukasi-detail-grid">
+          <div v-for="bidang in bidangDetail" :key="bidang.key">
+            <dt>{{ bidang.label }}</dt>
+            <dd>{{ detailCatatan.data[bidang.key] || 'Belum dicatat' }}</dd>
+          </div>
+          <div><dt>Nama Verifikator</dt><dd>{{ detailCatatan.nama_verifikator || 'Belum dicatat' }}</dd></div>
+        </dl>
+      </template>
+    </Dialog>
 
     <Dialog :visible="!!detail" modal header="Foto Edukasi Pasien" :style="{ width: '760px', maxWidth: '95vw' }"
       @update:visible="!$event && (detail = null)">

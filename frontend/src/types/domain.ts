@@ -2,6 +2,8 @@ export type Dictionary<T = any> = Record<string, T>
 
 export interface Pasien extends Dictionary {
   no_rawat: string
+  no_rekam_medis?: string
+  nama_pasien?: string
   no_rkm_medis?: string
   nm_pasien?: string
   jenis_rawat?: 'Rawat Jalan' | 'Rawat Inap' | 'IGD/UGD' | string

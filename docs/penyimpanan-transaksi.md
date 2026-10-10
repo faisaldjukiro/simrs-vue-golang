@@ -115,3 +115,33 @@ Pengujian integrasi melalui Postman pada lingkungan uji:
 
 Verifikasi otomatis memakai driver SQL dan server HTTP tiruan; belum menguji
 upload ke server SIMRS nyata atau melakukan mutasi data pasien nyata.
+
+## Asesmen dan verifikasi Edukasi Pasien
+
+Form menggunakan 14 kolom asesmen/verifikasi yang sudah ditambahkan pengguna
+pada `catatan_edukasi` SIMRS; `materi` dan `catatan_verifikasi` bertipe TEXT.
+Tidak ada migration tambahan. Deploy backend dan frontend bersamaan.
+
+Asesmen mencatat kemampuan membaca, pendidikan penerima, bahasa, motivasi,
+kesediaan menerima informasi, hambatan emosional, keterbatasan fisik/kognitif,
+dan nilai budaya. Isian yang belum dikaji boleh kosong. Nilai NULL pada catatan
+lama ditampilkan sebagai belum dicatat, bukan otomatis terverifikasi.
+
+Status baru default `Belum diverifikasi`. Pemilihan `Terverifikasi` memerlukan
+tingkat pemahaman, waktu WITA yang tidak mendahului edukasi, dan petugas
+verifikator. Petugas biasa memakai identitas login; administrator dapat memilih
+petugas. Status terverifikasi mencatat bahwa penilaian sudah dilakukan, sehingga
+hasil `Belum memahami` tetap diperbolehkan dan dapat disertai catatan tindak lanjut.
+Pengubahan status menjadi belum diverifikasi mengosongkan waktu/NIP verifikator.
+
+Riwayat menampilkan ringkasan verifikasi dan tombol Detail Edukasi. Cetak memakai
+tabel per catatan agar semua asesmen, hasil verifikasi, dan nama petugas terbaca.
+Upload foto tetap tersedia. Tanggal verifikasi kosong disimpan sebagai SQL NULL.
+Edit/hapus menyertakan seluruh field terbaru pada snapshot `asli`.
+
+Endpoint Postman tetap `GET/POST/PUT/DELETE {{api_url}}/api/edukasi-pasien`, dengan
+Bearer token dan bentuk payload yang sama. Tambahkan field baru pada `data`;
+untuk status `Terverifikasi`, kirim misalnya `tingkat_pemahaman: "Sebagian memahami"`,
+`tanggal_verifikasi: "2026-10-10 10:00:00"`, dan `nip_verifikator` milik petugas uji.
+Gunakan waktu setelah tanggal/jam edukasi. Uji GET, edit, dan foto pada lingkungan
+uji; pemeriksaan otomatis dilakukan dengan data tiruan tanpa mutasi pasien nyata.

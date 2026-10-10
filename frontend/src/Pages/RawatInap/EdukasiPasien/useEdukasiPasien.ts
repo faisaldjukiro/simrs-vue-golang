@@ -1,13 +1,17 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { cetakEdukasiPasien } from './cetakEdukasiPasien'
+import type { KopPemulangan } from '../../../types/perencanaanPemulangan'
 import { request } from '../../../lib/shared/http'
 import { useNotifikasi } from '../../../lib/shared/useNotifikasi'
-import { bidangEdukasi } from '../../../types/edukasiPasien'
+import { bidangEdukasi, bidangAsesmen, bidangVerifikasi } from '../../../types/edukasiPasien'
 import type { CatatanEdukasi, HasilEdukasi, PropsEdukasi } from '../../../types/edukasiPasien'
 
 export function useEdukasiPasien(props: PropsEdukasi) {
   const notifikasi = useNotifikasi()
   const loading = ref(false)
   const saving = ref(false)
+  const printing = ref(false)
+  const cetakAktif = ref('')
   const error = ref('')
   const errorSimpan = ref('')
   const keyword = ref('')
@@ -17,6 +21,8 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   const records = ref<CatatanEdukasi[]>([])
   const editing = ref<CatatanEdukasi | null>(null)
   const detail = ref<CatatanEdukasi | null>(null)
+  const detailCatatan = ref<CatatanEdukasi | null>(null)
+  const verifikator = ref<Record<string, string>>({})
   const hapusTarget = ref<CatatanEdukasi | null>(null)
   const petugas = ref<Record<string, string>>({})
   const ruangan = ref<Record<string, string>>({})
@@ -63,10 +69,32 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     !errorFilter.value &&
     (!mulai.value || r.data.tgl_perawatan >= mulai.value) &&
     (!selesai.value || r.data.tgl_perawatan <= selesai.value) &&
-    [r.nama_petugas, r.nama_ruangan, r.sumber, ...Object.values(r.data)].join(' ').toLocaleLowerCase()
+    [r.nama_petugas, r.nama_ruangan, r.nama_verifikator, r.sumber, ...Object.values(r.data)].join(' ').toLocaleLowerCase()
       .includes(keyword.value.trim().toLocaleLowerCase()),
   ).map(r => ({ ...r, kunci: r.sumber + ':' + r.data.tgl_perawatan + ' ' + r.data.jam_rawat })))
   const terkunci = computed(() => loading.value || saving.value || !!error.value)
+  const terverifikasi = computed(() => form.status_verifikasi === 'Terverifikasi')
+
+  function waktuVerifikasiSekarang() {
+    form.tanggal_verifikasi = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19)
+  }
+
+  function ubahStatusVerifikasi(value: string) {
+    form.status_verifikasi = value
+    if (value === 'Terverifikasi') {
+      if (!form.tanggal_verifikasi) waktuVerifikasiSekarang()
+      if (!verifikator.value.kode) verifikator.value = { ...petugasLogin.value }
+    } else {
+      form.tanggal_verifikasi = ''
+      verifikator.value = {}
+      form.nip_verifikator = ''
+    }
+  }
+
+  const bidangDetail = [
+    { key: 'tgl_perawatan', label: 'Tanggal Edukasi' }, { key: 'jam_rawat', label: 'Jam Edukasi (WITA)' },
+    ...bidangEdukasi, ...bidangAsesmen, ...bidangVerifikasi,
+  ]
 
   function api<T>(path = '', options: RequestInit = {}) {
     return request<T>('/api/edukasi-pasien' + path, {
@@ -88,7 +116,9 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     if (!petugas.value.kode) petugas.value = { ...petugasLogin.value }
     const metode = form.metode || 'Audio'
     Object.keys(form).forEach(k => delete form[k])
-    for (const b of bidangEdukasi) form[b.key] = ''
+    for (const b of bidangDetail) form[b.key] = ''
+    form.status_verifikasi = 'Belum diverifikasi'
+    verifikator.value = {}
     form.foto = ''
     form.metode = metode
     waktuSekarang()
@@ -117,42 +147,35 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     return api<Record<string, string>[]>('/referensi?' + new URLSearchParams({ jenis, q }))
   }
 
-  function cetak() {
-    if (loading.value || error.value || !rows.value.length) return
+  async function cetak(row?: CatatanEdukasi) {
+    if (terkunci.value || printing.value || (!row && !rows.value.length)) return
     const popup = window.open('', '_blank', 'width=1100,height=750')
     if (!popup) {
       notifikasi.peringatan('Izinkan jendela cetak pada browser terlebih dahulu.')
       return
     }
-    const doc = popup.document
-    doc.title = 'Catatan Edukasi Pasien'
-    doc.documentElement.lang = 'id'
-    const style = doc.createElement('style')
-    style.textContent = '@page { size: A4 landscape; margin: 12mm; } body { font: 12px Arial, sans-serif; color: #111; } h1 { font-size: 20px; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #aaa; padding: 8px; text-align: left; overflow-wrap: anywhere; } th { background: #eee; } thead { display: table-header-group; } tr { break-inside: avoid; }'
-    doc.head.append(style)
-    const title = doc.createElement('h1')
-    title.textContent = 'Catatan Edukasi Pasien'
-    const identity = doc.createElement('p')
-    identity.textContent = `${props.patient.nm_pasien || '-'} | RM: ${props.patient.no_rkm_medis || '-'} | No. Rawat: ${props.patient.no_rawat}`
-    const period = doc.createElement('p')
-    period.textContent = `Periode: ${mulai.value || 'Awal kunjungan'} s.d. ${selesai.value || 'Terakhir'} | Pencarian: ${keyword.value || '-'} | ${rows.value.length} catatan | Waktu WITA`
-    const table = doc.createElement('table')
-    const head = table.createTHead().insertRow()
-    for (const label of ['Tanggal', 'Jam', ...bidangEdukasi.map(b => b.label), 'Petugas', 'Ruangan', 'Sumber']) {
-      const th = doc.createElement('th')
-      th.textContent = label
-      head.append(th)
-    }
-    const body = table.createTBody()
-    for (const r of rows.value) {
-      const tr = body.insertRow()
-      for (const value of [r.data.tgl_perawatan, r.data.jam_rawat, ...bidangEdukasi.map(b => r.data[b.key]), `${r.nama_petugas || '-'} (${r.data.nip})`, r.nama_ruangan || r.data.kd_ruangan, r.sumber]) {
-        tr.insertCell().textContent = value || '-'
+    const pasien = { ...props.patient }
+    const catatan = (row ? [row] : rows.value).map(r => ({ ...r, data: { ...r.data } }))
+    const konteks = generasi
+    printing.value = true
+    cetakAktif.value = row ? row.sumber + ':' + row.data.tgl_perawatan + ' ' + row.data.jam_rawat : 'semua'
+    popup.document.body.textContent = 'Menyiapkan edukasi dan kop rumah sakit...'
+    try {
+      const kop = await request<KopPemulangan>('/api/perencanaan-pemulangan/kop', {
+        headers: { Authorization: 'Bearer ' + props.token },
+      })
+      if (popup.closed) return
+      if (konteks !== generasi) { popup.close(); return }
+      await cetakEdukasiPasien(popup, pasien, catatan, kop, () => konteks === generasi)
+    } catch (e) {
+      if (!popup.closed) popup.close()
+      if (konteks === generasi) notifikasi.peringatan(e instanceof Error ? e.message : 'Cetak edukasi gagal.')
+    } finally {
+      if (konteks === generasi) {
+        printing.value = false
+        cetakAktif.value = ''
       }
     }
-    doc.body.append(title, identity, period, table)
-    popup.focus()
-    popup.requestAnimationFrame(() => popup.print())
   }
 
   function edit(row: CatatanEdukasi) {
@@ -161,6 +184,8 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     editing.value = { ...row, data: { ...row.data } }
     formVisible.value = true
     Object.assign(form, row.data)
+    form.tanggal_verifikasi = (row.data.tanggal_verifikasi || '').replace(' ', 'T')
+    verifikator.value = { kode: row.data.nip_verifikator, nama: row.nama_verifikator }
     petugas.value = { kode: row.data.nip, nama: row.nama_petugas }
     ruangan.value = { kode: row.data.kd_ruangan, nama: row.nama_ruangan }
   }
@@ -172,13 +197,26 @@ export function useEdukasiPasien(props: PropsEdukasi) {
       errorSimpan.value = 'Lengkapi tanggal, jam, dan petugas.'
       return
     }
+    if (!hapus && terverifikasi.value) {
+      if (!form.tingkat_pemahaman || !form.tanggal_verifikasi || !verifikator.value.kode) {
+        errorSimpan.value = 'Lengkapi tingkat pemahaman, waktu, dan petugas verifikasi.'
+        return
+      }
+      const waktu = form.tanggal_verifikasi.replace('T', ' ')
+      if ((waktu.length === 16 ? waktu + ':00' : waktu) < `${form.tgl_perawatan} ${form.jam_rawat.length === 5 ? form.jam_rawat + ':00' : form.jam_rawat}`) {
+        errorSimpan.value = 'Waktu verifikasi tidak boleh sebelum waktu edukasi.'
+        return
+      }
+    }
     const konteks = generasi
     saving.value = true
     try {
       const payload = JSON.stringify({
         no_rawat: props.patient.no_rawat,
         sumber: hapus ? hapusTarget.value?.sumber : editing.value?.sumber,
-        data: hapus ? undefined : { ...form, nip: petugas.value.kode, kd_ruangan: ruangan.value.kode || '' },
+        data: hapus ? undefined : { ...form, nip: petugas.value.kode, kd_ruangan: ruangan.value.kode || '',
+          tanggal_verifikasi: terverifikasi.value ? form.tanggal_verifikasi.replace('T', ' ') : '',
+          nip_verifikator: terverifikasi.value ? verifikator.value.kode : '' },
         asli: hapus ? hapusTarget.value?.data : editing.value?.data,
       })
       let body: string | FormData = payload
@@ -205,6 +243,8 @@ export function useEdukasiPasien(props: PropsEdukasi) {
 
   watch(() => [props.token, props.patient.no_rawat], () => {
     generasi++
+    printing.value = false
+    cetakAktif.value = ''
     saving.value = false
     records.value = []
     petugasLogin.value = {}
@@ -213,6 +253,7 @@ export function useEdukasiPasien(props: PropsEdukasi) {
     form.metode = 'Audio'
     bolehPilihPetugas.value = false
     detail.value = null
+    detailCatatan.value = null
     hapusTarget.value = null
     keyword.value = ''
     mulai.value = ''
@@ -226,8 +267,9 @@ export function useEdukasiPasien(props: PropsEdukasi) {
   return {
     loading, saving, error, errorSimpan, keyword, rows, records, formVisible, editing, detail,
     hapusTarget, petugas, ruangan, petugasLogin, bolehPilihPetugas, form, terkunci,
-    mulai, selesai, errorFilter, cetak,
+    mulai, selesai, errorFilter, cetak, printing, cetakAktif,
     waktuSekarang, reset, muat, cariReferensi, edit, mutasi,
     foto, kunciFoto, pratinjauFoto, fotoGagal, detailFotoGagal, pilihFoto, batalFoto,
+    detailCatatan, bidangDetail, verifikator, terverifikasi, ubahStatusVerifikasi, waktuVerifikasiSekarang,
   }
 }

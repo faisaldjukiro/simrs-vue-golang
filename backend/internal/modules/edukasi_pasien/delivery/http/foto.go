@@ -21,6 +21,7 @@ import (
 )
 
 const batasFoto = 10 << 20
+const batasData = 2 << 20 // Dua kolom TEXT beserta snapshot asli dan escape JSON.
 
 type pengaturanFoto struct {
 	uploadURL, prefix, webBaseURL string
@@ -30,13 +31,13 @@ type pengaturanFoto struct {
 func bacaInput(c *gin.Context) (edukasi_pasien.Input, *multipart.FileHeader, error) {
 	var in edukasi_pasien.Input
 	if c.ContentType() != "multipart/form-data" {
-		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 128<<10)
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, batasData)
 		if err := c.ShouldBindJSON(&in); err != nil {
 			return in, nil, edukasi_pasien.ErrValidasi
 		}
 		return in, nil, nil
 	}
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, batasFoto+(256<<10))
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, batasFoto+batasData+(256<<10))
 	if err := c.Request.ParseMultipartForm(1 << 20); err != nil {
 		return in, nil, fmt.Errorf("%w: foto maksimal 10 MB dan formulir harus lengkap", edukasi_pasien.ErrValidasi)
 	}
@@ -44,7 +45,7 @@ func bacaInput(c *gin.Context) (edukasi_pasien.Input, *multipart.FileHeader, err
 		return in, nil, edukasi_pasien.ErrValidasi
 	}
 	payload := c.PostForm("payload")
-	if len(payload) > 128<<10 || json.Unmarshal([]byte(payload), &in) != nil {
+	if len(payload) > batasData || json.Unmarshal([]byte(payload), &in) != nil {
 		return in, nil, edukasi_pasien.ErrValidasi
 	}
 	files := c.Request.MultipartForm.File["foto"]

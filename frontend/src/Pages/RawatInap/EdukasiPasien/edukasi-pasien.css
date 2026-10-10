@@ -20,6 +20,55 @@
   line-height: 1.5;
 }
 
+.edukasi-bagian {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.edukasi-subjudul {
+  margin: 0 0 14px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.edukasi-petunjuk {
+  margin: 10px 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.edukasi-catatan-verifikasi {
+  margin: 16px 0;
+}
+
+.edukasi-teks-ringkas {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  max-width: 360px;
+}
+
+.edukasi-detail-grid {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.edukasi-detail-grid dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.edukasi-detail-grid dd {
+  margin: 4px 0 0;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .edukasi-foto {
   display: grid;
   gap: 12px;
@@ -63,8 +112,58 @@
   margin: 0;
 }
 
-.edukasi-page .clinical-table-actions {
-  flex-wrap: wrap;
+.edukasi-table :deep(.p-datatable-thead > tr > th) {
+  font-size: 12px;
+}
+
+.edukasi-table :deep(.p-datatable-tbody > tr > td) {
+  vertical-align: top;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.edukasi-table .clinical-table-main strong {
+  min-width: 0;
+  font-size: 13px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.edukasi-table .clinical-table-main span {
+  font-size: 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.edukasi-table .edukasi-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 188px;
+}
+
+.edukasi-table .edukasi-actions button {
+  min-height: 34px;
+  padding: 7px 10px;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.edukasi-table .edukasi-actions button:hover:not(:disabled) {
+  background: var(--surface-soft);
+}
+
+.edukasi-table .edukasi-actions .edukasi-cetak {
+  grid-column: 1 / -1;
+}
+
+.edukasi-action-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 @media (max-width: 640px) {
